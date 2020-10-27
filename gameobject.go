@@ -1,5 +1,10 @@
 package engosdl
 
+import (
+	"fmt"
+	"reflect"
+)
+
 // IGameObject represents the interface for any game object. Any object in the
 // game has to implement this interface.
 type IGameObject interface {
@@ -119,6 +124,7 @@ func (gobj *GameObject) OnEnable() {
 // OnStart calls all component OnStart methods.
 func (gobj *GameObject) OnStart() {
 	for _, component := range gobj.GetComponents() {
+		fmt.Println(reflect.TypeOf(component))
 		component.OnStart()
 	}
 }

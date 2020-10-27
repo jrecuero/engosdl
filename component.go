@@ -4,6 +4,9 @@ package engosdl
 // GameObject
 type IComponent interface {
 	IObject
+	GetGameObject() *GameObject
+	Enable(bool)
+	IsEnable() bool
 	OnAwake()
 	OnStart()
 	OnUpdate()
@@ -14,9 +17,26 @@ type IComponent interface {
 // Component represents the default IComponent implementation.
 type Component struct {
 	*Object
+	gameObject *GameObject
+	enable     bool
 }
 
 var _ IComponent = (*Component)(nil)
+
+// GetGameObject return the component game object parent.
+func (c *Component) GetGameObject() *GameObject {
+	return c.gameObject
+}
+
+// Enable sets component enable attribute
+func (c *Component) Enable(enable bool) {
+	c.enable = enable
+}
+
+// IsEnable returns if component is enable or not
+func (c *Component) IsEnable() bool {
+	return c.enable
+}
 
 // OnAwake is called first time the component is created.
 func (c *Component) OnAwake() {
@@ -33,7 +53,7 @@ func (c *Component) OnEnable() {
 	Logger.Trace().Str("component", c.name).Msg("OnEnable")
 }
 
-// OnUpdate is called for every updata tick.
+// OnUpdate is called for every update tick.
 func (c *Component) OnUpdate() {
 	Logger.Trace().Str("component", c.name).Msg("OnUpdate")
 }
@@ -44,9 +64,11 @@ func (c *Component) OnDraw() {
 }
 
 // NewComponent creates a new component instance.
-func NewComponent(name string) *Component {
+func NewComponent(name string, gobj *GameObject) *Component {
 	Logger.Trace().Str("component", name).Msg("new component")
 	return &Component{
-		Object: NewObject(name),
+		Object:     NewObject(name),
+		gameObject: gobj,
+		enable:     true,
 	}
 }

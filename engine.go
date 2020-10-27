@@ -30,6 +30,7 @@ type Engine struct {
 	window       *sdl.Window
 	renderer     *sdl.Renderer
 	sceneHandler ISceneHandler
+	eventHandler IEventHandler
 }
 
 // NewEngine creates a new engine instance.
@@ -40,16 +41,14 @@ func NewEngine(name string, w, h int32) *Engine {
 		width:        w,
 		height:       h,
 		sceneHandler: NewSceneHandler("engine-scene-handler"),
+		eventHandler: NewEventHandler("engine-event-handler"),
 	}
 }
 
-// DoInit initialiazes all engine required structures.
-func (engine *Engine) DoInit() {
-}
-
-// DoStart starts the game engine.
-func (engine *Engine) DoStart() {
+// DoInitSdl initialiazes all engine sdl structures.
+func (engine *Engine) DoInitSdl() {
 	var err error
+
 	Logger.Trace().Str("engine", engine.name).Msg("start engine")
 	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		Logger.Error().Err(err)
@@ -70,20 +69,24 @@ func (engine *Engine) DoStart() {
 		Logger.Error().Err(err)
 		panic(err)
 	}
+}
 
+// DoAwake awakes all engine structures.
+func (engine *Engine) DoAwake() {
+	engine.GetSceneHandler().OnAwake()
+}
+
+// DoStart starts the game engine.
+func (engine *Engine) DoStart() {
 	engine.active = true
 
-	for _, scene := range engine.sceneHandler.Scenes() {
-		scene.OnAwake()
-	}
+	engine.GetSceneHandler().OnStart()
 }
 
 // DoRun runs the engine.
 func (engine *Engine) DoRun() {
 	Logger.Trace().Str("engine", engine.name).Msg("run engine")
-	for _, scene := range engine.sceneHandler.Scenes() {
-		scene.OnStart()
-	}
+
 	for engine.active {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
@@ -93,8 +96,14 @@ func (engine *Engine) DoRun() {
 				break
 			}
 		}
+
+		engine.GetSceneHandler().OnUpdate()
+
 		engine.renderer.SetDrawColor(255, 255, 255, 255)
 		engine.renderer.Clear()
+
+		engine.GetSceneHandler().OnDraw()
+
 		engine.renderer.Present()
 		sdl.Delay(30)
 	}
@@ -108,7 +117,22 @@ func (engine *Engine) DoCleanup() {
 	defer engine.renderer.Destroy()
 }
 
+// GetRenderer returns the engine renderer.
+func (engine *Engine) GetRenderer() *sdl.Renderer {
+	return engine.renderer
+}
+
+// GetSceneHandler returns the engine scene handler.
+func (engine *Engine) GetSceneHandler() ISceneHandler {
+	return engine.sceneHandler
+}
+
+// GetEventHandler returns the engine event handler.
+func (engine *Engine) GetEventHandler() IEventHandler {
+	return engine.eventHandler
+}
+
 // AddScene adds a new scene to the engine.
 func (engine *Engine) AddScene(scene IScene) bool {
-	return engine.sceneHandler.AddScene(scene)
+	return engine.GetSceneHandler().AddScene(scene)
 }
