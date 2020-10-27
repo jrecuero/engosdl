@@ -13,53 +13,40 @@ type IComponent interface {
 
 // Component represents the default IComponent implementation.
 type Component struct {
-	id   string
-	name string
+	*Object
 }
 
 var _ IComponent = (*Component)(nil)
 
-// GetID returns the component id.
-func (c *Component) GetID() string {
-	return c.id
-}
-
-// GetName returns the component name
-func (c *Component) GetName() string {
-	return c.name
-}
-
-// SetName sets the component name
-func (c *Component) SetName(name string) IObject {
-	c.name = name
-	return c
-}
-
 // OnAwake is called first time the component is created.
 func (c *Component) OnAwake() {
+	Logger.Trace().Str("component", c.name).Msg("OnAwake")
 }
 
 // OnStart is called first time the component is enabled.
 func (c *Component) OnStart() {
+	Logger.Trace().Str("component", c.name).Msg("OnStart")
 }
 
 // OnEnable is called every time the component is enabled.
 func (c *Component) OnEnable() {
+	Logger.Trace().Str("component", c.name).Msg("OnEnable")
 }
 
 // OnUpdate is called for every updata tick.
 func (c *Component) OnUpdate() {
+	Logger.Trace().Str("component", c.name).Msg("OnUpdate")
 }
 
 // OnDraw is called for every draw tick.
 func (c *Component) OnDraw() {
+	Logger.Trace().Str("component", c.name).Msg("OnDraw")
 }
 
 // NewComponent creates a new component instance.
 func NewComponent(name string) *Component {
-	logger.Trace().Str("component", name).Msg("new component")
+	Logger.Trace().Str("component", name).Msg("new component")
 	return &Component{
-		id:   "",
-		name: name,
+		Object: NewObject(name),
 	}
 }

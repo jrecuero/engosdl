@@ -8,7 +8,8 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-var logger zerolog.Logger
+// Logger is the system logger to be used by the application.
+var Logger zerolog.Logger
 
 func init() {
 	file, err := os.Create("engosdl.log")
@@ -17,79 +18,97 @@ func init() {
 	}
 	//"2006-01-02T15:04:05.999999999Z07:00"
 	zerolog.TimeFieldFormat = time.RFC3339Nano
-	logger = zerolog.New(file).With().Timestamp().Logger()
+	Logger = zerolog.New(file).With().Timestamp().Logger()
 }
 
 // Engine represents the main game engine in charge of running the game.
 type Engine struct {
-	name     string
-	width    int32
-	height   int32
-	active   bool
-	window   *sdl.Window
-	renderer *sdl.Renderer
+	name         string
+	width        int32
+	height       int32
+	active       bool
+	window       *sdl.Window
+	renderer     *sdl.Renderer
+	sceneHandler ISceneHandler
 }
 
 // NewEngine creates a new engine instance.
 func NewEngine(name string, w, h int32) *Engine {
-	logger.Trace().Str("engine", name).Msg("new engine")
+	Logger.Trace().Str("engine", name).Msg("new engine")
 	return &Engine{
-		name:   name,
-		width:  w,
-		height: h,
+		name:         name,
+		width:        w,
+		height:       h,
+		sceneHandler: NewSceneHandler("engine-scene-handler"),
 	}
+}
+
+// DoInit initialiazes all engine required structures.
+func (engine *Engine) DoInit() {
 }
 
 // DoStart starts the game engine.
-func (e *Engine) DoStart() {
+func (engine *Engine) DoStart() {
 	var err error
-	logger.Trace().Str("engine", e.name).Msg("start engine")
+	Logger.Trace().Str("engine", engine.name).Msg("start engine")
 	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		logger.Error().Err(err)
+		Logger.Error().Err(err)
 		panic(err)
 	}
 
-	e.window, err = sdl.CreateWindow(e.name,
+	engine.window, err = sdl.CreateWindow(engine.name,
 		sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		e.width, e.height,
+		engine.width, engine.height,
 		sdl.WINDOW_SHOWN)
 	if err != nil {
-		logger.Error().Err(err)
+		Logger.Error().Err(err)
 		panic(err)
 	}
 
-	e.renderer, err = sdl.CreateRenderer(e.window, -1, sdl.RENDERER_ACCELERATED)
+	engine.renderer, err = sdl.CreateRenderer(engine.window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
-		logger.Error().Err(err)
+		Logger.Error().Err(err)
 		panic(err)
 	}
 
-	e.active = true
+	engine.active = true
+
+	for _, scene := range engine.sceneHandler.Scenes() {
+		scene.OnAwake()
+	}
 }
 
 // DoRun runs the engine.
-func (e *Engine) DoRun() {
-	logger.Trace().Str("engine", e.name).Msg("run engine")
-	for e.active {
+func (engine *Engine) DoRun() {
+	Logger.Trace().Str("engine", engine.name).Msg("run engine")
+	for _, scene := range engine.sceneHandler.Scenes() {
+		scene.OnStart()
+	}
+	for engine.active {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent:
-				logger.Trace().Str("engine", e.name).Msg("exit engine")
-				e.active = false
+				Logger.Trace().Str("engine", engine.name).Msg("exit engine")
+				engine.active = false
 				break
 			}
 		}
-		e.renderer.SetDrawColor(255, 255, 255, 255)
-		e.renderer.Clear()
-		e.renderer.Present()
+		engine.renderer.SetDrawColor(255, 255, 255, 255)
+		engine.renderer.Clear()
+		engine.renderer.Present()
 		sdl.Delay(30)
 	}
 }
 
-//DoCleanup clean-ups all graphical resources created by teh engine.
-func (e *Engine) DoCleanup() {
-	logger.Trace().Str("engine", e.name).Msg("end engine")
+// DoCleanup clean-ups all graphical resources created by teh engine.
+func (engine *Engine) DoCleanup() {
+	Logger.Trace().Str("engine", engine.name).Msg("end engine")
 	defer sdl.Quit()
-	defer e.window.Destroy()
-	defer e.renderer.Destroy()
+	defer engine.window.Destroy()
+	defer engine.renderer.Destroy()
+}
+
+// AddScene adds a new scene to the engine.
+func (engine *Engine) AddScene(scene IScene) bool {
+	return engine.sceneHandler.AddScene(scene)
 }

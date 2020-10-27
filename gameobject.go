@@ -1,12 +1,5 @@
 package engosdl
 
-// IObject represents the interface for any object in the game.
-type IObject interface {
-	GetID() string
-	GetName() string
-	SetName(string) IObject
-}
-
 // IGameObject represents the interface for any game object. Any object in the
 // game has to implement this interface.
 type IGameObject interface {
@@ -23,12 +16,16 @@ type IGameObject interface {
 	AddComponent(IComponent) IGameObject
 	GetComponent(interface{}) IComponent
 	GetComponents() []IComponent
+	OnAwake()
+	OnEnable()
+	OnStart()
+	OnUpdate()
+	OnDraw()
 }
 
 // GameObject is the default implementation for IGameObject.
 type GameObject struct {
-	id         string
-	name       string
+	*Object
 	active     bool
 	layer      int32
 	tag        string
@@ -38,22 +35,6 @@ type GameObject struct {
 }
 
 var _ IGameObject = (*GameObject)(nil)
-
-// GetID returns the game object id.
-func (gobj *GameObject) GetID() string {
-	return gobj.id
-}
-
-// GetName returns the game object name
-func (gobj *GameObject) GetName() string {
-	return gobj.name
-}
-
-// SetName sets the game object name
-func (gobj *GameObject) SetName(name string) IObject {
-	gobj.name = name
-	return gobj
-}
 
 // GetActive returns if the game object is active (enable) or not (disable).
 func (gobj *GameObject) GetActive() bool {
@@ -106,6 +87,7 @@ func (gobj *GameObject) GetTransform() ITransform {
 
 // AddComponent adds a new component to the game object.
 func (gobj *GameObject) AddComponent(component IComponent) IGameObject {
+	Logger.Trace().Str("gameobject", gobj.name).Str("component", component.GetName()).Msg("add component")
 	gobj.components = append(gobj.components, component)
 	return gobj
 }
@@ -120,16 +102,50 @@ func (gobj *GameObject) GetComponents() []IComponent {
 	return gobj.components
 }
 
+// OnAwake calls all component OnAwake methods.
+func (gobj *GameObject) OnAwake() {
+	for _, component := range gobj.GetComponents() {
+		component.OnAwake()
+	}
+}
+
+// OnEnable calls all component OnEnable methods.
+func (gobj *GameObject) OnEnable() {
+	for _, component := range gobj.GetComponents() {
+		component.OnEnable()
+	}
+}
+
+// OnStart calls all component OnStart methods.
+func (gobj *GameObject) OnStart() {
+	for _, component := range gobj.GetComponents() {
+		component.OnStart()
+	}
+}
+
+// OnUpdate calls all component OnUpdate methods.
+func (gobj *GameObject) OnUpdate() {
+	for _, component := range gobj.GetComponents() {
+		component.OnUpdate()
+	}
+}
+
+// OnDraw calls all component OnDraw methods.
+func (gobj *GameObject) OnDraw() {
+	for _, component := range gobj.GetComponents() {
+		component.OnDraw()
+	}
+}
+
 // NewGameObject creates a new game object instance.
 func NewGameObject(name string) *GameObject {
-	logger.Trace().Str("gameobject", name).Msg("new game object")
+	Logger.Trace().Str("gameobject", name).Msg("new game object")
 	return &GameObject{
-		id:         "",
-		name:       name,
+		Object:     NewObject(name),
 		active:     true,
 		layer:      0,
 		tag:        "",
-		scene:      NewScene(),
+		scene:      nil,
 		transform:  NewTransform(),
 		components: []IComponent{},
 	}
