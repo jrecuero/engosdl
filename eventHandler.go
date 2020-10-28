@@ -5,41 +5,6 @@ type IEvent interface {
 	IObject
 }
 
-// IEventPool represents the pool where events are stores.
-type IEventPool interface {
-	IObject
-	Add(IEvent) bool
-	Next() IEvent
-	Pop() IEvent
-}
-
-// IPoolHandler represents the interface for the pool event handler.
-type IPoolHandler interface {
-	IObject
-	GetPool() IEventPool
-	AddEvent(IEvent) bool
-	NextEventInPool() IEvent
-	PopEventInPool() IEvent
-}
-
-// IDelegate represents any delegate to be used in the delegate event handler.
-type IDelegate interface {
-	IObject
-}
-
-// TDelegateSignature represents the callback for any method to be registered
-// to a delegate.
-type TDelegateSignature func(...interface{}) bool
-
-// IDelegateHandler represents the interface for the delefate event handler.
-type IDelegateHandler interface {
-	IObject
-	CreateDelegate() IDelegate
-	RegisterToDelegate(IDelegate, TDelegateSignature) (int64, bool)
-	UnregisterFromDeleate(int64) bool
-	TriggerDelegate(IDelegate, ...interface{})
-}
-
 // IEventHandler represents the interface for the event handler.
 type IEventHandler interface {
 	IObject
@@ -51,6 +16,7 @@ type IEventHandler interface {
 // interface.
 type EventHandler struct {
 	*Object
+	delegateHandler IDelegateHandler
 }
 
 // GetPoolHandler returns the pool event handler.
@@ -60,10 +26,12 @@ func (h *EventHandler) GetPoolHandler() IPoolHandler {
 
 // GetDelegateHandler returns the delegate event handler.
 func (h *EventHandler) GetDelegateHandler() IDelegateHandler {
-	return nil
+	return h.delegateHandler
 }
 
 // NewEventHandler creates a new event handler instance.
 func NewEventHandler(name string) *EventHandler {
-	return &EventHandler{}
+	return &EventHandler{
+		delegateHandler: NewDelegateHandler("delegate-handler"),
+	}
 }

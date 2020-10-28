@@ -33,16 +33,36 @@ type Engine struct {
 	eventHandler IEventHandler
 }
 
+var gameEngine *Engine
+
+// GetEngine returns the singleton game engine.
+func GetEngine() *Engine {
+	return gameEngine
+}
+
 // NewEngine creates a new engine instance.
 func NewEngine(name string, w, h int32) *Engine {
 	Logger.Trace().Str("engine", name).Msg("new engine")
-	return &Engine{
-		name:         name,
-		width:        w,
-		height:       h,
-		sceneHandler: NewSceneHandler("engine-scene-handler"),
-		eventHandler: NewEventHandler("engine-event-handler"),
+	if gameEngine == nil {
+		gameEngine = &Engine{
+			name:         name,
+			width:        w,
+			height:       h,
+			sceneHandler: NewSceneHandler("engine-scene-handler"),
+			eventHandler: NewEventHandler("engine-event-handler"),
+		}
 	}
+	return gameEngine
+}
+
+// GetWidth returns engine window width.
+func (engine *Engine) GetWidth() int32 {
+	return engine.width
+}
+
+// GetHeight returns engine window height
+func (engine *Engine) GetHeight() int32 {
+	return engine.height
 }
 
 // DoInitSdl initialiazes all engine sdl structures.

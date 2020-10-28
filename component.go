@@ -4,21 +4,22 @@ package engosdl
 // GameObject
 type IComponent interface {
 	IObject
+	GetActive() bool
+	GetDelegates() []IDelegate
 	GetGameObject() *GameObject
-	Enable(bool)
-	IsEnable() bool
 	OnAwake()
+	OnDraw()
+	OnEnable()
 	OnStart()
 	OnUpdate()
-	OnEnable()
-	OnDraw()
+	SetActive(bool)
 }
 
 // Component represents the default IComponent implementation.
 type Component struct {
 	*Object
 	gameObject *GameObject
-	enable     bool
+	active     bool
 }
 
 var _ IComponent = (*Component)(nil)
@@ -28,14 +29,19 @@ func (c *Component) GetGameObject() *GameObject {
 	return c.gameObject
 }
 
-// Enable sets component enable attribute
-func (c *Component) Enable(enable bool) {
-	c.enable = enable
+// GetDelegates returns all delegates registered to the component.
+func (c *Component) GetDelegates() []IDelegate {
+	return nil
 }
 
-// IsEnable returns if component is enable or not
-func (c *Component) IsEnable() bool {
-	return c.enable
+// SetActive sets component active attribute
+func (c *Component) SetActive(active bool) {
+	c.active = active
+}
+
+// GetActive returns if component is active or not
+func (c *Component) GetActive() bool {
+	return c.active
 }
 
 // OnAwake is called first time the component is created.
@@ -55,12 +61,12 @@ func (c *Component) OnEnable() {
 
 // OnUpdate is called for every update tick.
 func (c *Component) OnUpdate() {
-	Logger.Trace().Str("component", c.name).Msg("OnUpdate")
+	// Logger.Trace().Str("component", c.name).Msg("OnUpdate")
 }
 
 // OnDraw is called for every draw tick.
 func (c *Component) OnDraw() {
-	Logger.Trace().Str("component", c.name).Msg("OnDraw")
+	// Logger.Trace().Str("component", c.name).Msg("OnDraw")
 }
 
 // NewComponent creates a new component instance.
@@ -69,6 +75,6 @@ func NewComponent(name string, gobj *GameObject) *Component {
 	return &Component{
 		Object:     NewObject(name),
 		gameObject: gobj,
-		enable:     true,
+		active:     true,
 	}
 }

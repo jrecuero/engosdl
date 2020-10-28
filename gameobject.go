@@ -9,23 +9,29 @@ import (
 // game has to implement this interface.
 type IGameObject interface {
 	IObject
-	GetActive() bool
-	SetActive(bool) IGameObject
-	GetLayer() int32
-	SetLayer(int32) IGameObject
-	GetScene() IScene
-	SetScene(IScene) IGameObject
-	GetTag() string
-	SetTag(string) IGameObject
-	GetTransform() ITransform
+	AddChild(IGameObject) bool
 	AddComponent(IComponent) IGameObject
+	DeleteChild(string) bool
+	GetActive() bool
+	GetChild(string) IGameObject
+	GetChildren() []IGameObject
 	GetComponent(interface{}) IComponent
 	GetComponents() []IComponent
+	GetLayer() int32
+	GetParent() IGameObject
+	GetScene() IScene
+	GetTag() string
+	GetTransform() ITransform
 	OnAwake()
+	OnDraw()
 	OnEnable()
 	OnStart()
 	OnUpdate()
-	OnDraw()
+	SetActive(bool) IGameObject
+	SetLayer(int32) IGameObject
+	SetParent(IGameObject) IGameObject
+	SetScene(IScene) IGameObject
+	SetTag(string) IGameObject
 }
 
 // GameObject is the default implementation for IGameObject.
@@ -34,6 +40,8 @@ type GameObject struct {
 	active     bool
 	layer      int32
 	tag        string
+	parent     IGameObject
+	children   []IGameObject
 	scene      IScene
 	transform  ITransform
 	components []IComponent
@@ -107,6 +115,55 @@ func (gobj *GameObject) GetComponents() []IComponent {
 	return gobj.components
 }
 
+// GetParent returns game object parent.
+func (gobj *GameObject) GetParent() IGameObject {
+	return gobj.parent
+}
+
+// SetParent sets game object parent.
+func (gobj *GameObject) SetParent(parent IGameObject) IGameObject {
+	gobj.parent = parent
+	return gobj
+}
+
+// GetChildren returns game object children.
+func (gobj *GameObject) GetChildren() []IGameObject {
+	return gobj.children
+}
+
+// getChild returns child and index by child name from game object children.
+func (gobj *GameObject) getChild(name string) (IGameObject, int) {
+	for i, child := range gobj.GetChildren() {
+		if child.GetName() == name {
+			return child, i
+		}
+	}
+	return nil, -1
+}
+
+// GetChild returns a child by name from game object children.
+func (gobj *GameObject) GetChild(name string) IGameObject {
+	if child, _ := gobj.getChild(name); child != nil {
+		return child
+	}
+	return nil
+}
+
+// AddChild adds a new child to game object children.
+func (gobj *GameObject) AddChild(child IGameObject) bool {
+	gobj.children = append(gobj.children, child)
+	return true
+}
+
+// DeleteChild removes a child from game object children.
+func (gobj *GameObject) DeleteChild(name string) bool {
+	if child, i := gobj.getChild(name); child != nil {
+		gobj.children = append(gobj.children[:i], gobj.children[i+1:]...)
+		return true
+	}
+	return false
+}
+
 // OnAwake calls all component OnAwake methods.
 func (gobj *GameObject) OnAwake() {
 	for _, component := range gobj.GetComponents() {
@@ -151,6 +208,8 @@ func NewGameObject(name string) *GameObject {
 		active:     true,
 		layer:      0,
 		tag:        "",
+		parent:     nil,
+		children:   []IGameObject{},
 		scene:      nil,
 		transform:  NewTransform(),
 		components: []IComponent{},
