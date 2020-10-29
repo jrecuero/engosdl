@@ -4,20 +4,36 @@ package engosdl
 type ISceneHandler interface {
 	IObject
 	AddScene(IScene) bool
-	GetScene(string) IScene
-	Scenes() []IScene
 	DeleteScene(string) bool
+	GetActiveScene() IScene
+	GetScene(string) IScene
+	GetScenes() []IScene
+	SetActiveFirstScene() IScene
+	SetActiveLastScene() IScene
+	SetActiveNextScene() IScene
+	SetActivePrevScene() IScene
+	SetActiveScene(IScene) bool
+	OnAfterUpdate()
 	OnAwake()
+	OnCycleEnd()
+	OnCycleStart()
+	OnDraw()
 	OnEnable()
 	OnStart()
 	OnUpdate()
-	OnDraw()
+}
+
+// ActiveScene represents the active scene.
+type ActiveScene struct {
+	scene IScene
+	index int
 }
 
 // SceneHandler is the default implementation for the scene handler interface.
 type SceneHandler struct {
 	*Object
-	scenes []IScene
+	scenes      []IScene
+	activeScene *ActiveScene
 }
 
 var _ ISceneHandler = (*SceneHandler)(nil)
@@ -26,32 +42,10 @@ var _ ISceneHandler = (*SceneHandler)(nil)
 func NewSceneHandler(name string) *SceneHandler {
 	Logger.Trace().Str("scene-handler", name).Msg("new scene handler")
 	return &SceneHandler{
-		Object: NewObject(name),
-		scenes: []IScene{},
+		Object:      NewObject(name),
+		scenes:      []IScene{},
+		activeScene: &ActiveScene{},
 	}
-}
-
-// Scenes returns all scenes in the scene handler.
-func (h *SceneHandler) Scenes() []IScene {
-	return h.scenes
-}
-
-// getScene returns the scene and index by the given scene name.
-func (h *SceneHandler) getScene(name string) (IScene, int) {
-	for i, scene := range h.Scenes() {
-		if scene.GetName() == name {
-			return scene, i
-		}
-	}
-	return nil, -1
-}
-
-// GetScene returns the scene for the given name.
-func (h *SceneHandler) GetScene(name string) IScene {
-	if scene, _ := h.getScene(name); scene != nil {
-		return scene
-	}
-	return nil
 }
 
 // AddScene adds a new scene to the scene handler
@@ -72,37 +66,155 @@ func (h *SceneHandler) DeleteScene(name string) bool {
 	return false
 }
 
+// GetActiveScene returns the scene handler active scene at that time.
+func (h *SceneHandler) GetActiveScene() IScene {
+	return h.activeScene.scene
+}
+
+// getScene returns the scene and index by the given scene name.
+func (h *SceneHandler) getScene(name string) (IScene, int) {
+	for i, scene := range h.GetScenes() {
+		if scene.GetName() == name {
+			return scene, i
+		}
+	}
+	return nil, -1
+}
+
+// GetScene returns the scene for the given name.
+func (h *SceneHandler) GetScene(name string) IScene {
+	if scene, _ := h.getScene(name); scene != nil {
+		return scene
+	}
+	return nil
+}
+
+// GetScenes returns all scenes in the scene handler.
+func (h *SceneHandler) GetScenes() []IScene {
+	return h.scenes
+}
+
+// OnAfterUpdate calls all scene OnAfterUpdate, which should run after DoUpdate
+// runs and before DoDraw.
+func (h *SceneHandler) OnAfterUpdate() {
+	if activeScene := h.GetActiveScene(); activeScene != nil {
+		activeScene.OnAfterUpdate()
+	}
+}
+
 // OnAwake calls all scene OnAwake methods.
 func (h *SceneHandler) OnAwake() {
-	for _, scene := range h.Scenes() {
-		scene.OnAwake()
+	if activeScene := h.GetActiveScene(); activeScene != nil {
+		activeScene.OnAwake()
 	}
 }
 
-// OnEnable calls all scene OnEnable methods.
-func (h *SceneHandler) OnEnable() {
-	for _, scene := range h.Scenes() {
-		scene.OnEnable()
+// OnCycleEnd calls all methods to run at the end of a tick cycle.
+func (h *SceneHandler) OnCycleEnd() {
+	if activeScene := h.GetActiveScene(); activeScene != nil {
+		activeScene.OnCycleEnd()
 	}
 }
 
-// OnStart calls all scene OnStart methods.
-func (h *SceneHandler) OnStart() {
-	for _, scene := range h.Scenes() {
-		scene.OnStart()
-	}
-}
-
-// OnUpdate calls all scene OnUpdate methods.
-func (h *SceneHandler) OnUpdate() {
-	for _, scene := range h.Scenes() {
-		scene.OnUpdate()
+// OnCycleStart calls all methods to run at the start of a tick cycle.
+func (h *SceneHandler) OnCycleStart() {
+	if activeScene := h.GetActiveScene(); activeScene != nil {
+		activeScene.OnCycleStart()
 	}
 }
 
 // OnDraw calls all scene OnDraw methods.
 func (h *SceneHandler) OnDraw() {
-	for _, scene := range h.Scenes() {
-		scene.OnDraw()
+	if activeScene := h.GetActiveScene(); activeScene != nil {
+		activeScene.OnDraw()
 	}
+}
+
+// OnEnable calls all scene OnEnable methods.
+func (h *SceneHandler) OnEnable() {
+	if activeScene := h.GetActiveScene(); activeScene != nil {
+		activeScene.OnEnable()
+	}
+}
+
+// OnStart calls all scene OnStart methods.
+func (h *SceneHandler) OnStart() {
+	if activeScene := h.GetActiveScene(); activeScene != nil {
+		activeScene.OnStart()
+	}
+}
+
+// OnUpdate calls all scene OnUpdate methods.
+func (h *SceneHandler) OnUpdate() {
+	if activeScene := h.GetActiveScene(); activeScene != nil {
+		activeScene.OnUpdate()
+	}
+}
+
+// SetActiveFirstScene sets the first scene as the acive one.
+func (h *SceneHandler) SetActiveFirstScene() IScene {
+	if len(h.GetScenes()) > 0 {
+
+		scene := h.GetScenes()[0]
+		h.setActiveScene(scene, 0)
+		return scene
+	}
+	return nil
+}
+
+// SetActiveLastScene sets the last scene as the active one.
+func (h *SceneHandler) SetActiveLastScene() IScene {
+	length := len(h.GetScenes())
+	if length > 0 {
+		scene := h.GetScenes()[length-1]
+		h.setActiveScene(scene, length-1)
+		return scene
+	}
+	return nil
+}
+
+// SetActiveNextScene sets the next scene as the active one.
+func (h *SceneHandler) SetActiveNextScene() IScene {
+	length := len(h.GetScenes())
+	if length > 0 && h.activeScene.scene != nil && h.activeScene.index < length-1 {
+		index := h.activeScene.index + 1
+		scene := h.GetScenes()[index]
+		h.setActiveScene(scene, index)
+		return scene
+	}
+	return nil
+}
+
+// SetActivePrevScene set the previous scene as the active one.
+func (h *SceneHandler) SetActivePrevScene() IScene {
+	length := len(h.GetScenes())
+	if length > 0 && h.activeScene.scene != nil && h.activeScene.index > 0 {
+		index := h.activeScene.index - 1
+		scene := h.GetScenes()[index]
+		h.setActiveScene(scene, index)
+		return scene
+	}
+	return nil
+}
+
+// setActiveScene set the given scene and index and active one. It proceeds
+// to unload previous scene active and load new one.
+func (h *SceneHandler) setActiveScene(scene IScene, index int) {
+	if h.activeScene.scene != nil {
+		h.activeScene.scene.Unload()
+	}
+	h.activeScene.scene = scene
+	h.activeScene.index = index
+	h.activeScene.scene.Load()
+}
+
+// SetActiveScene sets the given scene as the active scene.
+func (h *SceneHandler) SetActiveScene(scene IScene) bool {
+	for i, scn := range h.GetScenes() {
+		if scn == scene {
+			h.setActiveScene(scene, i)
+			return true
+		}
+	}
+	return false
 }

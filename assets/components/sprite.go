@@ -33,6 +33,7 @@ func (spr *Sprite) textureFromBMP() {
 		engosdl.Logger.Error().Err(err)
 		panic(err)
 	}
+	spr.GetGameObject().GetTransform().SetDim(engosdl.NewVector(float64(spr.width), float64(spr.height)))
 	// spr.center.X = spr.GetParent().GetTransform().GetPosition().X + float64(spr.width)/2
 	// spr.center.Y = spr.GetParent().GetTransform().GetPosition().Y + float64(spr.height)/2
 }

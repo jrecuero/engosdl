@@ -3,6 +3,8 @@ package engosdl
 // IDelegate represents any delegate to be used in the delegate event handler.
 type IDelegate interface {
 	IObject
+	GetObject() IObject
+	GetEventName() string
 }
 
 // TDelegateSignature represents the callback for any method to be registered

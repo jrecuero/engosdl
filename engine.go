@@ -55,14 +55,34 @@ func NewEngine(name string, w, h int32) *Engine {
 	return gameEngine
 }
 
-// GetWidth returns engine window width.
-func (engine *Engine) GetWidth() int32 {
-	return engine.width
+// AddScene adds a new scene to the engine.
+func (engine *Engine) AddScene(scene IScene) bool {
+	return engine.GetSceneHandler().AddScene(scene)
 }
 
-// GetHeight returns engine window height
-func (engine *Engine) GetHeight() int32 {
-	return engine.height
+// DoAwake awakes all engine structures.
+func (engine *Engine) DoAwake() {
+	// Set first scene as the actve by default.
+	engine.GetSceneHandler().SetActiveFirstScene()
+	engine.GetSceneHandler().OnAwake()
+}
+
+// DoCleanup clean-ups all graphical resources created by teh engine.
+func (engine *Engine) DoCleanup() {
+	Logger.Trace().Str("engine", engine.name).Msg("end engine")
+	defer sdl.Quit()
+	defer engine.window.Destroy()
+	defer engine.renderer.Destroy()
+}
+
+// DoCycleEnd calls all methods to run at the end of a tick cycle.
+func (engine *Engine) DoCycleEnd() {
+	engine.GetSceneHandler().OnCycleEnd()
+}
+
+// DoCycleStart calls all methods to run at the start of a tick cycle.
+func (engine *Engine) DoCycleStart() {
+	engine.GetSceneHandler().OnCycleStart()
 }
 
 // DoInitSdl initialiazes all engine sdl structures.
@@ -91,23 +111,15 @@ func (engine *Engine) DoInitSdl() {
 	}
 }
 
-// DoAwake awakes all engine structures.
-func (engine *Engine) DoAwake() {
-	engine.GetSceneHandler().OnAwake()
-}
-
-// DoStart starts the game engine.
-func (engine *Engine) DoStart() {
-	engine.active = true
-
-	engine.GetSceneHandler().OnStart()
-}
-
 // DoRun runs the engine.
 func (engine *Engine) DoRun() {
 	Logger.Trace().Str("engine", engine.name).Msg("run engine")
 
 	for engine.active {
+
+		// Execute everything required at the start of a tick cycle.
+		engine.DoCycleStart()
+
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent:
@@ -117,24 +129,40 @@ func (engine *Engine) DoRun() {
 			}
 		}
 
+		// Execute all update calls.
 		engine.GetSceneHandler().OnUpdate()
+		// Execute any post updates behavior.
+		engine.GetSceneHandler().OnAfterUpdate()
 
 		engine.renderer.SetDrawColor(255, 255, 255, 255)
 		engine.renderer.Clear()
 
+		// Execute all draw calls.
 		engine.GetSceneHandler().OnDraw()
 
 		engine.renderer.Present()
+
+		// Execute everything required at the end of the tick cycle.
+		engine.DoCycleEnd()
 		sdl.Delay(30)
 	}
 }
 
-// DoCleanup clean-ups all graphical resources created by teh engine.
-func (engine *Engine) DoCleanup() {
-	Logger.Trace().Str("engine", engine.name).Msg("end engine")
-	defer sdl.Quit()
-	defer engine.window.Destroy()
-	defer engine.renderer.Destroy()
+// DoStart starts the game engine.
+func (engine *Engine) DoStart() {
+	engine.active = true
+
+	engine.GetSceneHandler().OnStart()
+}
+
+// GetEventHandler returns the engine event handler.
+func (engine *Engine) GetEventHandler() IEventHandler {
+	return engine.eventHandler
+}
+
+// GetHeight returns engine window height
+func (engine *Engine) GetHeight() int32 {
+	return engine.height
 }
 
 // GetRenderer returns the engine renderer.
@@ -147,12 +175,7 @@ func (engine *Engine) GetSceneHandler() ISceneHandler {
 	return engine.sceneHandler
 }
 
-// GetEventHandler returns the engine event handler.
-func (engine *Engine) GetEventHandler() IEventHandler {
-	return engine.eventHandler
-}
-
-// AddScene adds a new scene to the engine.
-func (engine *Engine) AddScene(scene IScene) bool {
-	return engine.GetSceneHandler().AddScene(scene)
+// GetWidth returns engine window width.
+func (engine *Engine) GetWidth() int32 {
+	return engine.width
 }
