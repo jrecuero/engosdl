@@ -20,11 +20,13 @@ func (c *OutOfBounds) OnUpdate() {
 	y := c.GetGameObject().GetTransform().GetPosition().Y
 	if (x+c.GetGameObject().GetTransform().GetDim().X) < 0 || int32(x) > w {
 		fmt.Printf("%s out of bounds %f\n", c.GetGameObject().GetName(), x)
-		c.GetGameObject().GetScene().DeleteGameObject(c.GetGameObject())
+		// c.GetGameObject().GetScene().DeleteGameObject(c.GetGameObject())
+		engosdl.GetEngine().DestroyGameObject(c.GetGameObject())
 	}
 	if (y+c.GetGameObject().GetTransform().GetDim().Y) < 0 || int32(y) > h {
 		fmt.Printf("%s out of bounds %f\n", c.GetGameObject().GetName(), y)
-		c.GetGameObject().GetScene().DeleteGameObject(c.GetGameObject())
+		// c.GetGameObject().GetScene().DeleteGameObject(c.GetGameObject())
+		engosdl.GetEngine().DestroyGameObject(c.GetGameObject())
 	}
 }
 

@@ -58,6 +58,7 @@ func (c *Component) GetGameObject() *GameObject {
 // Load is called when component is loaded by the game object.
 func (c *Component) Load() {
 	c.loaded = true
+	c.OnStart()
 }
 
 // OnAwake is called first time the component is created.

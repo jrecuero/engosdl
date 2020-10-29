@@ -92,6 +92,28 @@ func (scene *Scene) GetGameObjects() []IGameObject {
 	return scene.gameObjects
 }
 
+// getIndexInLoadedGameObject return the index for the given game object in
+// loadedGameObject array.
+func (scene Scene) getIndexInLoadedGameObject(gobj IGameObject) (int, bool) {
+	for i, obj := range scene.loadedGameObjects {
+		if obj.GetName() == gobj.GetName() {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
+// getIndexInUnloadedGameObject return the index for the given game object in
+// unloadedGameObject array.
+func (scene Scene) getIndexInUnloadedGameObject(gobj IGameObject) (int, bool) {
+	for i, obj := range scene.unloadedGameObjects {
+		if obj.GetName() == gobj.GetName() {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
 // Load is call when scene is loaded in the scene handler.
 func (scene *Scene) Load() {
 	scene.loaded = true
@@ -120,6 +142,12 @@ func (scene *Scene) OnAfterUpdate() {
 		for _, gobj := range scene.toDeleteGameObjects {
 			if _, i := scene.getGameObject(gobj.GetName()); i != -1 {
 				scene.gameObjects = append(scene.gameObjects[:i], scene.gameObjects[i+1:]...)
+			}
+			if index, ok := scene.getIndexInLoadedGameObject(gobj); ok {
+				scene.loadedGameObjects = append(scene.loadedGameObjects[:index], scene.loadedGameObjects[index+1:]...)
+			}
+			if index, ok := scene.getIndexInUnloadedGameObject(gobj); ok {
+				scene.unloadedGameObjects = append(scene.unloadedGameObjects[:index], scene.unloadedGameObjects[index+1:]...)
 			}
 		}
 		scene.toDeleteGameObjects = []IGameObject{}

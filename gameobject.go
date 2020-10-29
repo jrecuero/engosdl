@@ -58,7 +58,7 @@ var _ IGameObject = (*GameObject)(nil)
 
 // NewGameObject creates a new game object instance.
 func NewGameObject(name string) *GameObject {
-	Logger.Trace().Str("gameobject", name).Msg("new game object")
+	Logger.Trace().Str("game-object", name).Msg("new game object")
 	return &GameObject{
 		Object:             NewObject(name),
 		active:             true,
@@ -83,7 +83,7 @@ func (gobj *GameObject) AddChild(child IGameObject) bool {
 
 // AddComponent adds a new component to the game object.
 func (gobj *GameObject) AddComponent(component IComponent) IGameObject {
-	Logger.Trace().Str("gameobject", gobj.name).
+	Logger.Trace().Str("game-object", gobj.name).
 		Str("component", component.GetName()).
 		Str("type", reflect.TypeOf(component).String()).
 		Msg("add component")
@@ -188,6 +188,7 @@ func (gobj *GameObject) loadUnloadedComponents() {
 // Load is called when object is loaded by the scene.
 func (gobj *GameObject) Load() {
 	gobj.loaded = true
+	gobj.OnStart()
 	gobj.loadUnloadedComponents()
 }
 

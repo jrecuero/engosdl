@@ -9,6 +9,23 @@ import (
 
 var TEST_RESULTS []string = []string{}
 
+func Benchmark_Delegate(b *testing.B) {
+	for i := 0; i < 10000; i++ {
+		TEST_RESULTS = []string{}
+		h := engosdl.NewDelegateHandler("test-handler")
+		obj := engosdl.NewObject("test-object")
+		delegate := h.CreateDelegate(obj, "active")
+		h.RegisterToDelegate(delegate, test_create_register)
+		h.TriggerDelegate(delegate)
+		if len(TEST_RESULTS) != 1 {
+			b.Errorf("Trigger Delegate error method not called")
+		}
+		if len(TEST_RESULTS) == 1 && TEST_RESULTS[0] != "signature was called" {
+			b.Errorf("Trigger Delegate error method not called")
+		}
+	}
+}
+
 func TestDelegate_CreateDelegate(t *testing.T) {
 	obj := engosdl.NewObject("test-object")
 	delegate := engosdl.NewDelegate("test-delegate", obj, "active")

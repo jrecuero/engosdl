@@ -22,7 +22,7 @@ func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
 	bullet.AddComponent(bulletMoveTo)
 	bullet.AddComponent(bulletOutOfBounds)
 	c.GetGameObject().GetScene().AddGameObject(bullet)
-	bullet.OnStart()
+	// bullet.OnStart()
 	return true
 }
 
