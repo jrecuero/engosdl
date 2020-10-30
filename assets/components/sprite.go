@@ -33,7 +33,7 @@ func (spr *Sprite) textureFromBMP() {
 		engosdl.Logger.Error().Err(err)
 		panic(err)
 	}
-	spr.GetGameObject().GetTransform().SetDim(engosdl.NewVector(float64(spr.width), float64(spr.height)))
+	spr.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(spr.width), float64(spr.height)))
 	// spr.center.X = spr.GetParent().GetTransform().GetPosition().X + float64(spr.width)/2
 	// spr.center.Y = spr.GetParent().GetTransform().GetPosition().Y + float64(spr.height)/2
 }
@@ -47,10 +47,10 @@ func (spr *Sprite) OnStart() {
 // OnDraw is called for every draw tick.
 func (spr *Sprite) OnDraw() {
 	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnDraw")
-	x := int32(spr.GetGameObject().GetTransform().GetPosition().X)
-	y := int32(spr.GetGameObject().GetTransform().GetPosition().Y)
-	width := spr.width * int32(spr.GetGameObject().GetTransform().GetScale().X)
-	height := spr.height * int32(spr.GetGameObject().GetTransform().GetScale().Y)
+	x := int32(spr.GetEntity().GetTransform().GetPosition().X)
+	y := int32(spr.GetEntity().GetTransform().GetPosition().Y)
+	width := spr.width * int32(spr.GetEntity().GetTransform().GetScale().X)
+	height := spr.height * int32(spr.GetEntity().GetTransform().GetScale().Y)
 	spr.renderer.CopyEx(spr.texture,
 		&sdl.Rect{X: 0, Y: 0, W: spr.width, H: spr.height},
 		&sdl.Rect{X: x, Y: y, W: width, H: height},
@@ -60,10 +60,10 @@ func (spr *Sprite) OnDraw() {
 }
 
 // NewSprite creates a new sprite instance.
-func NewSprite(name string, gobj *engosdl.GameObject, filename string, renderer *sdl.Renderer) *Sprite {
+func NewSprite(name string, entity *engosdl.Entity, filename string, renderer *sdl.Renderer) *Sprite {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
 	return &Sprite{
-		Component: engosdl.NewComponent(name, gobj),
+		Component: engosdl.NewComponent(name, entity),
 		filename:  filename,
 		renderer:  renderer,
 		// center:    engosdl.NewVector(0, 0),

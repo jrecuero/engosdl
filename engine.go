@@ -60,11 +60,11 @@ func (engine *Engine) AddScene(scene IScene) bool {
 	return engine.GetSceneHandler().AddScene(scene)
 }
 
-// DestroyGameObject removes the given game object from the game.
-func (engine *Engine) DestroyGameObject(gobj IGameObject) bool {
-	scene := gobj.GetScene()
-	scene.DeleteGameObject(gobj)
-	Logger.Trace().Str("engine", engine.name).Str("scene", scene.GetName()).Str("game-object", gobj.GetName()).Msg("destroy game-object")
+// DestroyEntity removes the given entity from the game.
+func (engine *Engine) DestroyEntity(entity IEntity) bool {
+	scene := entity.GetScene()
+	scene.DeleteEntity(entity)
+	Logger.Trace().Str("engine", engine.name).Str("scene", scene.GetName()).Str("entity", entity.GetName()).Msg("destroy entity")
 	return true
 }
 

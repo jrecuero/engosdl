@@ -1,12 +1,12 @@
 package engosdl
 
 // IComponent represents the interface for any component to be added to any
-// GameObject
+// Entity
 type IComponent interface {
 	IObject
 	GetActive() bool
 	GetDelegates() []IDelegate
-	GetGameObject() *GameObject
+	GetEntity() *Entity
 	Load()
 	SetActive(bool)
 	OnAwake()
@@ -22,21 +22,21 @@ type IComponent interface {
 // Component represents the default IComponent implementation.
 type Component struct {
 	*Object
-	gameObject *GameObject
-	active     bool
-	loaded     bool
+	Entity *Entity
+	active bool
+	loaded bool
 }
 
 var _ IComponent = (*Component)(nil)
 
 // NewComponent creates a new component instance.
-func NewComponent(name string, gobj *GameObject) *Component {
+func NewComponent(name string, entity *Entity) *Component {
 	Logger.Trace().Str("component", name).Msg("new component")
 	return &Component{
-		Object:     NewObject(name),
-		gameObject: gobj,
-		active:     true,
-		loaded:     false,
+		Object: NewObject(name),
+		Entity: entity,
+		active: true,
+		loaded: false,
 	}
 }
 
@@ -50,12 +50,12 @@ func (c *Component) GetDelegates() []IDelegate {
 	return nil
 }
 
-// GetGameObject return the component game object parent.
-func (c *Component) GetGameObject() *GameObject {
-	return c.gameObject
+// GetEntity return the component entity parent.
+func (c *Component) GetEntity() *Entity {
+	return c.Entity
 }
 
-// Load is called when component is loaded by the game object.
+// Load is called when component is loaded by the entity.
 func (c *Component) Load() {
 	c.loaded = true
 	c.OnStart()
@@ -99,7 +99,7 @@ func (c *Component) SetActive(active bool) {
 	c.active = active
 }
 
-// Unload is called when component is unloaded by the game object.
+// Unload is called when component is unloaded by the entity.
 func (c *Component) Unload() {
 	c.loaded = false
 }

@@ -14,7 +14,7 @@ type Keyboard struct {
 // OnUpdate is called for every update tick.
 func (k *Keyboard) OnUpdate() {
 	keys := sdl.GetKeyboardState()
-	position := k.GetGameObject().GetTransform().GetPosition()
+	position := k.GetEntity().GetTransform().GetPosition()
 	if keys[sdl.SCANCODE_LEFT] == 1 {
 		position.X -= k.speed.X
 	}
@@ -31,16 +31,16 @@ func (k *Keyboard) OnUpdate() {
 		engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", k.GetName()).Msg("space key pressed")
 	}
 	// if keys[sdl.SCANCODE_TAB] == 1 {
-	// 	scale := k.GetGameObject().GetTransform().GetScale()
+	// 	scale := k.GetEntity().GetTransform().GetScale()
 	// 	scale.X = 1
 	// }
 }
 
 // NewKeyboard creates a new keyboard instance.
-func NewKeyboard(name string, gobj *engosdl.GameObject, speed *engosdl.Vector) *Keyboard {
+func NewKeyboard(name string, entity *engosdl.Entity, speed *engosdl.Vector) *Keyboard {
 	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", name).Msg("new keyboard")
 	return &Keyboard{
-		Component: engosdl.NewComponent(name, gobj),
+		Component: engosdl.NewComponent(name, entity),
 		speed:     speed,
 	}
 }

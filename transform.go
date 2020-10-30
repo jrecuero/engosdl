@@ -1,6 +1,6 @@
 package engosdl
 
-// ITransform represents the interface for any game object transformation.
+// ITransform represents the interface for any entity transformation.
 type ITransform interface {
 	GetDim() *Vector
 	GetPosition() *Vector

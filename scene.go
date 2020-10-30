@@ -3,10 +3,10 @@ package engosdl
 // IScene represents the interface for any game scene
 type IScene interface {
 	IObject
-	AddGameObject(IGameObject) bool
-	DeleteGameObject(IGameObject) bool
-	GetGameObject(name string) IGameObject
-	GetGameObjects() []IGameObject
+	AddEntity(IEntity) bool
+	DeleteEntity(IEntity) bool
+	GetEntity(name string) IEntity
+	GetEntities() []IEntity
 	Load()
 	OnAfterUpdate()
 	OnAwake()
@@ -22,11 +22,11 @@ type IScene interface {
 // Scene is the default implementation for IScene interface.
 type Scene struct {
 	*Object
-	gameObjects         []IGameObject
-	toDeleteGameObjects []IGameObject
-	loadedGameObjects   []IGameObject
-	unloadedGameObjects []IGameObject
-	loaded              bool
+	Entities         []IEntity
+	toDeleteEntities []IEntity
+	loadedEntities   []IEntity
+	unloadedEntities []IEntity
+	loaded           bool
 }
 
 var _ IScene = (*Scene)(nil)
@@ -35,79 +35,79 @@ var _ IScene = (*Scene)(nil)
 func NewScene(name string) *Scene {
 	Logger.Trace().Str("scene", name).Msg("new scene")
 	return &Scene{
-		Object:              NewObject(name),
-		gameObjects:         []IGameObject{},
-		toDeleteGameObjects: []IGameObject{},
-		loadedGameObjects:   []IGameObject{},
-		unloadedGameObjects: []IGameObject{},
-		loaded:              false,
+		Object:           NewObject(name),
+		Entities:         []IEntity{},
+		toDeleteEntities: []IEntity{},
+		loadedEntities:   []IEntity{},
+		unloadedEntities: []IEntity{},
+		loaded:           false,
 	}
 }
 
-// AddGameObject adds a new game object to the scene.
-func (scene *Scene) AddGameObject(gobj IGameObject) bool {
-	Logger.Trace().Str("scene", scene.GetName()).Str("gameobject", gobj.GetName()).Msg("add game object")
-	scene.gameObjects = append(scene.gameObjects, gobj)
-	scene.unloadedGameObjects = append(scene.unloadedGameObjects, gobj)
-	gobj.SetScene(scene)
+// AddEntity adds a new entity to the scene.
+func (scene *Scene) AddEntity(entity IEntity) bool {
+	Logger.Trace().Str("scene", scene.GetName()).Str("Entity", entity.GetName()).Msg("add entity")
+	scene.Entities = append(scene.Entities, entity)
+	scene.unloadedEntities = append(scene.unloadedEntities, entity)
+	entity.SetScene(scene)
 	return true
 }
 
-// DeleteGameObject deletes a game object from the scene.
-func (scene *Scene) DeleteGameObject(gobj IGameObject) bool {
-	Logger.Trace().Str("scene", scene.GetName()).Str("gameobject", gobj.GetName()).Msg("delete game object")
-	for _, travObj := range scene.gameObjects {
-		if travObj == gobj {
-			// GameObject to be deleted in OnAfterUpdate method.
-			// scene.gameObjects = append(scene.gameObjects[:i], scene.gameObjects[i+1:]...)
-			scene.toDeleteGameObjects = append(scene.toDeleteGameObjects, gobj)
+// DeleteEntity deletes a entity from the scene.
+func (scene *Scene) DeleteEntity(entity IEntity) bool {
+	Logger.Trace().Str("scene", scene.GetName()).Str("Entity", entity.GetName()).Msg("delete entity")
+	for _, travObj := range scene.Entities {
+		if travObj == entity {
+			// Entity to be deleted in OnAfterUpdate method.
+			// scene.Entities = append(scene.Entities[:i], scene.Entities[i+1:]...)
+			scene.toDeleteEntities = append(scene.toDeleteEntities, entity)
 			return true
 		}
 	}
 	return false
 }
 
-// getGameObject returns game object and index for the given name.
-func (scene *Scene) getGameObject(name string) (IGameObject, int) {
-	for i, gobj := range scene.gameObjects {
-		if gobj.GetName() == name {
-			return gobj, i
+// getEntity returns entity and index for the given name.
+func (scene *Scene) getEntity(name string) (IEntity, int) {
+	for i, entity := range scene.Entities {
+		if entity.GetName() == name {
+			return entity, i
 		}
 	}
 	return nil, -1
 }
 
-// GetGameObject returns a game object for the given name.
-func (scene *Scene) GetGameObject(name string) IGameObject {
-	for _, gobj := range scene.gameObjects {
-		if gobj.GetName() == name {
-			return gobj
+// GetEntity returns a entity for the given name.
+func (scene *Scene) GetEntity(name string) IEntity {
+	for _, entity := range scene.Entities {
+		if entity.GetName() == name {
+			return entity
 		}
 	}
 	return nil
 }
 
-// GetGameObjects returns all game objects in the scene.
-func (scene *Scene) GetGameObjects() []IGameObject {
-	return scene.gameObjects
+// GetEntities returns all Entities in the scene.
+func (scene *Scene) GetEntities() []IEntity {
+	return scene.Entities
 }
 
-// getIndexInLoadedGameObject return the index for the given game object in
-// loadedGameObject array.
-func (scene Scene) getIndexInLoadedGameObject(gobj IGameObject) (int, bool) {
-	for i, obj := range scene.loadedGameObjects {
-		if obj.GetName() == gobj.GetName() {
+// getIndexInLoadedEntity return the index for the given entity in
+// loadedEntity array.
+func (scene Scene) getIndexInLoadedEntity(entity IEntity) (int, bool) {
+	for i, obj := range scene.loadedEntities {
+		if obj.GetName() == entity.GetName() {
 			return i, true
 		}
 	}
 	return -1, false
 }
 
-// getIndexInUnloadedGameObject return the index for the given game object in
-// unloadedGameObject array.
-func (scene Scene) getIndexInUnloadedGameObject(gobj IGameObject) (int, bool) {
-	for i, obj := range scene.unloadedGameObjects {
-		if obj.GetName() == gobj.GetName() {
+// getIndexInUnloadedEntity return the index for the given entity in
+// unloadedEntity array.
+func (scene Scene) getIndexInUnloadedEntity(entity IEntity) (int, bool) {
+	for i, obj := range scene.unloadedEntities {
+		if obj.GetName() == entity.GetName() {
 			return i, true
 		}
 	}
@@ -117,47 +117,47 @@ func (scene Scene) getIndexInUnloadedGameObject(gobj IGameObject) (int, bool) {
 // Load is call when scene is loaded in the scene handler.
 func (scene *Scene) Load() {
 	scene.loaded = true
-	scene.loadUnloadedGameObjects()
+	scene.loadUnloadedEntities()
 }
 
-// loadUnloadedGameObjects proceeds to load any unloaded game object
-func (scene *Scene) loadUnloadedGameObjects() {
-	unloaded := []IGameObject{}
-	for _, gobj := range scene.unloadedGameObjects {
-		if gobj.GetActive() {
-			gobj.Load()
-			scene.loadedGameObjects = append(scene.loadedGameObjects, gobj)
+// loadUnloadedEntities proceeds to load any unloaded entity
+func (scene *Scene) loadUnloadedEntities() {
+	unloaded := []IEntity{}
+	for _, entity := range scene.unloadedEntities {
+		if entity.GetActive() {
+			entity.Load()
+			scene.loadedEntities = append(scene.loadedEntities, entity)
 		} else {
-			unloaded = append(unloaded, gobj)
+			unloaded = append(unloaded, entity)
 		}
 	}
-	scene.unloadedGameObjects = unloaded
+	scene.unloadedEntities = unloaded
 }
 
 // OnAfterUpdate calls executed after all DoUpdates have been executed and
 // before OnDraw.
 func (scene *Scene) OnAfterUpdate() {
-	// Delete all GameObjects being marked to be deleted
-	if len(scene.toDeleteGameObjects) != 0 {
-		for _, gobj := range scene.toDeleteGameObjects {
-			if _, i := scene.getGameObject(gobj.GetName()); i != -1 {
-				scene.gameObjects = append(scene.gameObjects[:i], scene.gameObjects[i+1:]...)
+	// Delete all Entities being marked to be deleted
+	if len(scene.toDeleteEntities) != 0 {
+		for _, entity := range scene.toDeleteEntities {
+			if _, i := scene.getEntity(entity.GetName()); i != -1 {
+				scene.Entities = append(scene.Entities[:i], scene.Entities[i+1:]...)
 			}
-			if index, ok := scene.getIndexInLoadedGameObject(gobj); ok {
-				scene.loadedGameObjects = append(scene.loadedGameObjects[:index], scene.loadedGameObjects[index+1:]...)
+			if index, ok := scene.getIndexInLoadedEntity(entity); ok {
+				scene.loadedEntities = append(scene.loadedEntities[:index], scene.loadedEntities[index+1:]...)
 			}
-			if index, ok := scene.getIndexInUnloadedGameObject(gobj); ok {
-				scene.unloadedGameObjects = append(scene.unloadedGameObjects[:index], scene.unloadedGameObjects[index+1:]...)
+			if index, ok := scene.getIndexInUnloadedEntity(entity); ok {
+				scene.unloadedEntities = append(scene.unloadedEntities[:index], scene.unloadedEntities[index+1:]...)
 			}
 		}
-		scene.toDeleteGameObjects = []IGameObject{}
+		scene.toDeleteEntities = []IEntity{}
 	}
 }
 
-// OnAwake calls all game object OnAwake methods.
+// OnAwake calls all entity OnAwake methods.
 func (scene *Scene) OnAwake() {
-	for _, gobj := range scene.gameObjects {
-		gobj.OnAwake()
+	for _, entity := range scene.Entities {
+		entity.OnAwake()
 	}
 }
 
@@ -167,46 +167,46 @@ func (scene *Scene) OnCycleEnd() {
 
 // OnCycleStart calls all methods to run at the start of a tick cycle.
 func (scene *Scene) OnCycleStart() {
-	scene.loadUnloadedGameObjects()
-	for _, gobj := range scene.loadedGameObjects {
-		gobj.OnCycleStart()
+	scene.loadUnloadedEntities()
+	for _, entity := range scene.loadedEntities {
+		entity.OnCycleStart()
 	}
 }
 
-// OnDraw calls all game objects OnDraw methods.
+// OnDraw calls all Entities OnDraw methods.
 func (scene *Scene) OnDraw() {
-	for _, gobj := range scene.loadedGameObjects {
-		gobj.OnDraw()
+	for _, entity := range scene.loadedEntities {
+		entity.OnDraw()
 	}
 }
 
-// OnEnable calls all game object OnEnable methods.
+// OnEnable calls all entity OnEnable methods.
 func (scene *Scene) OnEnable() {
-	for _, gobj := range scene.gameObjects {
-		gobj.OnEnable()
+	for _, entity := range scene.Entities {
+		entity.OnEnable()
 	}
 }
 
-// OnStart calls all game objects OnStart methods.
+// OnStart calls all Entities OnStart methods.
 func (scene *Scene) OnStart() {
-	for _, gobj := range scene.gameObjects {
-		gobj.OnStart()
+	for _, entity := range scene.Entities {
+		entity.OnStart()
 	}
 }
 
-// OnUpdate calls all game objects OnUpdate methods.
+// OnUpdate calls all Entities OnUpdate methods.
 func (scene *Scene) OnUpdate() {
-	for _, gobj := range scene.loadedGameObjects {
-		gobj.OnUpdate()
+	for _, entity := range scene.loadedEntities {
+		entity.OnUpdate()
 	}
 }
 
 // Unload is called when scene is unloaded from the scene handler.
 func (scene *Scene) Unload() {
 	scene.loaded = false
-	for _, gobj := range scene.loadedGameObjects {
-		gobj.Unload()
+	for _, entity := range scene.loadedEntities {
+		entity.Unload()
 	}
-	scene.loadedGameObjects = []IGameObject{}
-	scene.unloadedGameObjects = []IGameObject{}
+	scene.loadedEntities = []IEntity{}
+	scene.unloadedEntities = []IEntity{}
 }

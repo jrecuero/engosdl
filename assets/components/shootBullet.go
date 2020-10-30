@@ -11,9 +11,9 @@ type ShootBullet struct {
 }
 
 func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
-	x := c.GetGameObject().GetTransform().GetPosition().X
-	y := c.GetGameObject().GetTransform().GetPosition().Y
-	bullet := engosdl.NewGameObject("bullet")
+	x := c.GetEntity().GetTransform().GetPosition().X
+	y := c.GetEntity().GetTransform().GetPosition().Y
+	bullet := engosdl.NewEntity("bullet")
 	bullet.GetTransform().SetPosition(engosdl.NewVector(x, y))
 	bulletSprite := NewSprite("bullet-sprite", bullet, "images/player_bullet.bmp", engosdl.GetEngine().GetRenderer())
 	bulletMoveTo := NewMoveTo("bullet-moveto", bullet, engosdl.NewVector(0, -1))
@@ -21,18 +21,18 @@ func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
 	bullet.AddComponent(bulletSprite)
 	bullet.AddComponent(bulletMoveTo)
 	bullet.AddComponent(bulletOutOfBounds)
-	c.GetGameObject().GetScene().AddGameObject(bullet)
+	c.GetEntity().GetScene().AddEntity(bullet)
 	// bullet.OnStart()
 	return true
 }
 
 // NewShootBullet creates a instance of shoot bullet
-func NewShootBullet(name string, gobj *engosdl.GameObject) *ShootBullet {
+func NewShootBullet(name string, entity *engosdl.Entity) *ShootBullet {
 	engosdl.Logger.Trace().Str("component", "shootbullet").Str("shootbullet", name).Msg("new shoot-bullet")
 	shootBullet := &ShootBullet{
-		Component: engosdl.NewComponent(name, gobj),
+		Component: engosdl.NewComponent(name, entity),
 	}
-	for _, component := range gobj.GetComponents() {
+	for _, component := range entity.GetComponents() {
 		for _, delegate := range component.GetDelegates() {
 			if delegate.GetEventName() == "shoot" {
 				shootBullet.delegate = delegate

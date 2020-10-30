@@ -7,7 +7,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-// KeyShooter represents a component that can create a game object when
+// KeyShooter represents a component that can create a entity when
 // a key is being pressed.
 type KeyShooter struct {
 	*engosdl.Component
@@ -36,10 +36,10 @@ func (k *KeyShooter) OnUpdate() {
 }
 
 // NewKeyShooter creates a new keyshooter instance
-func NewKeyShooter(name string, gobj *engosdl.GameObject, key int) *KeyShooter {
+func NewKeyShooter(name string, entity *engosdl.Entity, key int) *KeyShooter {
 	engosdl.Logger.Trace().Str("component", "keyshooter").Str("keyshooter", name).Msg("new key-shooter")
 	keyShooter := &KeyShooter{
-		Component: engosdl.NewComponent(name, gobj),
+		Component: engosdl.NewComponent(name, entity),
 		key:       key,
 		cooldown:  500 * time.Millisecond,
 	}
