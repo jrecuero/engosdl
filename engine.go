@@ -43,7 +43,7 @@ func GetEngine() *Engine {
 // NewEngine creates a new engine instance.
 func NewEngine(name string, w, h int32) *Engine {
 	Logger.Trace().Str("engine", name).Msg("new engine")
-	if gameEngine == nil {
+	if GetEngine() == nil {
 		gameEngine = &Engine{
 			name:         name,
 			width:        w,
@@ -51,6 +51,7 @@ func NewEngine(name string, w, h int32) *Engine {
 			sceneHandler: NewSceneHandler("engine-scene-handler"),
 			eventHandler: NewEventHandler("engine-event-handler"),
 		}
+		gameEngine.DoInitSdl()
 	}
 	return gameEngine
 }
@@ -64,6 +65,7 @@ func (engine *Engine) AddScene(scene IScene) bool {
 func (engine *Engine) DestroyEntity(entity IEntity) bool {
 	scene := entity.GetScene()
 	scene.DeleteEntity(entity)
+	entity.SetActive(false)
 	Logger.Trace().Str("engine", engine.name).Str("scene", scene.GetName()).Str("entity", entity.GetName()).Msg("destroy entity")
 	return true
 }
@@ -85,19 +87,19 @@ func (engine *Engine) DoCleanup() {
 
 // DoCycleEnd calls all methods to run at the end of a tick cycle.
 func (engine *Engine) DoCycleEnd() {
-	engine.GetSceneHandler().OnCycleEnd()
+	engine.GetSceneHandler().DoCycleEnd()
 }
 
 // DoCycleStart calls all methods to run at the start of a tick cycle.
 func (engine *Engine) DoCycleStart() {
-	engine.GetSceneHandler().OnCycleStart()
+	engine.GetSceneHandler().DoCycleStart()
 }
 
 // DoInitSdl initialiazes all engine sdl structures.
 func (engine *Engine) DoInitSdl() {
 	var err error
 
-	Logger.Trace().Str("engine", engine.name).Msg("start engine")
+	Logger.Trace().Str("engine", engine.name).Msg("init sdl module")
 	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		Logger.Error().Err(err)
 		panic(err)
@@ -160,6 +162,7 @@ func (engine *Engine) DoRun() {
 func (engine *Engine) DoStart() {
 	engine.active = true
 
+	engine.GetEventHandler().OnStart()
 	engine.GetSceneHandler().OnStart()
 }
 
@@ -186,4 +189,13 @@ func (engine *Engine) GetSceneHandler() ISceneHandler {
 // GetWidth returns engine window width.
 func (engine *Engine) GetWidth() int32 {
 	return engine.width
+}
+
+// RunEngine runs the game engine.
+func (engine *Engine) RunEngine() bool {
+	engine.DoAwake()
+	engine.DoStart()
+	engine.DoRun()
+	engine.DoCleanup()
+	return true
 }

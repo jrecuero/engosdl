@@ -12,6 +12,13 @@ type OutOfBounds struct {
 	*engosdl.Component
 }
 
+// NewOutOfBounds creates a new out of bounds instance
+func NewOutOfBounds(name string) *OutOfBounds {
+	return &OutOfBounds{
+		Component: engosdl.NewComponent(name),
+	}
+}
+
 // OnUpdate is called for every update tick.
 func (c *OutOfBounds) OnUpdate() {
 	w := engosdl.GetEngine().GetWidth()
@@ -27,12 +34,5 @@ func (c *OutOfBounds) OnUpdate() {
 		fmt.Printf("%s out of bounds %f\n", c.GetEntity().GetName(), y)
 		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
 		engosdl.GetEngine().DestroyEntity(c.GetEntity())
-	}
-}
-
-// NewOutOfBounds creates a new out of bounds instance
-func NewOutOfBounds(name string, entity *engosdl.Entity) *OutOfBounds {
-	return &OutOfBounds{
-		Component: engosdl.NewComponent(name, entity),
 	}
 }

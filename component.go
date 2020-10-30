@@ -4,25 +4,26 @@ package engosdl
 // Entity
 type IComponent interface {
 	IObject
+	DoCycleEnd()
+	DoCycleStart()
+	DoLoad(IComponent)
+	DoUnLoad()
 	GetActive() bool
 	GetDelegates() []IDelegate
-	GetEntity() *Entity
-	Load()
-	SetActive(bool)
+	GetEntity() IEntity
 	OnAwake()
-	OnCycleEnd()
-	OnCycleStart()
 	OnDraw()
 	OnEnable()
 	OnStart()
 	OnUpdate()
-	Unload()
+	SetActive(bool)
+	SetEntity(IEntity)
 }
 
 // Component represents the default IComponent implementation.
 type Component struct {
 	*Object
-	Entity *Entity
+	entity IEntity
 	active bool
 	loaded bool
 }
@@ -30,14 +31,34 @@ type Component struct {
 var _ IComponent = (*Component)(nil)
 
 // NewComponent creates a new component instance.
-func NewComponent(name string, entity *Entity) *Component {
+func NewComponent(name string) *Component {
 	Logger.Trace().Str("component", name).Msg("new component")
 	return &Component{
 		Object: NewObject(name),
-		Entity: entity,
+		entity: nil,
 		active: true,
 		loaded: false,
 	}
+}
+
+// DoCycleEnd calls all methods to run at the end of a tick cycle.
+func (c *Component) DoCycleEnd() {
+}
+
+// DoCycleStart calls all methods to run at the start of a tick cycle.
+func (c *Component) DoCycleStart() {
+}
+
+// DoLoad is called when component is loaded by the entity.
+func (c *Component) DoLoad(component IComponent) {
+	c.loaded = true
+	// fmt.Printf("load: %#v\n", reflect.TypeOf(component).String())
+	component.OnStart()
+}
+
+// DoUnLoad is called when component is unloaded by the entity.
+func (c *Component) DoUnLoad() {
+	c.loaded = false
 }
 
 // GetActive returns if component is active or not
@@ -51,27 +72,13 @@ func (c *Component) GetDelegates() []IDelegate {
 }
 
 // GetEntity return the component entity parent.
-func (c *Component) GetEntity() *Entity {
-	return c.Entity
-}
-
-// Load is called when component is loaded by the entity.
-func (c *Component) Load() {
-	c.loaded = true
-	c.OnStart()
+func (c *Component) GetEntity() IEntity {
+	return c.entity
 }
 
 // OnAwake is called first time the component is created.
 func (c *Component) OnAwake() {
 	Logger.Trace().Str("component", c.name).Msg("OnAwake")
-}
-
-// OnCycleEnd calls all methods to run at the end of a tick cycle.
-func (c *Component) OnCycleEnd() {
-}
-
-// OnCycleStart calls all methods to run at the start of a tick cycle.
-func (c *Component) OnCycleStart() {
 }
 
 // OnDraw is called for every draw tick.
@@ -99,7 +106,7 @@ func (c *Component) SetActive(active bool) {
 	c.active = active
 }
 
-// Unload is called when component is unloaded by the entity.
-func (c *Component) Unload() {
-	c.loaded = false
+// SetEntity sets component new entity instance.
+func (c *Component) SetEntity(entity IEntity) {
+	c.entity = entity
 }

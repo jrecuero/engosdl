@@ -16,56 +16,56 @@ type Sprite struct {
 	texture  *sdl.Texture
 }
 
-func (spr *Sprite) textureFromBMP() {
-	img, err := sdl.LoadBMP(spr.filename)
-	if err != nil {
-		engosdl.Logger.Error().Err(err)
-		panic(err)
+// NewSprite creates a new sprite instance.
+func NewSprite(name string, filename string, renderer *sdl.Renderer) *Sprite {
+	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
+	return &Sprite{
+		Component: engosdl.NewComponent(name),
+		filename:  filename,
+		renderer:  renderer,
+		// center:    engosdl.NewVector(0, 0),
 	}
-	defer img.Free()
-	spr.texture, err = spr.renderer.CreateTextureFromSurface(img)
-	if err != nil {
-		engosdl.Logger.Error().Err(err)
-		panic(err)
-	}
-	_, _, spr.width, spr.height, err = spr.texture.Query()
-	if err != nil {
-		engosdl.Logger.Error().Err(err)
-		panic(err)
-	}
-	spr.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(spr.width), float64(spr.height)))
-	// spr.center.X = spr.GetParent().GetTransform().GetPosition().X + float64(spr.width)/2
-	// spr.center.Y = spr.GetParent().GetTransform().GetPosition().Y + float64(spr.height)/2
 }
 
 // OnStart is called first time the component is enabled.
-func (spr *Sprite) OnStart() {
-	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", spr.GetName()).Msg("OnStart")
-	spr.textureFromBMP()
+func (c *Sprite) OnStart() {
+	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
+	c.textureFromBMP()
 }
 
 // OnDraw is called for every draw tick.
-func (spr *Sprite) OnDraw() {
+func (c *Sprite) OnDraw() {
 	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnDraw")
-	x := int32(spr.GetEntity().GetTransform().GetPosition().X)
-	y := int32(spr.GetEntity().GetTransform().GetPosition().Y)
-	width := spr.width * int32(spr.GetEntity().GetTransform().GetScale().X)
-	height := spr.height * int32(spr.GetEntity().GetTransform().GetScale().Y)
-	spr.renderer.CopyEx(spr.texture,
-		&sdl.Rect{X: 0, Y: 0, W: spr.width, H: spr.height},
+	x := int32(c.GetEntity().GetTransform().GetPosition().X)
+	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
+	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
+	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
+	c.renderer.CopyEx(c.texture,
+		&sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height},
 		&sdl.Rect{X: x, Y: y, W: width, H: height},
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)
 }
 
-// NewSprite creates a new sprite instance.
-func NewSprite(name string, entity *engosdl.Entity, filename string, renderer *sdl.Renderer) *Sprite {
-	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
-	return &Sprite{
-		Component: engosdl.NewComponent(name, entity),
-		filename:  filename,
-		renderer:  renderer,
-		// center:    engosdl.NewVector(0, 0),
+func (c *Sprite) textureFromBMP() {
+	img, err := sdl.LoadBMP(c.filename)
+	if err != nil {
+		engosdl.Logger.Error().Err(err)
+		panic(err)
 	}
+	defer img.Free()
+	c.texture, err = c.renderer.CreateTextureFromSurface(img)
+	if err != nil {
+		engosdl.Logger.Error().Err(err)
+		panic(err)
+	}
+	_, _, c.width, c.height, err = c.texture.Query()
+	if err != nil {
+		engosdl.Logger.Error().Err(err)
+		panic(err)
+	}
+	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width), float64(c.height)))
+	// c.center.X = c.GetParent().GetTransform().GetPosition().X + float64(spr.width)/2
+	// c.center.Y = c.GetParent().GetTransform().GetPosition().Y + float64(spr.height)/2
 }

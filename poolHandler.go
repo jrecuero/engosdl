@@ -14,5 +14,6 @@ type IPoolHandler interface {
 	GetPool() IEventPool
 	AddEvent(IEvent) bool
 	NextEventInPool() IEvent
+	OnStart()
 	PopEventInPool() IEvent
 }

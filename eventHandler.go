@@ -8,8 +8,9 @@ type IEvent interface {
 // IEventHandler represents the interface for the event handler.
 type IEventHandler interface {
 	IObject
-	GetPoolHandler() IPoolHandler
 	GetDelegateHandler() IDelegateHandler
+	GetPoolHandler() IPoolHandler
+	OnStart()
 }
 
 // EventHandler is the default implementation fort the event handler
@@ -19,9 +20,11 @@ type EventHandler struct {
 	delegateHandler IDelegateHandler
 }
 
-// GetPoolHandler returns the pool event handler.
-func (h *EventHandler) GetPoolHandler() IPoolHandler {
-	return nil
+// NewEventHandler creates a new event handler instance.
+func NewEventHandler(name string) *EventHandler {
+	return &EventHandler{
+		delegateHandler: NewDelegateHandler("delegate-handler"),
+	}
 }
 
 // GetDelegateHandler returns the delegate event handler.
@@ -29,9 +32,13 @@ func (h *EventHandler) GetDelegateHandler() IDelegateHandler {
 	return h.delegateHandler
 }
 
-// NewEventHandler creates a new event handler instance.
-func NewEventHandler(name string) *EventHandler {
-	return &EventHandler{
-		delegateHandler: NewDelegateHandler("delegate-handler"),
-	}
+// GetPoolHandler returns the pool event handler.
+func (h *EventHandler) GetPoolHandler() IPoolHandler {
+	return nil
+}
+
+// OnStart calls OnStart for all event handlers.
+func (h *EventHandler) OnStart() {
+	h.GetDelegateHandler().OnStart()
+	// h.GetPoolHandler().OnStart()
 }

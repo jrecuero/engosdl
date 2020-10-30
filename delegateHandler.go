@@ -1,5 +1,11 @@
 package engosdl
 
+import "fmt"
+
+const (
+	collisionDelegate = "on-collision"
+)
+
 // IDelegate represents any delegate to be used in the delegate event handler.
 type IDelegate interface {
 	IObject
@@ -15,9 +21,11 @@ type TDelegateSignature func(...interface{}) bool
 type IDelegateHandler interface {
 	IObject
 	CreateDelegate(IObject, string) IDelegate
+	OnStart()
+	GetCollisionDelegate() IDelegate
 	RegisterToDelegate(IDelegate, TDelegateSignature) (string, bool)
-	UnregisterFromDelegate(string) bool
 	TriggerDelegate(IDelegate, ...interface{})
+	UnregisterFromDelegate(string) bool
 }
 
 // Delegate is the default implementation for delegate interface.
@@ -69,6 +77,18 @@ type DelegateHandler struct {
 	*Object
 	delegates []IDelegate
 	registers []*Register
+	defaults  map[string]IDelegate
+}
+
+// NewDelegateHandler creates a new delegate handler instance.
+func NewDelegateHandler(name string) *DelegateHandler {
+	Logger.Trace().Str("delegate-handler", name).Msg("create new delegate handler")
+	return &DelegateHandler{
+		Object:    NewObject(name),
+		delegates: []IDelegate{},
+		registers: []*Register{},
+		defaults:  make(map[string]IDelegate),
+	}
 }
 
 // CreateDelegate creates a new delefate in the delegate handler
@@ -76,6 +96,16 @@ func (h *DelegateHandler) CreateDelegate(obj IObject, evName string) IDelegate {
 	delegate := NewDelegate(obj.GetName()+"/"+evName, obj, evName)
 	h.delegates = append(h.delegates, delegate)
 	return delegate
+}
+
+// GetCollisionDelegate returns default delegate for collisions.
+func (h *DelegateHandler) GetCollisionDelegate() IDelegate {
+	return h.defaults[collisionDelegate]
+}
+
+// OnStart initializes all delegate handler structure.
+func (h *DelegateHandler) OnStart() {
+	h.defaults[collisionDelegate] = h.CreateDelegate(h, collisionDelegate)
 }
 
 // RegisterToDelegate registers a method to a delegate.
@@ -87,6 +117,9 @@ func (h *DelegateHandler) RegisterToDelegate(delegate IDelegate, signature TDele
 
 // TriggerDelegate calls all signatures registered to a given delegate.
 func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, params ...interface{}) {
+	if delegate.GetName() == "delegate-handler/on-collision" {
+		fmt.Printf("collision delegate with params:  %#v\n", params)
+	}
 	for _, register := range h.registers {
 		if register.Delegate.GetName() == delegate.GetName() {
 			register.Signature(params...)
@@ -97,14 +130,4 @@ func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, params ...interfac
 // UnregisterFromDelegate unresgisters the given register from the delegate.
 func (h *DelegateHandler) UnregisterFromDelegate(string) bool {
 	return true
-}
-
-// NewDelegateHandler creates a new delegate handler instance.
-func NewDelegateHandler(name string) *DelegateHandler {
-	Logger.Trace().Str("delegate-handler", name).Msg("create new delegate handler")
-	return &DelegateHandler{
-		Object:    NewObject(name),
-		delegates: []IDelegate{},
-		registers: []*Register{},
-	}
 }

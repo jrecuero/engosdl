@@ -12,8 +12,14 @@ type IEntity interface {
 	AddChild(IEntity) bool
 	AddComponent(IComponent) IEntity
 	DeleteChild(string) bool
+	DeleteChildByName(string) bool
+	DoCycleEnd()
+	DoCycleStart()
+	DoLoad()
+	DoUnLoad()
 	GetActive() bool
 	GetChild(string) IEntity
+	GetChildByName(string) IEntity
 	GetChildren() []IEntity
 	GetComponent(interface{}) IComponent
 	GetComponents() []IComponent
@@ -22,10 +28,7 @@ type IEntity interface {
 	GetScene() IScene
 	GetTag() string
 	GetTransform() ITransform
-	Load()
 	OnAwake()
-	OnCycleEnd()
-	OnCycleStart()
 	OnDraw()
 	OnEnable()
 	OnStart()
@@ -35,7 +38,6 @@ type IEntity interface {
 	SetParent(IEntity) IEntity
 	SetScene(IScene) IEntity
 	SetTag(string) IEntity
-	Unload()
 }
 
 // Entity is the default implementation for IEntity.
@@ -94,18 +96,57 @@ func (entity *Entity) AddComponent(component IComponent) IEntity {
 			panic(err)
 		}
 	}
+	component.SetEntity(entity)
 	entity.components = append(entity.components, component)
 	entity.unloadedComponents = append(entity.unloadedComponents, component)
 	return entity
 }
 
-// DeleteChild removes a child from entity children.
-func (entity *Entity) DeleteChild(name string) bool {
-	if child, i := entity.getChild(name); child != nil {
+// DeleteChild removes a child from entity children using child ID.
+func (entity *Entity) DeleteChild(id string) bool {
+	if child, i := entity.getChild(id); child != nil {
 		entity.children = append(entity.children[:i], entity.children[i+1:]...)
 		return true
 	}
 	return false
+}
+
+// DeleteChildByName removes a child from entity children using child name
+func (entity *Entity) DeleteChildByName(name string) bool {
+	if child, i := entity.getChildByName(name); child != nil {
+		entity.children = append(entity.children[:i], entity.children[i+1:]...)
+		return true
+	}
+	return false
+}
+
+// DoCycleEnd calls all methods to run at the end of a tick cycle.
+func (entity *Entity) DoCycleEnd() {
+}
+
+// DoCycleStart calls all methods to run at the start of a tick cycle.
+func (entity *Entity) DoCycleStart() {
+	entity.loadUnloadedComponents()
+	for _, component := range entity.loadedComponents {
+		component.DoCycleStart()
+	}
+}
+
+// DoLoad is called when object is loaded by the scene.
+func (entity *Entity) DoLoad() {
+	entity.loaded = true
+	entity.OnStart()
+	entity.loadUnloadedComponents()
+}
+
+// DoUnLoad is called when object is unloaded by the scene.
+func (entity *Entity) DoUnLoad() {
+	entity.loaded = false
+	for _, component := range entity.loadedComponents {
+		component.DoUnLoad()
+	}
+	entity.loadedComponents = []IComponent{}
+	entity.unloadedComponents = []IComponent{}
 }
 
 // GetActive returns if the entity is active (enable) or not (disable).
@@ -113,8 +154,18 @@ func (entity *Entity) GetActive() bool {
 	return entity.active
 }
 
-// getChild returns child and index by child name from entity children.
-func (entity *Entity) getChild(name string) (IEntity, int) {
+// getChild returns child and index by child id from entity children.
+func (entity *Entity) getChild(id string) (IEntity, int) {
+	for i, child := range entity.GetChildren() {
+		if child.GetID() == id {
+			return child, i
+		}
+	}
+	return nil, -1
+}
+
+// getChildByName returns child and index by child name from entity children.
+func (entity *Entity) getChildByName(name string) (IEntity, int) {
 	for i, child := range entity.GetChildren() {
 		if child.GetName() == name {
 			return child, i
@@ -123,9 +174,17 @@ func (entity *Entity) getChild(name string) (IEntity, int) {
 	return nil, -1
 }
 
-// GetChild returns a child by name from entity children.
-func (entity *Entity) GetChild(name string) IEntity {
-	if child, _ := entity.getChild(name); child != nil {
+// GetChild returns a child by id from entity children.
+func (entity *Entity) GetChild(id string) IEntity {
+	if child, _ := entity.getChild(id); child != nil {
+		return child
+	}
+	return nil
+}
+
+// GetChildByName returns a child by name from entity children.
+func (entity *Entity) GetChildByName(name string) IEntity {
+	if child, _ := entity.getChildByName(name); child != nil {
 		return child
 	}
 	return nil
@@ -176,7 +235,9 @@ func (entity *Entity) loadUnloadedComponents() {
 	unloaded := []IComponent{}
 	for _, component := range entity.unloadedComponents {
 		if component.GetActive() {
-			component.Load()
+			// fmt.Printf("calling load: %#v\n", reflect.TypeOf(component).String())
+			component.DoLoad(component)
+			// component.OnStart()
 			entity.loadedComponents = append(entity.loadedComponents, component)
 		} else {
 			unloaded = append(unloaded, component)
@@ -185,36 +246,19 @@ func (entity *Entity) loadUnloadedComponents() {
 	entity.unloadedComponents = unloaded
 }
 
-// Load is called when object is loaded by the scene.
-func (entity *Entity) Load() {
-	entity.loaded = true
-	entity.OnStart()
-	entity.loadUnloadedComponents()
-}
-
 // OnAwake calls all component OnAwake methods.
 func (entity *Entity) OnAwake() {
-	for _, component := range entity.GetComponents() {
-		component.OnAwake()
-	}
-}
-
-// OnCycleEnd calls all methods to run at the end of a tick cycle.
-func (entity *Entity) OnCycleEnd() {
-}
-
-// OnCycleStart calls all methods to run at the start of a tick cycle.
-func (entity *Entity) OnCycleStart() {
-	entity.loadUnloadedComponents()
-	for _, component := range entity.loadedComponents {
-		component.OnCycleStart()
-	}
+	// for _, component := range entity.GetComponents() {
+	// 	component.OnAwake()
+	// }
 }
 
 // OnDraw calls all component OnDraw methods.
 func (entity *Entity) OnDraw() {
 	for _, component := range entity.loadedComponents {
-		component.OnDraw()
+		if component.GetActive() {
+			component.OnDraw()
+		}
 	}
 }
 
@@ -227,15 +271,17 @@ func (entity *Entity) OnEnable() {
 
 // OnStart calls all component OnStart methods.
 func (entity *Entity) OnStart() {
-	for _, component := range entity.GetComponents() {
-		component.OnStart()
-	}
+	// for _, component := range entity.GetComponents() {
+	// 	component.OnStart()
+	// }
 }
 
 // OnUpdate calls all component OnUpdate methods.
 func (entity *Entity) OnUpdate() {
 	for _, component := range entity.loadedComponents {
-		component.OnUpdate()
+		if component.GetActive() {
+			component.OnUpdate()
+		}
 	}
 }
 
@@ -267,14 +313,4 @@ func (entity *Entity) SetScene(scene IScene) IEntity {
 func (entity *Entity) SetTag(tag string) IEntity {
 	entity.tag = tag
 	return entity
-}
-
-// Unload is called when object is unloaded by the scene.
-func (entity *Entity) Unload() {
-	entity.loaded = false
-	for _, component := range entity.loadedComponents {
-		component.Unload()
-	}
-	entity.loadedComponents = []IComponent{}
-	entity.unloadedComponents = []IComponent{}
 }

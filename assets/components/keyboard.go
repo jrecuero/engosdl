@@ -11,36 +11,36 @@ type Keyboard struct {
 	speed *engosdl.Vector
 }
 
+// NewKeyboard creates a new keyboard instance.
+func NewKeyboard(name string, speed *engosdl.Vector) *Keyboard {
+	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", name).Msg("new keyboard")
+	return &Keyboard{
+		Component: engosdl.NewComponent(name),
+		speed:     speed,
+	}
+}
+
 // OnUpdate is called for every update tick.
-func (k *Keyboard) OnUpdate() {
+func (c *Keyboard) OnUpdate() {
 	keys := sdl.GetKeyboardState()
-	position := k.GetEntity().GetTransform().GetPosition()
+	position := c.GetEntity().GetTransform().GetPosition()
 	if keys[sdl.SCANCODE_LEFT] == 1 {
-		position.X -= k.speed.X
+		position.X -= c.speed.X
 	}
 	if keys[sdl.SCANCODE_RIGHT] == 1 {
-		position.X += k.speed.X
+		position.X += c.speed.X
 	}
 	if keys[sdl.SCANCODE_UP] == 1 {
-		position.Y -= k.speed.Y
+		position.Y -= c.speed.Y
 	}
 	if keys[sdl.SCANCODE_DOWN] == 1 {
-		position.Y += k.speed.Y
+		position.Y += c.speed.Y
 	}
 	if keys[sdl.SCANCODE_SPACE] == 1 {
-		engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", k.GetName()).Msg("space key pressed")
+		engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", c.GetName()).Msg("space key pressed")
 	}
 	// if keys[sdl.SCANCODE_TAB] == 1 {
 	// 	scale := k.GetEntity().GetTransform().GetScale()
 	// 	scale.X = 1
 	// }
-}
-
-// NewKeyboard creates a new keyboard instance.
-func NewKeyboard(name string, entity *engosdl.Entity, speed *engosdl.Vector) *Keyboard {
-	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", name).Msg("new keyboard")
-	return &Keyboard{
-		Component: engosdl.NewComponent(name, entity),
-		speed:     speed,
-	}
 }

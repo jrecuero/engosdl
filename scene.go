@@ -5,18 +5,19 @@ type IScene interface {
 	IObject
 	AddEntity(IEntity) bool
 	DeleteEntity(IEntity) bool
-	GetEntity(name string) IEntity
+	DoCycleEnd()
+	DoCycleStart()
+	DoLoad()
+	DoUnLoad()
 	GetEntities() []IEntity
-	Load()
+	GetEntity(string) IEntity
+	GetEntityByName(string) IEntity
 	OnAfterUpdate()
 	OnAwake()
-	OnCycleEnd()
-	OnCycleStart()
 	OnDraw()
 	OnEnable()
 	OnStart()
 	OnUpdate()
-	Unload()
 }
 
 // Scene is the default implementation for IScene interface.
@@ -67,6 +68,34 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 	return false
 }
 
+// DoCycleEnd calls all methods to run at the end of a tick cycle.
+func (scene *Scene) DoCycleEnd() {
+}
+
+// DoCycleStart calls all methods to run at the start of a tick cycle.
+func (scene *Scene) DoCycleStart() {
+	scene.loadUnloadedEntities()
+	for _, entity := range scene.loadedEntities {
+		entity.DoCycleStart()
+	}
+}
+
+// DoLoad is call when scene is loaded in the scene handler.
+func (scene *Scene) DoLoad() {
+	scene.loaded = true
+	scene.loadUnloadedEntities()
+}
+
+// DoUnLoad is called when scene is unloaded from the scene handler.
+func (scene *Scene) DoUnLoad() {
+	scene.loaded = false
+	for _, entity := range scene.loadedEntities {
+		entity.DoUnLoad()
+	}
+	scene.loadedEntities = []IEntity{}
+	scene.unloadedEntities = []IEntity{}
+}
+
 // getEntity returns entity and index for the given name.
 func (scene *Scene) getEntity(name string) (IEntity, int) {
 	for i, entity := range scene.Entities {
@@ -77,19 +106,29 @@ func (scene *Scene) getEntity(name string) (IEntity, int) {
 	return nil, -1
 }
 
-// GetEntity returns a entity for the given name.
-func (scene *Scene) GetEntity(name string) IEntity {
+// GetEntities returns all Entities in the scene.
+func (scene *Scene) GetEntities() []IEntity {
+	return scene.Entities
+}
+
+// GetEntity returns a entity for the entity ID.
+func (scene *Scene) GetEntity(id string) IEntity {
 	for _, entity := range scene.Entities {
-		if entity.GetName() == name {
+		if entity.GetID() == id {
 			return entity
 		}
 	}
 	return nil
 }
 
-// GetEntities returns all Entities in the scene.
-func (scene *Scene) GetEntities() []IEntity {
-	return scene.Entities
+// GetEntityByName returns a entity for the given name.
+func (scene *Scene) GetEntityByName(name string) IEntity {
+	for _, entity := range scene.Entities {
+		if entity.GetName() == name {
+			return entity
+		}
+	}
+	return nil
 }
 
 // getIndexInLoadedEntity return the index for the given entity in
@@ -114,18 +153,12 @@ func (scene Scene) getIndexInUnloadedEntity(entity IEntity) (int, bool) {
 	return -1, false
 }
 
-// Load is call when scene is loaded in the scene handler.
-func (scene *Scene) Load() {
-	scene.loaded = true
-	scene.loadUnloadedEntities()
-}
-
 // loadUnloadedEntities proceeds to load any unloaded entity
 func (scene *Scene) loadUnloadedEntities() {
 	unloaded := []IEntity{}
 	for _, entity := range scene.unloadedEntities {
 		if entity.GetActive() {
-			entity.Load()
+			entity.DoLoad()
 			scene.loadedEntities = append(scene.loadedEntities, entity)
 		} else {
 			unloaded = append(unloaded, entity)
@@ -161,22 +194,12 @@ func (scene *Scene) OnAwake() {
 	}
 }
 
-// OnCycleEnd calls all methods to run at the end of a tick cycle.
-func (scene *Scene) OnCycleEnd() {
-}
-
-// OnCycleStart calls all methods to run at the start of a tick cycle.
-func (scene *Scene) OnCycleStart() {
-	scene.loadUnloadedEntities()
-	for _, entity := range scene.loadedEntities {
-		entity.OnCycleStart()
-	}
-}
-
 // OnDraw calls all Entities OnDraw methods.
 func (scene *Scene) OnDraw() {
 	for _, entity := range scene.loadedEntities {
-		entity.OnDraw()
+		if entity.GetActive() {
+			entity.OnDraw()
+		}
 	}
 }
 
@@ -197,16 +220,8 @@ func (scene *Scene) OnStart() {
 // OnUpdate calls all Entities OnUpdate methods.
 func (scene *Scene) OnUpdate() {
 	for _, entity := range scene.loadedEntities {
-		entity.OnUpdate()
+		if entity.GetActive() {
+			entity.OnUpdate()
+		}
 	}
-}
-
-// Unload is called when scene is unloaded from the scene handler.
-func (scene *Scene) Unload() {
-	scene.loaded = false
-	for _, entity := range scene.loadedEntities {
-		entity.Unload()
-	}
-	scene.loadedEntities = []IEntity{}
-	scene.unloadedEntities = []IEntity{}
 }
