@@ -41,6 +41,7 @@ func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
 	c.counter++
 	bullet := engosdl.NewEntity("bullet" + strconv.Itoa(c.counter))
 	bullet.GetTransform().SetPosition(engosdl.NewVector(x, y))
+	bullet.SetDieOnCollision(true)
 	bulletSprite := NewSprite("bullet-sprite", "images/player_bullet.bmp", engosdl.GetEngine().GetRenderer())
 	bulletMoveTo := NewMoveTo("bullet-moveto", engosdl.NewVector(0, -5))
 	bulletOutOfBounds := NewOutOfBounds("bullet-out-of-bounds")

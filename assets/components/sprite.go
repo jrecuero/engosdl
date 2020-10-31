@@ -35,8 +35,12 @@ func (c *Sprite) onCollision(params ...interface{}) bool {
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
 		fmt.Printf("%s sprite onCollision %s with %s\n", c.GetEntity().GetName(), collisionEntityOne.GetName(), collisionEntityTwo.GetName())
-		engosdl.GetEngine().DestroyEntity(collisionEntityOne)
-		engosdl.GetEngine().DestroyEntity(collisionEntityTwo)
+		if collisionEntityOne.GetDieOnCollision() {
+			engosdl.GetEngine().DestroyEntity(collisionEntityOne)
+		}
+		if collisionEntityTwo.GetDieOnCollision() {
+			engosdl.GetEngine().DestroyEntity(collisionEntityTwo)
+		}
 	}
 	return true
 }
@@ -64,6 +68,7 @@ func (c *Sprite) OnDraw() {
 		sdl.FLIP_NONE)
 }
 
+// textureFromBMP creates a texture from a BMP image file.
 func (c *Sprite) textureFromBMP() {
 	img, err := sdl.LoadBMP(c.filename)
 	if err != nil {

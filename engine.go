@@ -6,6 +6,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/ttf"
 )
 
 // Logger is the system logger to be used by the application.
@@ -91,6 +92,8 @@ func (engine *Engine) DoCycleStart() {
 // DoInitSdl initialiazes all engine sdl structures.
 func (engine *Engine) DoInitSdl() {
 	var err error
+
+	ttf.Init()
 
 	Logger.Trace().Str("engine", engine.name).Msg("init sdl module")
 	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {

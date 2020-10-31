@@ -23,6 +23,7 @@ type IEntity interface {
 	GetChildren() []IEntity
 	GetComponent(interface{}) IComponent
 	GetComponents() []IComponent
+	GetDieOnCollision() bool
 	GetLayer() int32
 	GetParent() IEntity
 	GetScene() IScene
@@ -33,6 +34,7 @@ type IEntity interface {
 	OnStart()
 	OnUpdate()
 	SetActive(bool) IEntity
+	SetDieOnCollision(bool) IEntity
 	SetLayer(int32) IEntity
 	SetParent(IEntity) IEntity
 	SetScene(IScene) IEntity
@@ -53,6 +55,7 @@ type Entity struct {
 	loadedComponents   []IComponent
 	unloadedComponents []IComponent
 	loaded             bool
+	dieOnCollision     bool
 }
 
 var _ IEntity = (*Entity)(nil)
@@ -204,6 +207,12 @@ func (entity *Entity) GetComponents() []IComponent {
 	return entity.components
 }
 
+// GetDieOnCollision returns if the entity should be detroyed with any
+// collision.
+func (entity *Entity) GetDieOnCollision() bool {
+	return entity.dieOnCollision
+}
+
 // GetLayer returns the  layer where the entity has been placed.
 func (entity *Entity) GetLayer() int32 {
 	return entity.layer
@@ -280,6 +289,12 @@ func (entity *Entity) OnUpdate() {
 // SetActive sets if the entity is active (enable) or not (disable).
 func (entity *Entity) SetActive(active bool) IEntity {
 	entity.active = active
+	return entity
+}
+
+// SetDieOnCollision sets if the entity should be destroyed in any collision.
+func (entity *Entity) SetDieOnCollision(die bool) IEntity {
+	entity.dieOnCollision = true
 	return entity
 }
 
