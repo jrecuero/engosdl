@@ -1,5 +1,9 @@
 package engosdl
 
+import (
+	"math"
+)
+
 // IScene represents the interface for any game scene
 type IScene interface {
 	IObject
@@ -13,7 +17,6 @@ type IScene interface {
 	GetEntity(string) IEntity
 	GetEntityByName(string) IEntity
 	OnAfterUpdate()
-	OnAwake()
 	OnDraw()
 	OnEnable()
 	OnStart()
@@ -23,11 +26,12 @@ type IScene interface {
 // Scene is the default implementation for IScene interface.
 type Scene struct {
 	*Object
-	Entities         []IEntity
-	toDeleteEntities []IEntity
-	loadedEntities   []IEntity
-	unloadedEntities []IEntity
-	loaded           bool
+	Entities            []IEntity
+	toDeleteEntities    []IEntity
+	loadedEntities      []IEntity
+	unloadedEntities    []IEntity
+	loaded              bool
+	collisionCollection []ICollider
 }
 
 var _ IScene = (*Scene)(nil)
@@ -62,6 +66,11 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 			// Entity to be deleted in OnAfterUpdate method.
 			// scene.Entities = append(scene.Entities[:i], scene.Entities[i+1:]...)
 			scene.toDeleteEntities = append(scene.toDeleteEntities, entity)
+			// Remove collider from the collision collection, so there is not
+			// more checks between this collider and other other one.
+			if index, ok := scene.getIndexInCollisionCollectionByEntity(entity); ok {
+				scene.collisionCollection = append(scene.collisionCollection[:index], scene.collisionCollection[index+1:]...)
+			}
 			return true
 		}
 	}
@@ -94,6 +103,7 @@ func (scene *Scene) DoUnLoad() {
 	}
 	scene.loadedEntities = []IEntity{}
 	scene.unloadedEntities = []IEntity{}
+	scene.collisionCollection = []ICollider{}
 }
 
 // getEntity returns entity and index for the given name.
@@ -131,6 +141,17 @@ func (scene *Scene) GetEntityByName(name string) IEntity {
 	return nil
 }
 
+// getIndexInCollisionCollectionByEntity returns the index for the collider in
+// the collision collection that belongs to the given entity.
+func (scene *Scene) getIndexInCollisionCollectionByEntity(entity IEntity) (int, bool) {
+	for i, collider := range scene.collisionCollection {
+		if collider.GetEntity().GetID() == entity.GetID() {
+			return i, true
+		}
+	}
+	return -1, false
+}
+
 // getIndexInLoadedEntity return the index for the given entity in
 // loadedEntity array.
 func (scene Scene) getIndexInLoadedEntity(entity IEntity) (int, bool) {
@@ -160,6 +181,13 @@ func (scene *Scene) loadUnloadedEntities() {
 		if entity.GetActive() {
 			entity.DoLoad()
 			scene.loadedEntities = append(scene.loadedEntities, entity)
+			for _, component := range entity.GetComponents() {
+				if component.GetActive() {
+					if collider, ok := interface{}(component).(ICollider); ok {
+						scene.collisionCollection = append(scene.collisionCollection, collider)
+					}
+				}
+			}
 		} else {
 			unloaded = append(unloaded, entity)
 		}
@@ -173,7 +201,7 @@ func (scene *Scene) OnAfterUpdate() {
 	// Delete all Entities being marked to be deleted
 	if len(scene.toDeleteEntities) != 0 {
 		for _, entity := range scene.toDeleteEntities {
-			if _, i := scene.getEntity(entity.GetName()); i != -1 {
+			if _, i := scene.getEntity(entity.GetID()); i != -1 {
 				scene.Entities = append(scene.Entities[:i], scene.Entities[i+1:]...)
 			}
 			if index, ok := scene.getIndexInLoadedEntity(entity); ok {
@@ -184,13 +212,6 @@ func (scene *Scene) OnAfterUpdate() {
 			}
 		}
 		scene.toDeleteEntities = []IEntity{}
-	}
-}
-
-// OnAwake calls all entity OnAwake methods.
-func (scene *Scene) OnAwake() {
-	for _, entity := range scene.Entities {
-		entity.OnAwake()
 	}
 }
 
@@ -219,6 +240,26 @@ func (scene *Scene) OnStart() {
 
 // OnUpdate calls all Entities OnUpdate methods.
 func (scene *Scene) OnUpdate() {
+	for i := 0; i < len(scene.collisionCollection); i++ {
+		colliderI := scene.collisionCollection[i]
+		collisionBoxI := colliderI.GetCollisionBox()
+		centerI := collisionBoxI.GetCenter()
+		radiusI := collisionBoxI.GetRadius()
+		entityI := colliderI.GetEntity()
+		for j := i + 1; j < len(scene.collisionCollection); j++ {
+			colliderJ := scene.collisionCollection[j]
+			collisionBoxJ := colliderJ.GetCollisionBox()
+			centerJ := collisionBoxJ.GetCenter()
+			radiusJ := collisionBoxJ.GetRadius()
+			entityJ := colliderJ.GetEntity()
+			distance := math.Sqrt(math.Pow(centerI.X-centerJ.X, 2) + math.Pow(centerI.Y-centerJ.Y, 2))
+			if distance < (radiusI + radiusJ) {
+				// fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
+				delegate := GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
+				GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(delegate, entityI, entityJ)
+			}
+		}
+	}
 	for _, entity := range scene.loadedEntities {
 		if entity.GetActive() {
 			entity.OnUpdate()

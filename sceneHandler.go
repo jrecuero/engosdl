@@ -17,7 +17,6 @@ type ISceneHandler interface {
 	SetActivePrevScene() IScene
 	SetActiveScene(IScene) bool
 	OnAfterUpdate()
-	OnAwake()
 	OnDraw()
 	OnEnable()
 	OnStart()
@@ -132,13 +131,6 @@ func (h *SceneHandler) GetScenes() []IScene {
 func (h *SceneHandler) OnAfterUpdate() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.OnAfterUpdate()
-	}
-}
-
-// OnAwake calls all scene OnAwake methods.
-func (h *SceneHandler) OnAwake() {
-	if activeScene := h.GetActiveScene(); activeScene != nil {
-		activeScene.OnAwake()
 	}
 }
 

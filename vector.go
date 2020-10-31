@@ -13,3 +13,8 @@ func NewVector(x, y float64) *Vector {
 		Y: y,
 	}
 }
+
+// Get returns vector values as a pair.
+func (v *Vector) Get() (float64, float64) {
+	return v.X, v.Y
+}

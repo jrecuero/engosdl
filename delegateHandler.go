@@ -1,9 +1,8 @@
 package engosdl
 
-import "fmt"
-
 const (
-	collisionDelegate = "on-collision"
+	collisionDelegate     = "on-collision"
+	collisionDelegateName = "delegate-handler/on-collision"
 )
 
 // IDelegate represents any delegate to be used in the delegate event handler.
@@ -117,11 +116,11 @@ func (h *DelegateHandler) RegisterToDelegate(delegate IDelegate, signature TDele
 
 // TriggerDelegate calls all signatures registered to a given delegate.
 func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, params ...interface{}) {
-	if delegate.GetName() == "delegate-handler/on-collision" {
-		fmt.Printf("collision delegate with params:  %#v\n", params)
-	}
+	// if delegate.GetName() == "delegate-handler/on-collision" {
+	// 	fmt.Printf("collision delegate with params:  %#v\n", params)
+	// }
 	for _, register := range h.registers {
-		if register.Delegate.GetName() == delegate.GetName() {
+		if register.Delegate != nil && register.Delegate.GetName() == delegate.GetName() {
 			register.Signature(params...)
 		}
 	}

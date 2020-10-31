@@ -70,13 +70,6 @@ func (engine *Engine) DestroyEntity(entity IEntity) bool {
 	return true
 }
 
-// DoAwake awakes all engine structures.
-func (engine *Engine) DoAwake() {
-	// Set first scene as the actve by default.
-	engine.GetSceneHandler().SetActiveFirstScene()
-	engine.GetSceneHandler().OnAwake()
-}
-
 // DoCleanup clean-ups all graphical resources created by teh engine.
 func (engine *Engine) DoCleanup() {
 	Logger.Trace().Str("engine", engine.name).Msg("end engine")
@@ -164,6 +157,9 @@ func (engine *Engine) DoStart() {
 
 	engine.GetEventHandler().OnStart()
 	engine.GetSceneHandler().OnStart()
+
+	// Set first scene as the actve by default.
+	engine.GetSceneHandler().SetActiveFirstScene()
 }
 
 // GetEventHandler returns the engine event handler.
@@ -193,7 +189,6 @@ func (engine *Engine) GetWidth() int32 {
 
 // RunEngine runs the game engine.
 func (engine *Engine) RunEngine() bool {
-	engine.DoAwake()
 	engine.DoStart()
 	engine.DoRun()
 	engine.DoCleanup()

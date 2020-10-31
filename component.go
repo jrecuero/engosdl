@@ -11,13 +11,25 @@ type IComponent interface {
 	GetActive() bool
 	GetDelegates() []IDelegate
 	GetEntity() IEntity
-	OnAwake()
+	OnCollision(IEntity)
 	OnDraw()
 	OnEnable()
 	OnStart()
 	OnUpdate()
 	SetActive(bool)
 	SetEntity(IEntity)
+}
+
+// ICollisionBox represets the interface for any collider collision box.
+type ICollisionBox interface {
+	GetCenter() *Vector
+	GetRadius() float64
+}
+
+// ICollider represents a special kind of component that implement collisions.
+type ICollider interface {
+	IComponent
+	GetCollisionBox() ICollisionBox
 }
 
 // Component represents the default IComponent implementation.
@@ -76,9 +88,8 @@ func (c *Component) GetEntity() IEntity {
 	return c.entity
 }
 
-// OnAwake is called first time the component is created.
-func (c *Component) OnAwake() {
-	Logger.Trace().Str("component", c.name).Msg("OnAwake")
+// OnCollision is called when entity collides with other entity.
+func (c *Component) OnCollision(entity IEntity) {
 }
 
 // OnDraw is called for every draw tick.

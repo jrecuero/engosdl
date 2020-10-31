@@ -28,7 +28,6 @@ type IEntity interface {
 	GetScene() IScene
 	GetTag() string
 	GetTransform() ITransform
-	OnAwake()
 	OnDraw()
 	OnEnable()
 	OnStart()
@@ -244,13 +243,6 @@ func (entity *Entity) loadUnloadedComponents() {
 		}
 	}
 	entity.unloadedComponents = unloaded
-}
-
-// OnAwake calls all component OnAwake methods.
-func (entity *Entity) OnAwake() {
-	// for _, component := range entity.GetComponents() {
-	// 	component.OnAwake()
-	// }
 }
 
 // OnDraw calls all component OnDraw methods.

@@ -1,6 +1,8 @@
 package components
 
 import (
+	"fmt"
+
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -27,10 +29,24 @@ func NewSprite(name string, filename string, renderer *sdl.Renderer) *Sprite {
 	}
 }
 
+// onCollision checks when there is a collision with other entity.
+func (c *Sprite) onCollision(params ...interface{}) bool {
+	collisionEntityOne := params[0].(*engosdl.Entity)
+	collisionEntityTwo := params[1].(*engosdl.Entity)
+	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
+		fmt.Printf("%s sprite onCollision %s with %s\n", c.GetEntity().GetName(), collisionEntityOne.GetName(), collisionEntityTwo.GetName())
+		engosdl.GetEngine().DestroyEntity(collisionEntityOne)
+		engosdl.GetEngine().DestroyEntity(collisionEntityTwo)
+	}
+	return true
+}
+
 // OnStart is called first time the component is enabled.
 func (c *Sprite) OnStart() {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
 	c.textureFromBMP()
+	delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
+	engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)
 }
 
 // OnDraw is called for every draw tick.
