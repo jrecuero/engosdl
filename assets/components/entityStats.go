@@ -9,7 +9,13 @@ import (
 // EntityStats represemts a component that contains generic entity stats.
 type EntityStats struct {
 	*engosdl.Component
-	life int
+	life     int
+	delegate engosdl.IDelegate
+}
+
+// GetDelegate returns delegate created by entity stats.
+func (c *EntityStats) GetDelegate() engosdl.IDelegate {
+	return c.delegate
 }
 
 // onCollision checks when there is a collision with other entity.
@@ -18,7 +24,12 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
 		c.life -= 10
-		fmt.Printf("%s [live %d] onCollision %s with %s\n", c.GetEntity().GetName(), c.life, collisionEntityOne.GetName(), collisionEntityTwo.GetName())
+		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.delegate, c.life)
+		fmt.Printf("%s [live %d] onCollision %s with %s\n",
+			c.GetEntity().GetName(),
+			c.life,
+			collisionEntityOne.GetName(),
+			collisionEntityTwo.GetName())
 		if c.life == 0 {
 			engosdl.GetEngine().DestroyEntity(c.GetEntity())
 		}
@@ -30,9 +41,9 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 func (c *EntityStats) OnStart() {
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnStart")
 	delegateHandler := engosdl.GetEngine().GetEventHandler().GetDelegateHandler()
-	delegate := delegateHandler.GetCollisionDelegate()
-	delegateHandler.CreateDelegate(c, "entity-stats")
-	delegateHandler.RegisterToDelegate(delegate, c.onCollision)
+	collisionDelegate := delegateHandler.GetCollisionDelegate()
+	c.delegate = delegateHandler.CreateDelegate(c, "entity-stats")
+	delegateHandler.RegisterToDelegate(collisionDelegate, c.onCollision)
 }
 
 // NewEntityStats creates a new entity stats instance.

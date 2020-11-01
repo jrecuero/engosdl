@@ -36,12 +36,10 @@ func (c *ShootBullet) OnStart() {
 }
 
 func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
-	x := c.GetEntity().GetTransform().GetPosition().X
-	y := c.GetEntity().GetTransform().GetPosition().Y
+	x, y := c.GetEntity().GetTransform().GetPosition().Get()
+	w, h := c.GetEntity().GetTransform().GetDim().Get()
 	c.counter++
 	bullet := engosdl.NewEntity("bullet" + strconv.Itoa(c.counter))
-	bullet.GetTransform().SetPosition(engosdl.NewVector(x, y))
-	bullet.SetDieOnCollision(true)
 	bulletSprite := NewSprite("bullet-sprite", "images/player_bullet.bmp", engosdl.GetEngine().GetRenderer())
 	bulletMoveTo := NewMoveTo("bullet-moveto", engosdl.NewVector(0, -5))
 	bulletOutOfBounds := NewOutOfBounds("bullet-out-of-bounds")
@@ -50,6 +48,8 @@ func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
 	bullet.AddComponent(bulletMoveTo)
 	bullet.AddComponent(bulletOutOfBounds)
 	bullet.AddComponent(bulletCollider2D)
+	bullet.GetTransform().SetPosition(engosdl.NewVector((x + w/2), (y + h/2)))
+	bullet.SetDieOnCollision(true)
 	c.GetEntity().GetScene().AddEntity(bullet)
 	// bullet.OnStart()
 	return true

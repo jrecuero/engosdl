@@ -1,6 +1,9 @@
 package components
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
@@ -33,10 +36,27 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 	}
 }
 
+// onUpdateStats updates text with entity stats changes.
+func (c *Text) onUpdateStats(params ...interface{}) bool {
+	life := params[0].(int)
+	c.message = "Enemy Life: " + strconv.Itoa(life)
+	c.texttureFromTTF()
+	return true
+}
+
 // OnStart is called first time the component is enabled.
 func (c *Text) OnStart() {
 	engosdl.Logger.Trace().Str("component", "text").Str("text", c.GetName()).Msg("OnStart")
 	c.texttureFromTTF()
+	if entity := c.GetEntity().GetScene().GetEntityByName("enemy"); entity != nil {
+		if component := entity.GetComponent(&EntityStats{}); component != nil {
+			if statsComponent, ok := component.(*EntityStats); ok {
+				delegate := statsComponent.GetDelegate()
+				engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onUpdateStats)
+				fmt.Printf("register to %s\n", delegate.GetEventName())
+			}
+		}
+	}
 }
 
 // OnDraw is called for every draw tick.

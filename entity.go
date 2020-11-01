@@ -21,7 +21,7 @@ type IEntity interface {
 	GetChild(string) IEntity
 	GetChildByName(string) IEntity
 	GetChildren() []IEntity
-	GetComponent(interface{}) IComponent
+	GetComponent(IComponent) IComponent
 	GetComponents() []IComponent
 	GetDieOnCollision() bool
 	GetLayer() int32
@@ -198,7 +198,12 @@ func (entity *Entity) GetChildren() []IEntity {
 }
 
 // GetComponent returns the given component from the entity.
-func (entity *Entity) GetComponent(k interface{}) IComponent {
+func (entity *Entity) GetComponent(typ IComponent) IComponent {
+	for _, component := range entity.GetComponents() {
+		if reflect.TypeOf(component) == reflect.TypeOf(typ) {
+			return component
+		}
+	}
 	return nil
 }
 

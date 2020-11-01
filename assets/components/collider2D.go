@@ -42,8 +42,8 @@ func NewCollider2D(name string) *Collider2D {
 func (c *Collider2D) GetCollisionBox() engosdl.ICollisionBox {
 	x, y := c.GetEntity().GetTransform().GetPosition().Get()
 	w, h := c.GetEntity().GetTransform().GetDim().Get()
-	c.collisionBox.center = engosdl.NewVector(x, y)
-	c.collisionBox.radius = math.Min(w, h) / 2
+	c.collisionBox.center = engosdl.NewVector(x+w/2, y+h/y)
+	c.collisionBox.radius = (math.Min(w, h) / 2) * 0.9
 	return c.collisionBox
 }
 
