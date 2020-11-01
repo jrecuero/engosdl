@@ -49,27 +49,4 @@ func (c *Collider2D) GetCollisionBox() engosdl.ICollisionBox {
 
 // OnUpdate is called for every update tick.
 func (c *Collider2D) OnUpdate() {
-	// x, y := c.GetEntity().GetTransform().GetPosition().Get()
-	// w, h := c.GetEntity().GetTransform().GetDim().Get()
-	// c.collisionBox.center = engosdl.NewVector(x, y)
-	// c.collisionBox.radius = math.Min(w, h) / 2
-	// // fmt.Printf("collision-box at (%f, %f) radius: %f\n", x, y, math.Min(w, h)/2)
-	// for _, entity := range c.GetEntity().GetScene().GetEntities() {
-	// 	if entity == c.GetEntity() {
-	// 		continue
-	// 	}
-	// 	for _, component := range entity.GetComponents() {
-	// 		if reflect.TypeOf(component) == reflect.TypeOf(c) {
-	// 			cx, cy := entity.GetTransform().GetPosition().Get()
-	// 			cw, ch := entity.GetTransform().GetDim().Get()
-	// 			cradius := math.Min(cw, ch) / 2
-	// 			distance := math.Sqrt(math.Pow(x-cx, 2) + math.Pow(y-cy, 2))
-	// 			if distance < (c.collisionBox.radius + cradius) {
-	// 				// fmt.Printf("%f check collision %s with %s\n", y, c.GetEntity().GetName(), entity.GetName())
-	// 				// delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-	// 				// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(delegate, c.GetEntity(), entity)
-	// 			}
-	// 		}
-	// 	}
-	// }
 }

@@ -11,21 +11,21 @@ import (
 type Sprite struct {
 	*engosdl.Component
 	filename string
-	// center   *engosdl.Vector
 	width    int32
 	height   int32
+	centered bool
 	renderer *sdl.Renderer
 	texture  *sdl.Texture
 }
 
 // NewSprite creates a new sprite instance.
-func NewSprite(name string, filename string, renderer *sdl.Renderer) *Sprite {
+func NewSprite(name string, filename string, renderer *sdl.Renderer, centered bool) *Sprite {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
 	return &Sprite{
 		Component: engosdl.NewComponent(name),
 		filename:  filename,
 		renderer:  renderer,
-		// center:    engosdl.NewVector(0, 0),
+		centered:  centered,
 	}
 }
 
@@ -60,9 +60,16 @@ func (c *Sprite) OnDraw() {
 	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
 	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
 	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
+	var displayAt *sdl.Rect
+	if c.centered {
+		displayAt = &sdl.Rect{X: x - c.width/2, Y: y - c.height/2, W: width, H: height}
+	} else {
+		displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
+	}
 	c.renderer.CopyEx(c.texture,
 		&sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height},
-		&sdl.Rect{X: x, Y: y, W: width, H: height},
+		displayAt,
+		// &sdl.Rect{X: x, Y: y, W: width, H: height},
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)

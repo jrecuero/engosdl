@@ -8,9 +8,9 @@ type MoveTo struct {
 	speed *engosdl.Vector
 }
 
-// NewMoveTo creates a new moveto instance.
+// NewMoveTo creates a new move-to instance.
 func NewMoveTo(name string, speed *engosdl.Vector) *MoveTo {
-	engosdl.Logger.Trace().Str("component", "moveto").Str("moveto", name).Msg("new move-to")
+	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", name).Msg("new move-to")
 	return &MoveTo{
 		Component: engosdl.NewComponent(name),
 		speed:     speed,

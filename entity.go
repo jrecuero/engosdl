@@ -212,7 +212,7 @@ func (entity *Entity) GetComponents() []IComponent {
 	return entity.components
 }
 
-// GetDieOnCollision returns if the entity should be detroyed with any
+// GetDieOnCollision returns if the entity should be destroyed with any
 // collision.
 func (entity *Entity) GetDieOnCollision() bool {
 	return entity.dieOnCollision

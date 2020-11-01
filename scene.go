@@ -61,8 +61,8 @@ func (scene *Scene) AddEntity(entity IEntity) bool {
 // DeleteEntity deletes a entity from the scene.
 func (scene *Scene) DeleteEntity(entity IEntity) bool {
 	Logger.Trace().Str("scene", scene.GetName()).Str("Entity", entity.GetName()).Msg("delete entity")
-	for _, travObj := range scene.Entities {
-		if travObj == entity {
+	for _, traverseObj := range scene.Entities {
+		if traverseObj == entity {
 			// Entity to be deleted in OnAfterUpdate method.
 			// scene.Entities = append(scene.Entities[:i], scene.Entities[i+1:]...)
 			scene.toDeleteEntities = append(scene.toDeleteEntities, entity)

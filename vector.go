@@ -1,6 +1,6 @@
 package engosdl
 
-// Vector represents any 2-Dimentional variable (position, rotation, ...)
+// Vector represents any 2-Dimensional variable (position, rotation, ...)
 type Vector struct {
 	X float64
 	Y float64

@@ -41,6 +41,30 @@ func GetEngine() *Engine {
 	return gameEngine
 }
 
+// GetEventHandler returns the event handler.
+func GetEventHandler() IEventHandler {
+	if engine := GetEngine(); engine != nil {
+		return engine.GetEventHandler()
+	}
+	return nil
+}
+
+// GetRenderer returns the engine renderr.
+func GetRenderer() *sdl.Renderer {
+	if engine := GetEngine(); engine != nil {
+		return engine.GetRenderer()
+	}
+	return nil
+}
+
+// GetSceneHandler returns the engine scene handler.
+func GetSceneHandler() ISceneHandler {
+	if engine := GetEngine(); engine != nil {
+		return engine.GetSceneHandler()
+	}
+	return nil
+}
+
 // NewEngine creates a new engine instance.
 func NewEngine(name string, w, h int32) *Engine {
 	Logger.Trace().Str("engine", name).Msg("new engine")
@@ -89,7 +113,7 @@ func (engine *Engine) DoCycleStart() {
 	engine.GetSceneHandler().DoCycleStart()
 }
 
-// DoInitSdl initialiazes all engine sdl structures.
+// DoInitSdl initializes all engine sdl structures.
 func (engine *Engine) DoInitSdl() {
 	var err error
 
@@ -161,7 +185,7 @@ func (engine *Engine) DoStart() {
 	engine.GetEventHandler().OnStart()
 	engine.GetSceneHandler().OnStart()
 
-	// Set first scene as the actve by default.
+	// Set first scene as the active by default.
 	engine.GetSceneHandler().SetActiveFirstScene()
 }
 

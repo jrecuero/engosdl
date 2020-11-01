@@ -6,7 +6,7 @@ import (
 	"github.com/jrecuero/engosdl"
 )
 
-// EntityStats represemts a component that contains generic entity stats.
+// EntityStats represents a component that contains generic entity stats.
 type EntityStats struct {
 	*engosdl.Component
 	life     int

@@ -24,7 +24,7 @@ type IDelegateHandler interface {
 	GetCollisionDelegate() IDelegate
 	RegisterToDelegate(IDelegate, TDelegateSignature) (string, bool)
 	TriggerDelegate(IDelegate, ...interface{})
-	UnregisterFromDelegate(string) bool
+	DeregisterFromDelegate(string) bool
 }
 
 // Delegate is the default implementation for delegate interface.
@@ -39,7 +39,7 @@ func (d *Delegate) GetObject() IObject {
 	return d.obj
 }
 
-// GetEventName returns delegate evet name.
+// GetEventName returns delegate event name.
 func (d *Delegate) GetEventName() string {
 	return d.evName
 }
@@ -126,7 +126,7 @@ func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, params ...interfac
 	}
 }
 
-// UnregisterFromDelegate unresgisters the given register from the delegate.
-func (h *DelegateHandler) UnregisterFromDelegate(string) bool {
+// DeregisterFromDelegate unregistered the given register from the delegate.
+func (h *DelegateHandler) DeregisterFromDelegate(string) bool {
 	return true
 }

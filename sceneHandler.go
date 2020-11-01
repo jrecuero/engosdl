@@ -162,7 +162,7 @@ func (h *SceneHandler) OnUpdate() {
 	}
 }
 
-// SetActiveFirstScene sets the first scene as the acive one.
+// SetActiveFirstScene sets the first scene as the active one.
 func (h *SceneHandler) SetActiveFirstScene() IScene {
 	if len(h.GetScenes()) > 0 {
 
