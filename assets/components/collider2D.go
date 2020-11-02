@@ -4,11 +4,18 @@ import (
 	"math"
 
 	"github.com/jrecuero/engosdl"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type collisionBox struct {
+	rect   *sdl.Rect
 	center *engosdl.Vector
 	radius float64
+}
+
+// GetRect returns collision box rectangle.
+func (c *collisionBox) GetRect() *sdl.Rect {
+	return c.rect
 }
 
 // GetCenter returns collision box center point as a vector.
@@ -30,10 +37,10 @@ type Collider2D struct {
 // NewCollider2D create a new collider-2D instance.
 func NewCollider2D(name string) *Collider2D {
 	return &Collider2D{
-		Component: engosdl.NewComponent(name),
+		Component:    engosdl.NewComponent(name),
 		collisionBox: &collisionBox{
-			center: engosdl.NewVector(0, 0),
-			radius: 0,
+			// center: engosdl.NewVector(0, 0),
+			// radius: 0,
 		},
 	}
 }
@@ -42,8 +49,10 @@ func NewCollider2D(name string) *Collider2D {
 func (c *Collider2D) GetCollisionBox() engosdl.ICollisionBox {
 	x, y := c.GetEntity().GetTransform().GetPosition().Get()
 	w, h := c.GetEntity().GetTransform().GetDim().Get()
-	c.collisionBox.center = engosdl.NewVector(x+w/2, y+h/y)
-	c.collisionBox.radius = (math.Min(w, h) / 2) * 0.9
+	c.collisionBox.center = engosdl.NewVector(x+(w/2), y+(h/2))
+	// Set collision box radius as 75% of the minimum radius.
+	c.collisionBox.radius = (math.Min(w, h) / 2) * 0.75
+	c.collisionBox.rect = &sdl.Rect{X: int32(x), Y: int32(y), W: int32(w), H: int32(h)}
 	return c.collisionBox
 }
 

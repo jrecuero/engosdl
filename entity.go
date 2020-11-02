@@ -99,6 +99,7 @@ func (entity *Entity) AddComponent(component IComponent) IEntity {
 		}
 	}
 	component.SetEntity(entity)
+	component.OnAwake()
 	entity.components = append(entity.components, component)
 	entity.unloadedComponents = append(entity.unloadedComponents, component)
 	return entity

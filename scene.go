@@ -1,6 +1,7 @@
 package engosdl
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -245,16 +246,19 @@ func (scene *Scene) OnUpdate() {
 		collisionBoxI := colliderI.GetCollisionBox()
 		centerI := collisionBoxI.GetCenter()
 		radiusI := collisionBoxI.GetRadius()
+		// rectI := collisionBoxI.GetRect()
 		entityI := colliderI.GetEntity()
 		for j := i + 1; j < len(scene.collisionCollection); j++ {
 			colliderJ := scene.collisionCollection[j]
 			collisionBoxJ := colliderJ.GetCollisionBox()
 			centerJ := collisionBoxJ.GetCenter()
 			radiusJ := collisionBoxJ.GetRadius()
+			// rectJ := collisionBoxJ.GetRect()
 			entityJ := colliderJ.GetEntity()
 			distance := math.Sqrt(math.Pow(centerI.X-centerJ.X, 2) + math.Pow(centerI.Y-centerJ.Y, 2))
 			if distance < (radiusI + radiusJ) {
-				// fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
+				// if rectI.HasIntersection(rectJ) {
+				fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
 				delegate := GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
 				GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(delegate, entityI, entityJ)
 			}

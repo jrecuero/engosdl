@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/jrecuero/engosdl"
@@ -57,7 +56,6 @@ func (c *Text) OnStart() {
 			if statsComponent, ok := component.(*EntityStats); ok {
 				delegate := statsComponent.GetDelegate()
 				engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onUpdateStats)
-				fmt.Printf("register to %s\n", delegate.GetEventName())
 			}
 		}
 	}

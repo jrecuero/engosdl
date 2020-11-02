@@ -1,5 +1,7 @@
 package engosdl
 
+import "github.com/veandco/go-sdl2/sdl"
+
 // IComponent represents the interface for any component to be added to any
 // Entity
 type IComponent interface {
@@ -12,6 +14,7 @@ type IComponent interface {
 	GetDelegates() []IDelegate
 	GetEntity() IEntity
 	OnCollision(IEntity)
+	OnAwake()
 	OnDraw()
 	OnEnable()
 	OnStart()
@@ -22,6 +25,7 @@ type IComponent interface {
 
 // ICollisionBox represets the interface for any collider collision box.
 type ICollisionBox interface {
+	GetRect() *sdl.Rect
 	GetCenter() *Vector
 	GetRadius() float64
 }
@@ -92,9 +96,15 @@ func (c *Component) GetEntity() IEntity {
 func (c *Component) OnCollision(entity IEntity) {
 }
 
+// OnAwake should create all component resources that don't have any dependency
+// with any other component or entity.
+func (c *Component) OnAwake() {
+	Logger.Trace().Str("component", c.name).Msg("OnAwake")
+}
+
 // OnDraw is called for every draw tick.
 func (c *Component) OnDraw() {
-	// Logger.Trace().Str("component", c.name).Msg("OnDraw")
+	Logger.Trace().Str("component", c.name).Msg("OnDraw")
 }
 
 // OnEnable is called every time the component is enabled.

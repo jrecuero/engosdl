@@ -13,20 +13,26 @@ type Sprite struct {
 	filename string
 	width    int32
 	height   int32
-	centered bool
 	renderer *sdl.Renderer
 	texture  *sdl.Texture
 }
 
 // NewSprite creates a new sprite instance.
-func NewSprite(name string, filename string, renderer *sdl.Renderer, centered bool) *Sprite {
+func NewSprite(name string, filename string, renderer *sdl.Renderer) *Sprite {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
 	return &Sprite{
 		Component: engosdl.NewComponent(name),
 		filename:  filename,
 		renderer:  renderer,
-		centered:  centered,
 	}
+}
+
+// OnAwake should create all component resources that don't have any dependency
+// with any other component or entity.
+func (c *Sprite) OnAwake() {
+	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnAwake")
+	c.textureFromBMP()
+	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width), float64(c.height)))
 }
 
 // onCollision checks when there is a collision with other entity.
@@ -48,9 +54,15 @@ func (c *Sprite) onCollision(params ...interface{}) bool {
 // OnStart is called first time the component is enabled.
 func (c *Sprite) OnStart() {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
-	c.textureFromBMP()
 	delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
 	engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)
+	if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
+		if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
+			if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
+				engosdl.GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
+			}
+		}
+	}
 }
 
 // OnDraw is called for every draw tick.
@@ -61,11 +73,12 @@ func (c *Sprite) OnDraw() {
 	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
 	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
 	var displayAt *sdl.Rect
-	if c.centered {
-		displayAt = &sdl.Rect{X: x - c.width/2, Y: y - c.height/2, W: width, H: height}
-	} else {
-		displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
-	}
+	// if c.centered {
+	// 	displayAt = &sdl.Rect{X: x - c.width/2, Y: y - c.height/2, W: width, H: height}
+	// } else {
+	// 	displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
+	// }
+	displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
 	c.renderer.CopyEx(c.texture,
 		&sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height},
 		displayAt,
@@ -73,6 +86,12 @@ func (c *Sprite) OnDraw() {
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)
+}
+
+// onOutOfBounds checks if the entity has gone out of bounds.
+func (c *Sprite) onOutOfBounds(params ...interface{}) bool {
+	engosdl.GetEngine().DestroyEntity(c.GetEntity())
+	return true
 }
 
 // textureFromBMP creates a texture from a BMP image file.
@@ -93,7 +112,4 @@ func (c *Sprite) textureFromBMP() {
 		engosdl.Logger.Error().Err(err)
 		panic(err)
 	}
-	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width), float64(c.height)))
-	// c.center.X = c.GetParent().GetTransform().GetPosition().X + float64(spr.width)/2
-	// c.center.Y = c.GetParent().GetTransform().GetPosition().Y + float64(spr.height)/2
 }

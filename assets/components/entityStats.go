@@ -18,6 +18,14 @@ func (c *EntityStats) GetDelegate() engosdl.IDelegate {
 	return c.delegate
 }
 
+// OnAwake should create all component resources that don't have any dependency
+// with any other component or entity.
+func (c *EntityStats) OnAwake() {
+	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnAwake")
+	delegateHandler := engosdl.GetEngine().GetEventHandler().GetDelegateHandler()
+	c.delegate = delegateHandler.CreateDelegate(c, "entity-stats")
+}
+
 // onCollision checks when there is a collision with other entity.
 func (c *EntityStats) onCollision(params ...interface{}) bool {
 	collisionEntityOne := params[0].(*engosdl.Entity)
@@ -42,7 +50,6 @@ func (c *EntityStats) OnStart() {
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnStart")
 	delegateHandler := engosdl.GetEngine().GetEventHandler().GetDelegateHandler()
 	collisionDelegate := delegateHandler.GetCollisionDelegate()
-	c.delegate = delegateHandler.CreateDelegate(c, "entity-stats")
 	delegateHandler.RegisterToDelegate(collisionDelegate, c.onCollision)
 }
 
