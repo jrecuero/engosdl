@@ -36,6 +36,13 @@ type ICollider interface {
 	GetCollisionBox() ICollisionBox
 }
 
+// ISprite represents the interface for any sprite component.
+type ISprite interface {
+	IComponent
+	GetFilename() string
+	SetDestroyOnOutOfBounds(bool)
+}
+
 // Component represents the default IComponent implementation.
 type Component struct {
 	*Object

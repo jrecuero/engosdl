@@ -8,7 +8,8 @@ import (
 // Keyboard represents a component that can take keyboard input
 type Keyboard struct {
 	*engosdl.Component
-	speed *engosdl.Vector
+	speed    *engosdl.Vector
+	position *engosdl.Vector
 }
 
 // NewKeyboard creates a new keyboard instance.
@@ -17,6 +18,27 @@ func NewKeyboard(name string, speed *engosdl.Vector) *Keyboard {
 	return &Keyboard{
 		Component: engosdl.NewComponent(name),
 		speed:     speed,
+		position:  engosdl.NewVector(0, 0),
+	}
+}
+
+// onOutOfBounds checks if the entity has gone out of bounds.
+func (c *Keyboard) onOutOfBounds(params ...interface{}) bool {
+	position := c.GetEntity().GetTransform().GetPosition()
+	position.X = c.position.X
+	position.Y = c.position.Y
+	return true
+}
+
+// OnStart is called first time the component is enabled.
+func (c *Keyboard) OnStart() {
+	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", c.GetName()).Msg("OnStart")
+	if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
+		if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
+			if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
+				engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
+			}
+		}
 	}
 }
 
@@ -24,6 +46,8 @@ func NewKeyboard(name string, speed *engosdl.Vector) *Keyboard {
 func (c *Keyboard) OnUpdate() {
 	keys := sdl.GetKeyboardState()
 	position := c.GetEntity().GetTransform().GetPosition()
+	c.position.X = position.X
+	c.position.Y = position.Y
 	if keys[sdl.SCANCODE_LEFT] == 1 {
 		position.X -= c.speed.X
 	}

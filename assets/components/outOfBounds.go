@@ -10,13 +10,15 @@ import (
 // window bounds
 type OutOfBounds struct {
 	*engosdl.Component
-	delegate engosdl.IDelegate
+	delegate   engosdl.IDelegate
+	leftCorner bool
 }
 
 // NewOutOfBounds creates a new out of bounds instance
-func NewOutOfBounds(name string) *OutOfBounds {
+func NewOutOfBounds(name string, leftCorner bool) *OutOfBounds {
 	return &OutOfBounds{
-		Component: engosdl.NewComponent(name),
+		Component:  engosdl.NewComponent(name),
+		leftCorner: leftCorner,
 	}
 }
 
@@ -44,14 +46,22 @@ func (c *OutOfBounds) OnUpdate() {
 	h := engosdl.GetEngine().GetHeight()
 	x := c.GetEntity().GetTransform().GetPosition().X
 	y := c.GetEntity().GetTransform().GetPosition().Y
-	if (x+c.GetEntity().GetTransform().GetDim().X) < 0 || int32(x) > w {
+	var testX, testY bool
+	if c.leftCorner {
+		testX = x < 0 || int32(x+c.GetEntity().GetTransform().GetDim().X) > w
+		testY = y < 0 || int32(y+c.GetEntity().GetTransform().GetDim().Y) > h
+	} else {
+		testX = (x+c.GetEntity().GetTransform().GetDim().X) < 0 || int32(x) > w
+		testY = (y+c.GetEntity().GetTransform().GetDim().Y) < 0 || int32(y) > h
+	}
+	if testX {
 		fmt.Printf("%s out of bounds %f\n", c.GetEntity().GetName(), x)
 		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
 		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.delegate, c.GetEntity())
 		// engosdl.GetEngine().DestroyEntity(c.GetEntity())
 
 	}
-	if (y+c.GetEntity().GetTransform().GetDim().Y) < 0 || int32(y) > h {
+	if testY {
 		fmt.Printf("%s out of bounds %f\n", c.GetEntity().GetName(), y)
 		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
 		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.delegate, c.GetEntity())
