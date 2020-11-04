@@ -5,6 +5,15 @@ import (
 	"math"
 )
 
+// Scene layer constants.
+const (
+	LayerTop        int = 3
+	LayerMiddle     int = 2
+	LayerBottom     int = 1
+	LayerBackground int = 0
+	maxLayers           = 4
+)
+
 // IScene represents the interface for any game scene
 type IScene interface {
 	IObject
@@ -27,10 +36,11 @@ type IScene interface {
 // Scene is the default implementation for IScene interface.
 type Scene struct {
 	*Object
-	Entities            []IEntity
+	entities            []IEntity
 	toDeleteEntities    []IEntity
 	loadedEntities      []IEntity
 	unloadedEntities    []IEntity
+	layers              [][]IEntity
 	loaded              bool
 	collisionCollection []ICollider
 }
@@ -40,20 +50,23 @@ var _ IScene = (*Scene)(nil)
 // NewScene creates a new scene instance
 func NewScene(name string) *Scene {
 	Logger.Trace().Str("scene", name).Msg("new scene")
-	return &Scene{
+	scene := &Scene{
 		Object:           NewObject(name),
-		Entities:         []IEntity{},
+		entities:         []IEntity{},
 		toDeleteEntities: []IEntity{},
 		loadedEntities:   []IEntity{},
 		unloadedEntities: []IEntity{},
+		layers:           make([][]IEntity, maxLayers),
 		loaded:           false,
+		// layers:           [][]IEntity{{}, {}, {}, {}},
 	}
+	return scene
 }
 
 // AddEntity adds a new entity to the scene.
 func (scene *Scene) AddEntity(entity IEntity) bool {
 	Logger.Trace().Str("scene", scene.GetName()).Str("Entity", entity.GetName()).Msg("add entity")
-	scene.Entities = append(scene.Entities, entity)
+	scene.entities = append(scene.entities, entity)
 	scene.unloadedEntities = append(scene.unloadedEntities, entity)
 	entity.SetScene(scene)
 	return true
@@ -62,7 +75,7 @@ func (scene *Scene) AddEntity(entity IEntity) bool {
 // DeleteEntity deletes a entity from the scene.
 func (scene *Scene) DeleteEntity(entity IEntity) bool {
 	Logger.Trace().Str("scene", scene.GetName()).Str("Entity", entity.GetName()).Msg("delete entity")
-	for _, traverseObj := range scene.Entities {
+	for _, traverseObj := range scene.entities {
 		if traverseObj == entity {
 			// Entity to be deleted in OnAfterUpdate method.
 			// scene.Entities = append(scene.Entities[:i], scene.Entities[i+1:]...)
@@ -105,11 +118,12 @@ func (scene *Scene) DoUnLoad() {
 	scene.loadedEntities = []IEntity{}
 	scene.unloadedEntities = []IEntity{}
 	scene.collisionCollection = []ICollider{}
+	scene.layers = make([][]IEntity, maxLayers)
 }
 
 // getEntity returns entity and index for the given name.
 func (scene *Scene) getEntity(name string) (IEntity, int) {
-	for i, entity := range scene.Entities {
+	for i, entity := range scene.entities {
 		if entity.GetName() == name {
 			return entity, i
 		}
@@ -119,12 +133,12 @@ func (scene *Scene) getEntity(name string) (IEntity, int) {
 
 // GetEntities returns all Entities in the scene.
 func (scene *Scene) GetEntities() []IEntity {
-	return scene.Entities
+	return scene.entities
 }
 
 // GetEntity returns a entity for the entity ID.
 func (scene *Scene) GetEntity(id string) IEntity {
-	for _, entity := range scene.Entities {
+	for _, entity := range scene.entities {
 		if entity.GetID() == id {
 			return entity
 		}
@@ -134,7 +148,7 @@ func (scene *Scene) GetEntity(id string) IEntity {
 
 // GetEntityByName returns a entity for the given name.
 func (scene *Scene) GetEntityByName(name string) IEntity {
-	for _, entity := range scene.Entities {
+	for _, entity := range scene.entities {
 		if entity.GetName() == name {
 			return entity
 		}
@@ -182,6 +196,8 @@ func (scene *Scene) loadUnloadedEntities() {
 		if entity.GetActive() {
 			entity.DoLoad()
 			scene.loadedEntities = append(scene.loadedEntities, entity)
+			layer := entity.GetLayer()
+			scene.layers[layer] = append(scene.layers[layer], entity)
 			for _, component := range entity.GetComponents() {
 				if component.GetActive() {
 					if collider, ok := interface{}(component).(ICollider); ok {
@@ -203,7 +219,7 @@ func (scene *Scene) OnAfterUpdate() {
 	if len(scene.toDeleteEntities) != 0 {
 		for _, entity := range scene.toDeleteEntities {
 			if _, i := scene.getEntity(entity.GetID()); i != -1 {
-				scene.Entities = append(scene.Entities[:i], scene.Entities[i+1:]...)
+				scene.entities = append(scene.entities[:i], scene.entities[i+1:]...)
 			}
 			if index, ok := scene.getIndexInLoadedEntity(entity); ok {
 				scene.loadedEntities = append(scene.loadedEntities[:index], scene.loadedEntities[index+1:]...)
@@ -216,30 +232,35 @@ func (scene *Scene) OnAfterUpdate() {
 	}
 }
 
-// OnDraw calls all Entities OnDraw methods.
+// OnDraw calls all Entities OnDraw methods. It call active entities using
+// layers struct, calling from background to top layer.
 func (scene *Scene) OnDraw() {
-	for _, entity := range scene.loadedEntities {
-		if entity.GetActive() {
-			entity.OnDraw()
+	for _, layer := range scene.layers {
+		for _, entity := range layer {
+			if entity.GetActive() {
+				entity.OnDraw()
+			}
 		}
 	}
 }
 
 // OnEnable calls all entity OnEnable methods.
 func (scene *Scene) OnEnable() {
-	for _, entity := range scene.Entities {
+	for _, entity := range scene.entities {
 		entity.OnEnable()
 	}
 }
 
 // OnStart calls all Entities OnStart methods.
 func (scene *Scene) OnStart() {
-	for _, entity := range scene.Entities {
+	for _, entity := range scene.entities {
 		entity.OnStart()
 	}
 }
 
-// OnUpdate calls all Entities OnUpdate methods.
+// OnUpdate calls all Entities OnUpdate methods. It does not use layers struct,
+// but loadEntities struct. It calls to test collision in all entities active
+// in the scene.
 func (scene *Scene) OnUpdate() {
 	for i := 0; i < len(scene.collisionCollection); i++ {
 		colliderI := scene.collisionCollection[i]

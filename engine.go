@@ -77,6 +77,8 @@ func NewEngine(name string, w, h int32) *Engine {
 			eventHandler: NewEventHandler("engine-event-handler"),
 		}
 		gameEngine.DoInitSdl()
+
+		gameEngine.DoInitResources()
 	}
 	return gameEngine
 }
@@ -111,6 +113,13 @@ func (engine *Engine) DoCycleEnd() {
 // DoCycleStart calls all methods to run at the start of a tick cycle.
 func (engine *Engine) DoCycleStart() {
 	engine.GetSceneHandler().DoCycleStart()
+}
+
+// DoInitResources initializes all internal resources, like scene handler and
+// event handler.
+func (engine *Engine) DoInitResources() {
+	engine.GetEventHandler().OnStart()
+	engine.GetSceneHandler().OnStart()
 }
 
 // DoInitSdl initializes all engine sdl structures.
@@ -178,12 +187,10 @@ func (engine *Engine) DoRun() {
 	}
 }
 
-// DoStart starts the game engine.
+// DoStart starts the game engine. At this point all scenes and entities have
+// been already added to the engine.
 func (engine *Engine) DoStart() {
 	engine.active = true
-
-	engine.GetEventHandler().OnStart()
-	engine.GetSceneHandler().OnStart()
 
 	// Set first scene as the active by default.
 	engine.GetSceneHandler().SetActiveFirstScene()

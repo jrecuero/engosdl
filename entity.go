@@ -24,7 +24,7 @@ type IEntity interface {
 	GetComponent(IComponent) IComponent
 	GetComponents() []IComponent
 	GetDieOnCollision() bool
-	GetLayer() int32
+	GetLayer() int
 	GetParent() IEntity
 	GetScene() IScene
 	GetTag() string
@@ -35,7 +35,7 @@ type IEntity interface {
 	OnUpdate()
 	SetActive(bool) IEntity
 	SetDieOnCollision(bool) IEntity
-	SetLayer(int32) IEntity
+	SetLayer(int) IEntity
 	SetParent(IEntity) IEntity
 	SetScene(IScene) IEntity
 	SetTag(string) IEntity
@@ -45,7 +45,7 @@ type IEntity interface {
 type Entity struct {
 	*Object
 	active             bool
-	layer              int32
+	layer              int
 	tag                string
 	parent             IEntity
 	children           []IEntity
@@ -66,7 +66,7 @@ func NewEntity(name string) *Entity {
 	return &Entity{
 		Object:             NewObject(name),
 		active:             true,
-		layer:              0,
+		layer:              LayerMiddle,
 		tag:                "",
 		parent:             nil,
 		children:           []IEntity{},
@@ -220,7 +220,7 @@ func (entity *Entity) GetDieOnCollision() bool {
 }
 
 // GetLayer returns the  layer where the entity has been placed.
-func (entity *Entity) GetLayer() int32 {
+func (entity *Entity) GetLayer() int {
 	return entity.layer
 }
 
@@ -305,7 +305,7 @@ func (entity *Entity) SetDieOnCollision(die bool) IEntity {
 }
 
 // SetLayer sets the entity layer where it will be placed.
-func (entity *Entity) SetLayer(layer int32) IEntity {
+func (entity *Entity) SetLayer(layer int) IEntity {
 	entity.layer = layer
 	return entity
 }
