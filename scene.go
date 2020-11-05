@@ -127,7 +127,17 @@ func (scene *Scene) DoUnLoad() {
 }
 
 // getEntity returns entity and index for the given name.
-func (scene *Scene) getEntity(name string) (IEntity, int) {
+func (scene *Scene) getEntity(id string) (IEntity, int) {
+	for i, entity := range scene.entities {
+		if entity.GetID() == id {
+			return entity, i
+		}
+	}
+	return nil, -1
+}
+
+// getEntityByName returns entity and index for the given name.
+func (scene *Scene) getEntityByName(name string) (IEntity, int) {
 	for i, entity := range scene.entities {
 		if entity.GetName() == name {
 			return entity, i
@@ -176,7 +186,7 @@ func (scene *Scene) getIndexInCollisionCollectionByEntity(entity IEntity) (int, 
 // loadedEntity array.
 func (scene Scene) getIndexInLoadedEntity(entity IEntity) (int, bool) {
 	for i, obj := range scene.loadedEntities {
-		if obj.GetName() == entity.GetName() {
+		if obj.GetID() == entity.GetID() {
 			return i, true
 		}
 	}

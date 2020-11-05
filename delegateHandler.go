@@ -245,11 +245,8 @@ func (h *DelegateHandler) RegisterToDelegate(delegate IDelegate, signature TDele
 
 // TriggerDelegate calls all signatures registered to a given delegate.
 func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, params ...interface{}) {
-	// if delegate.GetName() == "delegate-handler/on-collision" {
-	// 	fmt.Printf("collision delegate with params:  %#v\n", params)
-	// }
 	for _, register := range h.registers {
-		if register.GetDelegate() != nil && register.GetDelegate().GetName() == delegate.GetName() {
+		if register.GetDelegate() != nil && register.GetDelegate().GetID() == delegate.GetID() {
 			register.GetSignature()(params...)
 		}
 	}
