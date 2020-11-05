@@ -86,7 +86,10 @@ func (c *Sprite) onCollision(params ...interface{}) bool {
 // onOutOfBounds checks if the entity has gone out of bounds.
 func (c *Sprite) onOutOfBounds(params ...interface{}) bool {
 	if c.destroyOnOutOfBounds {
-		engosdl.GetEngine().DestroyEntity(c.GetEntity())
+		entity := params[0].(engosdl.IEntity)
+		if entity.GetID() == c.GetEntity().GetID() {
+			engosdl.GetEngine().DestroyEntity(c.GetEntity())
+		}
 	}
 	return true
 }
