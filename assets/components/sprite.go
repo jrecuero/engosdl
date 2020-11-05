@@ -93,6 +93,7 @@ func (c *Sprite) onOutOfBounds(params ...interface{}) bool {
 
 // OnStart is called first time the component is enabled.
 func (c *Sprite) OnStart() {
+	// Register to: "on-collision" and "out-of-bounds"
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
 	delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
 	engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)

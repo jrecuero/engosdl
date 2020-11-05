@@ -26,13 +26,8 @@ func NewShootBullet(name string) *ShootBullet {
 // OnStart is called first time the component is enabled.
 func (c *ShootBullet) OnStart() {
 	engosdl.Logger.Trace().Str("component", "shoot-bullet").Str("shoot-bullet", c.GetName()).Msg("OnStart")
-	for _, component := range c.GetEntity().GetComponents() {
-		for _, delegate := range component.GetDelegates() {
-			if delegate.GetEventName() == "shoot" {
-				// shootBullet.delegate = delegate
-				engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.shootBulletSignature)
-			}
-		}
+	if component := c.GetEntity().GetComponent(&KeyShooter{}); component != nil {
+		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(component.GetDelegate(), c.shootBulletSignature)
 	}
 }
 

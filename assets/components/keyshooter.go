@@ -14,7 +14,6 @@ type KeyShooter struct {
 	key       int
 	cooldown  time.Duration
 	lastshoot time.Time
-	delegate  engosdl.IDelegate
 }
 
 // NewKeyShooter creates a new keyshooter instance
@@ -28,16 +27,11 @@ func NewKeyShooter(name string, key int) *KeyShooter {
 	return keyShooter
 }
 
-// GetDelegates returns all delegates registered to the component.
-func (c *KeyShooter) GetDelegates() []engosdl.IDelegate {
-	return []engosdl.IDelegate{c.delegate}
-}
-
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *KeyShooter) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("OnAwake")
-	c.delegate = engosdl.GetEngine().GetEventHandler().GetDelegateHandler().CreateDelegate(c, "shoot")
+	c.SetDelegate(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().CreateDelegate(c, "shoot"))
 }
 
 // OnStart is called first time the component is enabled.
@@ -51,7 +45,7 @@ func (c *KeyShooter) OnUpdate() {
 	if keys[sdl.SCANCODE_SPACE] == 1 {
 		engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("space key pressed")
 		if time.Since(c.lastshoot) >= c.cooldown {
-			engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.delegate)
+			engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate())
 			c.lastshoot = time.Now()
 		}
 	}

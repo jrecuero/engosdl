@@ -85,6 +85,9 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 			if index, ok := scene.getIndexInCollisionCollectionByEntity(entity); ok {
 				scene.collisionCollection = append(scene.collisionCollection[:index], scene.collisionCollection[index+1:]...)
 			}
+			// Trigger destroy delegate
+			destroyDelegate := GetEngine().GetEventHandler().GetDelegateHandler().GetDestroyDelegate()
+			GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(destroyDelegate, entity)
 			return true
 		}
 	}
@@ -208,6 +211,9 @@ func (scene *Scene) loadUnloadedEntities() {
 		} else {
 			unloaded = append(unloaded, entity)
 		}
+		// Trigger load delegate
+		loadDelegate := GetEngine().GetEventHandler().GetDelegateHandler().GetLoadDelegate()
+		GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(loadDelegate, entity)
 	}
 	scene.unloadedEntities = unloaded
 }

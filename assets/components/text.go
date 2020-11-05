@@ -11,16 +11,19 @@ import (
 // Text represents a component that can display some text.
 type Text struct {
 	*engosdl.Component
-	fontFile string
-	font     *ttf.Font
-	fontSize int
-	color    sdl.Color
-	message  string
-	renderer *sdl.Renderer
-	texture  *sdl.Texture
-	width    int32
-	height   int32
+	fontFile  string
+	font      *ttf.Font
+	fontSize  int
+	color     sdl.Color
+	message   string
+	renderer  *sdl.Renderer
+	texture   *sdl.Texture
+	width     int32
+	height    int32
+	registers []*engosdl.Register
 }
+
+var _ engosdl.IText = (*Text)(nil)
 
 // NewText create a new text instance.
 func NewText(name string, fontFile string, fontSize int, color sdl.Color, message string, renderer *sdl.Renderer) *Text {
@@ -33,6 +36,13 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 		message:   message,
 		renderer:  renderer,
 	}
+}
+
+// AddDelegateToRegister adds a new delegate that component should register.
+func (c *Text) AddDelegateToRegister(delegate engosdl.IDelegate, entity engosdl.IEntity, component engosdl.IComponent, signature engosdl.TDelegateSignature) engosdl.IText {
+	register := engosdl.NewRegister("new-register", entity, component, delegate, signature)
+	c.registers = append(c.registers, register)
+	return c
 }
 
 // onUpdateStats updates text with entity stats changes.
@@ -51,12 +61,27 @@ func (c *Text) onUpdateStats(params ...interface{}) bool {
 func (c *Text) OnStart() {
 	engosdl.Logger.Trace().Str("component", "text").Str("text", c.GetName()).Msg("OnStart")
 	c.textureFromTTF()
-	if entity := c.GetEntity().GetScene().GetEntityByName("enemy"); entity != nil {
-		if component := entity.GetComponent(&EntityStats{}); component != nil {
-			if statsComponent, ok := component.(*EntityStats); ok {
-				delegate := statsComponent.GetDelegate()
-				engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onUpdateStats)
+	// if entity := c.GetEntity().GetScene().GetEntityByName("enemy"); entity != nil {
+	// 	if component := entity.GetComponent(&EntityStats{}); component != nil {
+	// 		if statsComponent, ok := component.(*EntityStats); ok {
+	// 			delegate := statsComponent.GetDelegate()
+	// 			engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onUpdateStats)
+	// 		}
+	// 	}
+	// }
+	for _, register := range c.registers {
+		delegate := register.GetDelegate()
+		if delegate == nil {
+			if component := register.GetEntity().GetComponent(register.GetComponent()); component != nil {
+				if delegate = component.GetDelegate(); delegate != nil {
+					register.SetDelegate(delegate)
+				}
 			}
+		}
+		if registerID, ok := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, register.GetSignature()); ok {
+			register.SetRegisterID(registerID)
+		} else {
+			panic("Failure at register " + register.GetName())
 		}
 	}
 }
@@ -73,6 +98,25 @@ func (c *Text) OnDraw() {
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)
+}
+
+// SetColor sets text color.
+func (c *Text) SetColor(color sdl.Color) engosdl.IText {
+	c.color = color
+	return c
+}
+
+// SetFontFilename sets the filename with the font.
+func (c *Text) SetFontFilename(filename string) engosdl.IText {
+	c.fontFile = filename
+	return c
+}
+
+// SetMessage sets the message to be displayed by the text component.
+func (c *Text) SetMessage(message string) engosdl.IText {
+	c.message = message
+	c.textureFromTTF()
+	return c
 }
 
 // textureFromTTF creates a texture from a ttf file.

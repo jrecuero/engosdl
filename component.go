@@ -11,7 +11,7 @@ type IComponent interface {
 	DoLoad(IComponent)
 	DoUnLoad()
 	GetActive() bool
-	GetDelegates() []IDelegate
+	GetDelegate() IDelegate
 	GetEntity() IEntity
 	OnCollision(IEntity)
 	OnAwake()
@@ -20,6 +20,7 @@ type IComponent interface {
 	OnStart()
 	OnUpdate()
 	SetActive(bool)
+	SetDelegate(IDelegate)
 	SetEntity(IEntity)
 }
 
@@ -43,12 +44,21 @@ type ISprite interface {
 	SetDestroyOnOutOfBounds(bool)
 }
 
+// IText represents the interface for any text component.
+type IText interface {
+	SetFontFilename(string) IText
+	SetColor(sdl.Color) IText
+	SetMessage(string) IText
+	AddDelegateToRegister(IDelegate, IEntity, IComponent, TDelegateSignature) IText
+}
+
 // Component represents the default IComponent implementation.
 type Component struct {
 	*Object
-	entity IEntity
-	active bool
-	loaded bool
+	entity   IEntity
+	active   bool
+	loaded   bool
+	delegate IDelegate
 }
 
 var _ IComponent = (*Component)(nil)
@@ -89,9 +99,9 @@ func (c *Component) GetActive() bool {
 	return c.active
 }
 
-// GetDelegates returns all delegates registered to the component.
-func (c *Component) GetDelegates() []IDelegate {
-	return nil
+// GetDelegate returns delegates created by the component.
+func (c *Component) GetDelegate() IDelegate {
+	return c.delegate
 }
 
 // GetEntity return the component entity parent.
@@ -132,6 +142,11 @@ func (c *Component) OnUpdate() {
 // SetActive sets component active attribute
 func (c *Component) SetActive(active bool) {
 	c.active = active
+}
+
+// SetDelegate sets component delegate.
+func (c *Component) SetDelegate(delegate IDelegate) {
+	c.delegate = delegate
 }
 
 // SetEntity sets component new entity instance.

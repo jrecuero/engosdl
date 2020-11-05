@@ -45,12 +45,12 @@ func test_create_register(...interface{}) bool {
 func TestDelegate_CreateRegister(t *testing.T) {
 	obj := engosdl.NewObject("test-object")
 	delegate := engosdl.NewDelegate("test-delegate", obj, "active")
-	register := engosdl.NewRegister("register-test", delegate, test_create_register)
-	if register.Delegate != delegate {
-		t.Errorf("new register delegate error\nexp: %#v\ngot: %#v", delegate, register.Delegate)
+	register := engosdl.NewRegister("register-test", nil, nil, delegate, test_create_register)
+	if register.GetDelegate() != delegate {
+		t.Errorf("new register delegate error\nexp: %#v\ngot: %#v", delegate, register.GetDelegate())
 	}
-	if fmt.Sprintf("%p", register.Signature) != fmt.Sprintf("%p", test_create_register) {
-		t.Errorf("mew register signature error\nexp: %p\ngot %p", test_create_register, register.Signature)
+	if fmt.Sprintf("%p", register.GetSignature()) != fmt.Sprintf("%p", test_create_register) {
+		t.Errorf("mew register signature error\nexp: %p\ngot %p", test_create_register, register.GetSignature())
 	}
 }
 
