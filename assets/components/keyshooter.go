@@ -31,12 +31,14 @@ func NewKeyShooter(name string, key int) *KeyShooter {
 // with any other component or entity.
 func (c *KeyShooter) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("OnAwake")
+	// Create new delegate "shoot"
 	c.SetDelegate(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().CreateDelegate(c, "shoot"))
 }
 
 // OnStart is called first time the component is enabled.
 func (c *KeyShooter) OnStart() {
 	engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("OnStart")
+	c.Component.OnStart()
 }
 
 // OnUpdate is called for every update tick.

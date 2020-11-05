@@ -108,12 +108,14 @@ func (scene *Scene) DoCycleStart() {
 
 // DoLoad is call when scene is loaded in the scene handler.
 func (scene *Scene) DoLoad() {
+	Logger.Trace().Str("scene", scene.GetName()).Msg("DoLoad")
 	scene.loaded = true
 	scene.loadUnloadedEntities()
 }
 
 // DoUnLoad is called when scene is unloaded from the scene handler.
 func (scene *Scene) DoUnLoad() {
+	Logger.Trace().Str("scene", scene.GetName()).Msg("DoUnLoad")
 	scene.loaded = false
 	for _, entity := range scene.loadedEntities {
 		entity.DoUnLoad()
@@ -233,6 +235,7 @@ func (scene *Scene) OnAfterUpdate() {
 			if index, ok := scene.getIndexInUnloadedEntity(entity); ok {
 				scene.unloadedEntities = append(scene.unloadedEntities[:index], scene.unloadedEntities[index+1:]...)
 			}
+			entity.DoUnLoad()
 		}
 		scene.toDeleteEntities = []IEntity{}
 	}
@@ -259,6 +262,7 @@ func (scene *Scene) OnEnable() {
 
 // OnStart calls all Entities OnStart methods.
 func (scene *Scene) OnStart() {
+	Logger.Trace().Str("scene", scene.GetName()).Msg("OnStart")
 	for _, entity := range scene.entities {
 		entity.OnStart()
 	}

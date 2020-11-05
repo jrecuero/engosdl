@@ -96,14 +96,18 @@ func (c *Sprite) OnStart() {
 	// Register to: "on-collision" and "out-of-bounds"
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
 	delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-	engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)
+	c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
+	// delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
+	// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)
 	if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
 		if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
 			if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
-				engosdl.GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
+				// engosdl.GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
+				c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
 			}
 		}
 	}
+	c.Component.OnStart()
 }
 
 // SetDestroyOnOutOfBounds sets internal attribute used to destroy sprite when

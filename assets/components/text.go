@@ -11,16 +11,15 @@ import (
 // Text represents a component that can display some text.
 type Text struct {
 	*engosdl.Component
-	fontFile  string
-	font      *ttf.Font
-	fontSize  int
-	color     sdl.Color
-	message   string
-	renderer  *sdl.Renderer
-	texture   *sdl.Texture
-	width     int32
-	height    int32
-	registers []*engosdl.Register
+	fontFile string
+	font     *ttf.Font
+	fontSize int
+	color    sdl.Color
+	message  string
+	renderer *sdl.Renderer
+	texture  *sdl.Texture
+	width    int32
+	height   int32
 }
 
 var _ engosdl.IText = (*Text)(nil)
@@ -38,11 +37,18 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 	}
 }
 
-// AddDelegateToRegister adds a new delegate that component should register.
-func (c *Text) AddDelegateToRegister(delegate engosdl.IDelegate, entity engosdl.IEntity, component engosdl.IComponent, signature engosdl.TDelegateSignature) engosdl.IText {
-	register := engosdl.NewRegister("new-register", entity, component, delegate, signature)
-	c.registers = append(c.registers, register)
-	return c
+// OnDraw is called for every draw tick.
+func (c *Text) OnDraw() {
+	x := int32(c.GetEntity().GetTransform().GetPosition().X)
+	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
+	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
+	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
+	c.renderer.CopyEx(c.texture,
+		&sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height},
+		&sdl.Rect{X: x, Y: y, W: width, H: height},
+		0,
+		&sdl.Point{},
+		sdl.FLIP_NONE)
 }
 
 // onUpdateStats updates text with entity stats changes.
@@ -60,6 +66,7 @@ func (c *Text) onUpdateStats(params ...interface{}) bool {
 // OnStart is called first time the component is enabled.
 func (c *Text) OnStart() {
 	engosdl.Logger.Trace().Str("component", "text").Str("text", c.GetName()).Msg("OnStart")
+	c.Component.OnStart()
 	c.textureFromTTF()
 	// if entity := c.GetEntity().GetScene().GetEntityByName("enemy"); entity != nil {
 	// 	if component := entity.GetComponent(&EntityStats{}); component != nil {
@@ -69,35 +76,6 @@ func (c *Text) OnStart() {
 	// 		}
 	// 	}
 	// }
-	for _, register := range c.registers {
-		delegate := register.GetDelegate()
-		if delegate == nil {
-			if component := register.GetEntity().GetComponent(register.GetComponent()); component != nil {
-				if delegate = component.GetDelegate(); delegate != nil {
-					register.SetDelegate(delegate)
-				}
-			}
-		}
-		if registerID, ok := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, register.GetSignature()); ok {
-			register.SetRegisterID(registerID)
-		} else {
-			panic("Failure at register " + register.GetName())
-		}
-	}
-}
-
-// OnDraw is called for every draw tick.
-func (c *Text) OnDraw() {
-	x := int32(c.GetEntity().GetTransform().GetPosition().X)
-	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
-	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
-	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
-	c.renderer.CopyEx(c.texture,
-		&sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height},
-		&sdl.Rect{X: x, Y: y, W: width, H: height},
-		0,
-		&sdl.Point{},
-		sdl.FLIP_NONE)
 }
 
 // SetColor sets text color.

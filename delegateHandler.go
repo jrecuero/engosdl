@@ -39,13 +39,14 @@ type IRegister interface {
 type IDelegateHandler interface {
 	IObject
 	CreateDelegate(IObject, string) IDelegate
-	OnStart()
+	DeleteDelegate(IDelegate) bool
+	DeregisterFromDelegate(string) bool
 	GetCollisionDelegate() IDelegate
 	GetDestroyDelegate() IDelegate
 	GetLoadDelegate() IDelegate
+	OnStart()
 	RegisterToDelegate(IDelegate, TDelegateSignature) (string, bool)
 	TriggerDelegate(IDelegate, ...interface{})
-	DeregisterFromDelegate(string) bool
 }
 
 // Delegate is the default implementation for delegate interface.
@@ -182,6 +183,35 @@ func (h *DelegateHandler) CreateDelegate(obj IObject, evName string) IDelegate {
 	return delegate
 }
 
+// DeleteDelegate deletes the given delegate from delegate handler and
+// all registers
+func (h *DelegateHandler) DeleteDelegate(delegate IDelegate) bool {
+	for i, delegat := range h.delegates {
+		if delegat.GetID() == delegate.GetID() {
+			h.delegates = append(h.delegates[:i], h.delegates[i+1:]...)
+			for j, register := range h.registers {
+				if register.GetDelegate().GetID() == delegate.GetID() {
+					h.registers = append(h.registers[:j], h.registers[j+1:]...)
+				}
+			}
+			return true
+		}
+	}
+	return false
+}
+
+// DeregisterFromDelegate unregistered the given register from the delegate.
+func (h *DelegateHandler) DeregisterFromDelegate(registerID string) bool {
+	for i, register := range h.registers {
+		if register.GetRegisterID() == registerID {
+			Logger.Trace().Str("delegate-handler", h.GetName()).Str("delegate", register.GetDelegate().GetName()).Msg("deregister-to-delegate")
+			h.registers = append(h.registers[:i], h.registers[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 // GetCollisionDelegate returns default delegate for collisions.
 func (h *DelegateHandler) GetCollisionDelegate() IDelegate {
 	return h.defaults[collisionDelegate]
@@ -206,9 +236,11 @@ func (h *DelegateHandler) OnStart() {
 
 // RegisterToDelegate registers a method to a delegate.
 func (h *DelegateHandler) RegisterToDelegate(delegate IDelegate, signature TDelegateSignature) (string, bool) {
+	Logger.Trace().Str("delegate-handler", h.GetName()).Str("delegate", delegate.GetName()).Msg("register-to-delegate")
 	register := NewRegister("", nil, nil, delegate, signature)
+	register.SetRegisterID(register.GetID())
 	h.registers = append(h.registers, register)
-	return register.GetID(), true
+	return register.GetRegisterID(), true
 }
 
 // TriggerDelegate calls all signatures registered to a given delegate.
@@ -221,9 +253,4 @@ func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, params ...interfac
 			register.GetSignature()(params...)
 		}
 	}
-}
-
-// DeregisterFromDelegate unregistered the given register from the delegate.
-func (h *DelegateHandler) DeregisterFromDelegate(string) bool {
-	return true
 }

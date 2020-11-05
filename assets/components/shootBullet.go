@@ -27,8 +27,12 @@ func NewShootBullet(name string) *ShootBullet {
 func (c *ShootBullet) OnStart() {
 	engosdl.Logger.Trace().Str("component", "shoot-bullet").Str("shoot-bullet", c.GetName()).Msg("OnStart")
 	if component := c.GetEntity().GetComponent(&KeyShooter{}); component != nil {
-		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(component.GetDelegate(), c.shootBulletSignature)
+		if delegate := component.GetDelegate(); delegate != nil {
+			// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.shootBulletSignature)
+			c.AddDelegateToRegister(delegate, nil, nil, c.shootBulletSignature)
+		}
 	}
+	c.Component.OnStart()
 }
 
 func (c *ShootBullet) shootBulletSignature(...interface{}) bool {

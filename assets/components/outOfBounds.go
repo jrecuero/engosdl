@@ -10,7 +10,6 @@ import (
 // window bounds
 type OutOfBounds struct {
 	*engosdl.Component
-	delegate   engosdl.IDelegate
 	leftCorner bool
 }
 
@@ -22,22 +21,18 @@ func NewOutOfBounds(name string, leftCorner bool) *OutOfBounds {
 	}
 }
 
-// GetDelegate returns the out of bounds delegate.
-func (c *OutOfBounds) GetDelegate() engosdl.IDelegate {
-	return c.delegate
-}
-
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *OutOfBounds) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "out-of-bounds").Str("out-of-bounds", c.GetName()).Msg("OnAwake")
-	delegateHandler := engosdl.GetEventHandler().GetDelegateHandler()
-	c.delegate = delegateHandler.CreateDelegate(c, "out-of-bounds")
+	// Creates new delegate "out-of-bounds"
+	c.SetDelegate(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().CreateDelegate(c, "out-of-bounds"))
 }
 
 // OnStart is called the first time component is loaded.
 func (c *OutOfBounds) OnStart() {
 	engosdl.Logger.Trace().Str("component", "out-of-bounds").Str("out-of-bounds", c.GetName()).Msg("OnStart")
+	c.Component.OnStart()
 }
 
 // OnUpdate is called for every update tick.
@@ -57,14 +52,14 @@ func (c *OutOfBounds) OnUpdate() {
 	if testX {
 		fmt.Printf("%s out of bounds %f\n", c.GetEntity().GetName(), x)
 		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
-		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.delegate, c.GetEntity())
+		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), c.GetEntity())
 		// engosdl.GetEngine().DestroyEntity(c.GetEntity())
 
 	}
 	if testY {
 		fmt.Printf("%s out of bounds %f\n", c.GetEntity().GetName(), y)
 		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
-		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.delegate, c.GetEntity())
+		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), c.GetEntity())
 		// engosdl.GetEngine().DestroyEntity(c.GetEntity())
 	}
 }

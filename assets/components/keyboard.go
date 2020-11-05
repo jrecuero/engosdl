@@ -36,10 +36,12 @@ func (c *Keyboard) OnStart() {
 	if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
 		if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
 			if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
-				engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
+				// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
+				c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
 			}
 		}
 	}
+	c.Component.OnStart()
 }
 
 // OnUpdate is called for every update tick.

@@ -9,21 +9,16 @@ import (
 // EntityStats represents a component that contains generic entity stats.
 type EntityStats struct {
 	*engosdl.Component
-	life     int
-	delegate engosdl.IDelegate
-}
-
-// GetDelegate returns delegate created by entity stats.
-func (c *EntityStats) GetDelegate() engosdl.IDelegate {
-	return c.delegate
+	life int
 }
 
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *EntityStats) OnAwake() {
+	// Create new delegate "entity-stats"
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnAwake")
-	delegateHandler := engosdl.GetEngine().GetEventHandler().GetDelegateHandler()
-	c.delegate = delegateHandler.CreateDelegate(c, "entity-stats")
+	c.SetDelegate(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().CreateDelegate(c, "entity-stats"))
+
 }
 
 // onCollision checks when there is a collision with other entity.
@@ -32,7 +27,7 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
 		c.life -= 10
-		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.delegate, c.life)
+		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), c.life)
 		fmt.Printf("%s [live %d] onCollision %s with %s\n",
 			c.GetEntity().GetName(),
 			c.life,
@@ -48,9 +43,12 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 // OnStart is called first time the component is enabled.
 func (c *EntityStats) OnStart() {
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnStart")
-	delegateHandler := engosdl.GetEngine().GetEventHandler().GetDelegateHandler()
-	collisionDelegate := delegateHandler.GetCollisionDelegate()
-	delegateHandler.RegisterToDelegate(collisionDelegate, c.onCollision)
+	// delegateHandler := engosdl.GetEngine().GetEventHandler().GetDelegateHandler()
+	// collisionDelegate := delegateHandler.GetCollisionDelegate()
+	// delegateHandler.RegisterToDelegate(collisionDelegate, c.onCollision)
+	delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
+	c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
+	c.Component.OnStart()
 }
 
 // NewEntityStats creates a new entity stats instance.
