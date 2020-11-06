@@ -70,7 +70,7 @@ func (d *Delegate) GetEventName() string {
 
 // NewDelegate creates a new delegate instance.
 func NewDelegate(name string, obj IObject, evName string) *Delegate {
-	Logger.Trace().Str("delegate", name).Str("evName", evName).Msg("create new delegate")
+	Logger.Trace().Str("delegate", name).Str("evName", evName).Msg("new delegate")
 	return &Delegate{
 		Object: NewObject(name),
 		obj:    obj,
@@ -167,7 +167,7 @@ type DelegateHandler struct {
 
 // NewDelegateHandler creates a new delegate handler instance.
 func NewDelegateHandler(name string) *DelegateHandler {
-	Logger.Trace().Str("delegate-handler", name).Msg("create new delegate handler")
+	Logger.Trace().Str("delegate-handler", name).Msg("new delegate handler")
 	return &DelegateHandler{
 		Object:    NewObject(name),
 		delegates: []IDelegate{},
@@ -178,6 +178,7 @@ func NewDelegateHandler(name string) *DelegateHandler {
 
 // CreateDelegate creates a new delefate in the delegate handler
 func (h *DelegateHandler) CreateDelegate(obj IObject, evName string) IDelegate {
+	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("CreateDelegate")
 	delegate := NewDelegate(obj.GetName()+"/"+evName, obj, evName)
 	h.delegates = append(h.delegates, delegate)
 	return delegate
@@ -186,6 +187,7 @@ func (h *DelegateHandler) CreateDelegate(obj IObject, evName string) IDelegate {
 // DeleteDelegate deletes the given delegate from delegate handler and
 // all registers
 func (h *DelegateHandler) DeleteDelegate(delegate IDelegate) bool {
+	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("DeleteDelegate")
 	for i, delegat := range h.delegates {
 		if delegat.GetID() == delegate.GetID() {
 			h.delegates = append(h.delegates[:i], h.delegates[i+1:]...)
@@ -229,6 +231,7 @@ func (h *DelegateHandler) GetLoadDelegate() IDelegate {
 
 // OnStart initializes all delegate handler structure.
 func (h *DelegateHandler) OnStart() {
+	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("OnStart")
 	h.defaults[collisionDelegate] = h.CreateDelegate(h, collisionDelegate)
 	h.defaults[destroyDelegate] = h.CreateDelegate(h, destroyDelegate)
 	h.defaults[loadDelegate] = h.CreateDelegate(h, loadDelegate)

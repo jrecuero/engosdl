@@ -137,6 +137,7 @@ func (entity *Entity) DoCycleStart() {
 
 // DoLoad is called when object is loaded by the scene.
 func (entity *Entity) DoLoad() {
+	Logger.Trace().Str("entity", entity.GetName()).Msg("DoLoad")
 	entity.loaded = true
 	entity.OnStart()
 	entity.loadUnloadedComponents()
@@ -144,6 +145,7 @@ func (entity *Entity) DoLoad() {
 
 // DoUnLoad is called when object is unloaded by the scene.
 func (entity *Entity) DoUnLoad() {
+	Logger.Trace().Str("entity", entity.GetName()).Msg("DoUnLoad")
 	entity.loaded = false
 	for _, component := range entity.loadedComponents {
 		component.DoUnLoad()

@@ -58,7 +58,6 @@ func NewScene(name string) *Scene {
 		unloadedEntities: []IEntity{},
 		layers:           make([][]IEntity, maxLayers),
 		loaded:           false,
-		// layers:           [][]IEntity{{}, {}, {}, {}},
 	}
 	return scene
 }

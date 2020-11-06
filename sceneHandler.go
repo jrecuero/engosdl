@@ -50,7 +50,8 @@ func NewSceneHandler(name string) *SceneHandler {
 
 // AddScene adds a new scene to the scene handler
 func (h *SceneHandler) AddScene(scene IScene) bool {
-	if scene := h.GetScene(scene.GetName()); scene != nil {
+	Logger.Trace().Str("scene-handler", h.GetName()).Msg("AddScene")
+	if scene := h.GetScene(scene.GetID()); scene != nil {
 		return false
 	}
 	h.scenes = append(h.scenes, scene)
@@ -59,6 +60,7 @@ func (h *SceneHandler) AddScene(scene IScene) bool {
 
 // DeleteScene deletes the scene given by the name.
 func (h *SceneHandler) DeleteScene(name string) bool {
+	Logger.Trace().Str("scene-handler", h.GetName()).Msg("DeleteScene")
 	if scene, i := h.getScene(name); scene != nil {
 		h.scenes = append(h.scenes[:i], h.scenes[i+1:]...)
 		return true
@@ -150,6 +152,7 @@ func (h *SceneHandler) OnEnable() {
 
 // OnStart calls all scene OnStart methods.
 func (h *SceneHandler) OnStart() {
+	Logger.Trace().Str("scene-handler", h.GetName()).Msg("OnStart")
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.OnStart()
 	}

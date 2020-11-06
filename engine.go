@@ -76,15 +76,13 @@ func NewEngine(name string, w, h int32) *Engine {
 			sceneHandler: NewSceneHandler("engine-scene-handler"),
 			eventHandler: NewEventHandler("engine-event-handler"),
 		}
-		gameEngine.DoInitSdl()
-
-		gameEngine.DoInitResources()
 	}
 	return gameEngine
 }
 
 // AddScene adds a new scene to the engine.
 func (engine *Engine) AddScene(scene IScene) bool {
+	Logger.Trace().Str("engine", engine.name).Msg("AddScene")
 	return engine.GetSceneHandler().AddScene(scene)
 }
 
@@ -115,9 +113,17 @@ func (engine *Engine) DoCycleStart() {
 	engine.GetSceneHandler().DoCycleStart()
 }
 
+// DoInit initializes basic engine resources.
+func (engine *Engine) DoInit() {
+	Logger.Trace().Str("engine", engine.name).Msg("DoInit")
+	gameEngine.DoInitSdl()
+	gameEngine.DoInitResources()
+}
+
 // DoInitResources initializes all internal resources, like scene handler and
 // event handler.
 func (engine *Engine) DoInitResources() {
+	Logger.Trace().Str("engine", engine.name).Msg("init resources")
 	engine.GetEventHandler().OnStart()
 	engine.GetSceneHandler().OnStart()
 }
@@ -190,6 +196,7 @@ func (engine *Engine) DoRun() {
 // DoStart starts the game engine. At this point all scenes and entities have
 // been already added to the engine.
 func (engine *Engine) DoStart() {
+	Logger.Trace().Str("engine", engine.name).Msg("DoStart")
 	engine.active = true
 
 	// Set first scene as the active by default.

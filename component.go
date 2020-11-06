@@ -41,7 +41,9 @@ type ICollider interface {
 // ISprite represents the interface for any sprite component.
 type ISprite interface {
 	IComponent
+	GetCamera() *sdl.Rect
 	GetFilename() string
+	SetCamera(*sdl.Rect)
 	SetDestroyOnOutOfBounds(bool)
 }
 
@@ -79,6 +81,7 @@ func NewComponent(name string) *Component {
 
 // AddDelegateToRegister adds a new delegate that component should register.
 func (c *Component) AddDelegateToRegister(delegate IDelegate, entity IEntity, component IComponent, signature TDelegateSignature) IComponent {
+	Logger.Trace().Str("component", c.GetName()).Msg("AddDelegateToRegister")
 	register := NewRegister("new-register", entity, component, delegate, signature)
 	c.registers = append(c.registers, register)
 	return c
@@ -94,7 +97,7 @@ func (c *Component) DoCycleStart() {
 
 // DoLoad is called when component is loaded by the entity.
 func (c *Component) DoLoad(component IComponent) {
-	Logger.Trace().Str("component", c.name).Msg("DoLoad")
+	Logger.Trace().Str("component", c.GetName()).Msg("DoLoad")
 	c.loaded = true
 	// fmt.Printf("load: %#v\n", reflect.TypeOf(component).String())
 	component.OnStart()
@@ -104,7 +107,7 @@ func (c *Component) DoLoad(component IComponent) {
 // is overwritten in any child class, Component  method has to be called,
 // because it is in charge to deregister all delegates and registers.
 func (c *Component) DoUnLoad() {
-	Logger.Trace().Str("component", c.name).Msg("DoUnLoad")
+	Logger.Trace().Str("component", c.GetName()).Msg("DoUnLoad")
 	// Deregister all register entries from delegate handler
 	for _, register := range c.registers {
 		GetEngine().GetEventHandler().GetDelegateHandler().DeregisterFromDelegate(register.GetRegisterID())

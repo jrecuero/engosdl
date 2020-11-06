@@ -16,6 +16,7 @@ type Sprite struct {
 	renderer             *sdl.Renderer
 	texture              *sdl.Texture
 	destroyOnOutOfBounds bool
+	camera               *sdl.Rect
 }
 
 var _ engosdl.ISprite = (*Sprite)(nil)
@@ -28,7 +29,13 @@ func NewSprite(name string, filename string, renderer *sdl.Renderer) *Sprite {
 		filename:             filename,
 		renderer:             renderer,
 		destroyOnOutOfBounds: true,
+		camera:               nil,
 	}
+}
+
+// GetCamera returns the camera used to display the sprite
+func (c *Sprite) GetCamera() *sdl.Rect {
+	return c.camera
 }
 
 // GetFilename returns filename used for the sprite.
@@ -49,19 +56,21 @@ func (c *Sprite) OnDraw() {
 	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnDraw")
 	x := int32(c.GetEntity().GetTransform().GetPosition().X)
 	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
-	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
-	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
+	width := int32(float64(c.width) * c.GetEntity().GetTransform().GetScale().X)
+	height := int32(float64(c.height) * c.GetEntity().GetTransform().GetScale().Y)
+	var displayFrom *sdl.Rect
 	var displayAt *sdl.Rect
 	// if c.centered {
 	// 	displayAt = &sdl.Rect{X: x - c.width/2, Y: y - c.height/2, W: width, H: height}
 	// } else {
 	// 	displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
 	// }
+	displayFrom = &sdl.Rect{X: 0, Y: 0, W: c.width, H: c.width}
 	displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
+
 	c.renderer.CopyEx(c.texture,
-		&sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height},
+		displayFrom,
 		displayAt,
-		// &sdl.Rect{X: x, Y: y, W: width, H: height},
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)
@@ -111,6 +120,11 @@ func (c *Sprite) OnStart() {
 		}
 	}
 	c.Component.OnStart()
+}
+
+// SetCamera sets the camera used to display the sprite.
+func (c *Sprite) SetCamera(camera *sdl.Rect) {
+	c.camera = camera
 }
 
 // SetDestroyOnOutOfBounds sets internal attribute used to destroy sprite when
