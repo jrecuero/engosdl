@@ -1,9 +1,12 @@
 package engosdl
 
+import "github.com/veandco/go-sdl2/sdl"
+
 // ITransform represents the interface for any entity transformation.
 type ITransform interface {
 	GetDim() *Vector
 	GetPosition() *Vector
+	GetRect() *sdl.Rect
 	GetRotation() float64
 	GetScale() *Vector
 	SetDim(*Vector) ITransform
@@ -28,6 +31,17 @@ func (t *Transform) GetDim() *Vector {
 // GetPosition returns the transform position.
 func (t *Transform) GetPosition() *Vector {
 	return t.position
+}
+
+// GetRect returns a rectangle with real position and dimensions.
+// Real dimensions are affected by the scale value.
+func (t *Transform) GetRect() *sdl.Rect {
+	return &sdl.Rect{
+		X: int32(t.GetPosition().X),
+		Y: int32(t.GetPosition().Y),
+		W: int32(t.GetDim().X * t.GetScale().X),
+		H: int32(t.GetDim().Y * t.GetScale().Y),
+	}
 }
 
 // GetRotation returns the transform rotation.
