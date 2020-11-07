@@ -17,6 +17,11 @@ func NewMoveTo(name string, speed *engosdl.Vector) *MoveTo {
 	}
 }
 
+// GetSpeed returns component speed.
+func (c *MoveTo) GetSpeed() *engosdl.Vector {
+	return c.speed
+}
+
 // onOutOfBounds checks if the entity has gone out of bounds.
 func (c *MoveTo) onOutOfBounds(params ...interface{}) bool {
 	position := c.GetEntity().GetTransform().GetPosition()
@@ -28,11 +33,13 @@ func (c *MoveTo) onOutOfBounds(params ...interface{}) bool {
 // OnStart is called first time the component is enabled.
 func (c *MoveTo) OnStart() {
 	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", c.GetName()).Msg("OnStart")
-	if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
-		if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
-			if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
-				// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
-				c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
+	if c.CanRegisterTo(engosdl.OutOfBoundsName) {
+		if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
+			if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
+				if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
+					// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
+					c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
+				}
 			}
 		}
 	}
@@ -44,4 +51,9 @@ func (c *MoveTo) OnUpdate() {
 	position := c.GetEntity().GetTransform().GetPosition()
 	position.X += c.speed.X
 	position.Y += c.speed.Y
+}
+
+// SetSpeed sets movement speed.
+func (c *MoveTo) SetSpeed(speed *engosdl.Vector) {
+	c.speed = speed
 }

@@ -86,7 +86,7 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 			}
 			// Trigger destroy delegate
 			destroyDelegate := GetEngine().GetEventHandler().GetDelegateHandler().GetDestroyDelegate()
-			GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(destroyDelegate, entity)
+			GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(destroyDelegate, true, entity)
 			return true
 		}
 	}
@@ -224,7 +224,7 @@ func (scene *Scene) loadUnloadedEntities() {
 		}
 		// Trigger load delegate
 		loadDelegate := GetEngine().GetEventHandler().GetDelegateHandler().GetLoadDelegate()
-		GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(loadDelegate, entity)
+		GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(loadDelegate, true, entity)
 	}
 	scene.unloadedEntities = unloaded
 }
@@ -300,7 +300,7 @@ func (scene *Scene) OnUpdate() {
 				// if rectI.HasIntersection(rectJ) {
 				fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
 				delegate := GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-				GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(delegate, entityI, entityJ)
+				GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(delegate, true, entityI, entityJ)
 			}
 		}
 	}

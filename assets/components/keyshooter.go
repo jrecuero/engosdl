@@ -47,7 +47,7 @@ func (c *KeyShooter) OnUpdate() {
 	if keys[sdl.SCANCODE_SPACE] == 1 {
 		engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("space key pressed")
 		if time.Since(c.lastshoot) >= c.cooldown {
-			engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate())
+			engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true)
 			c.lastshoot = time.Now()
 		}
 	}

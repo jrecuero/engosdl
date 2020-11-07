@@ -1,12 +1,21 @@
 package engosdl
 
 const (
+	// CollisionName represents on collision delegate.
+	CollisionName = "on-collision"
+	// DestroyName represents on destroy delegate.
+	DestroyName = "on-destroy"
+	// LoadName represents on load delegate.
+	LoadName = "on-load"
+	// OutOfBoundsName represents on out of bounds delegate.
+	OutOfBoundsName = "on-out-of-bounds"
+
 	delegateHandlerName   = "delegate-handler"
-	collisionDelegate     = "on-collision"
+	collisionDelegate     = CollisionName
 	collisionDelegateName = delegateHandlerName + "/" + collisionDelegate
-	destroyDelegate       = "on-destroy"
+	destroyDelegate       = DestroyName
 	destroyDelegateName   = delegateHandlerName + "/" + destroyDelegate
-	loadDelegate          = "on-load"
+	loadDelegate          = LoadName
 	loadDelegateName      = delegateHandlerName + "/" + loadDelegate
 )
 
@@ -26,11 +35,14 @@ type IRegister interface {
 	GetComponent() IComponent
 	GetDelegate() IDelegate
 	GetEntity() IEntity
+	GetName() string
+	GetParams() []interface{}
 	GetRegisterID() string
 	GetSignature() TDelegateSignature
 	SetComponent(IComponent) IRegister
 	SetDelegate(IDelegate) IRegister
 	SetEntity(IEntity) IRegister
+	SetParams([]interface{})
 	SetRegisterID(string) IRegister
 	SetSignature(TDelegateSignature) IRegister
 }
@@ -45,8 +57,9 @@ type IDelegateHandler interface {
 	GetDestroyDelegate() IDelegate
 	GetLoadDelegate() IDelegate
 	OnStart()
+	OnUpdate()
 	RegisterToDelegate(IDelegate, TDelegateSignature) (string, bool)
-	TriggerDelegate(IDelegate, ...interface{})
+	TriggerDelegate(IDelegate, bool, ...interface{})
 }
 
 // Delegate is the default implementation for delegate interface.
@@ -86,6 +99,7 @@ type Register struct {
 	delegate   IDelegate
 	signature  TDelegateSignature
 	registerID string
+	params     []interface{}
 }
 
 var _ IRegister = (*Register)(nil)
@@ -99,6 +113,7 @@ func NewRegister(name string, entity IEntity, component IComponent, delegate IDe
 		component: component,
 		delegate:  delegate,
 		signature: signature,
+		params:    []interface{}{},
 	}
 }
 
@@ -115,6 +130,11 @@ func (r *Register) GetDelegate() IDelegate {
 // GetEntity returns register entity.
 func (r *Register) GetEntity() IEntity {
 	return r.entity
+}
+
+// GetParams returns register parameters.
+func (r *Register) GetParams() []interface{} {
+	return r.params
 }
 
 // GetRegisterID returns the registerID.
@@ -145,6 +165,11 @@ func (r *Register) SetEntity(entity IEntity) IRegister {
 	return r
 }
 
+// SetParams sets the register parameters.
+func (r *Register) SetParams(params []interface{}) {
+	r.params = params
+}
+
 // SetRegisterID sets the registerID.
 func (r *Register) SetRegisterID(id string) IRegister {
 	r.registerID = id
@@ -160,19 +185,21 @@ func (r *Register) SetSignature(signature TDelegateSignature) IRegister {
 // DelegateHandler is the default implementation for event handler interface.
 type DelegateHandler struct {
 	*Object
-	delegates []IDelegate
-	registers []*Register
-	defaults  map[string]IDelegate
+	delegates  []IDelegate
+	registers  []IRegister
+	defaults   map[string]IDelegate
+	toBeCalled []IRegister
 }
 
 // NewDelegateHandler creates a new delegate handler instance.
 func NewDelegateHandler(name string) *DelegateHandler {
 	Logger.Trace().Str("delegate-handler", name).Msg("new delegate handler")
 	return &DelegateHandler{
-		Object:    NewObject(name),
-		delegates: []IDelegate{},
-		registers: []*Register{},
-		defaults:  make(map[string]IDelegate),
+		Object:     NewObject(name),
+		delegates:  []IDelegate{},
+		registers:  []IRegister{},
+		defaults:   make(map[string]IDelegate),
+		toBeCalled: []IRegister{},
 	}
 }
 
@@ -237,6 +264,17 @@ func (h *DelegateHandler) OnStart() {
 	h.defaults[loadDelegate] = h.CreateDelegate(h, loadDelegate)
 }
 
+// OnUpdate is called after all other OnUpdate methods have been called for
+// all entities and components in the scene. It will execute all registers
+// still pending.
+func (h *DelegateHandler) OnUpdate() {
+	for i := 0; i < len(h.toBeCalled); i++ {
+		register := h.toBeCalled[i]
+		register.GetSignature()(register.GetParams()...)
+	}
+	h.toBeCalled = []IRegister{}
+}
+
 // RegisterToDelegate registers a method to a delegate.
 func (h *DelegateHandler) RegisterToDelegate(delegate IDelegate, signature TDelegateSignature) (string, bool) {
 	Logger.Trace().Str("delegate-handler", h.GetName()).Str("delegate", delegate.GetName()).Msg("register-to-delegate")
@@ -247,10 +285,18 @@ func (h *DelegateHandler) RegisterToDelegate(delegate IDelegate, signature TDele
 }
 
 // TriggerDelegate calls all signatures registered to a given delegate.
-func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, params ...interface{}) {
+func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, now bool, params ...interface{}) {
 	for _, register := range h.registers {
 		if register.GetDelegate() != nil && register.GetDelegate().GetID() == delegate.GetID() {
-			register.GetSignature()(params...)
+			if now {
+				register.GetSignature()(params...)
+			} else {
+				storeRegister := NewRegister(register.GetName(), register.GetEntity(), register.GetComponent(), register.GetDelegate(), register.GetSignature())
+				storeRegister.SetRegisterID(register.GetRegisterID())
+				storeRegister.SetParams(params)
+				h.toBeCalled = append(h.toBeCalled, storeRegister)
+			}
 		}
 	}
+	return
 }

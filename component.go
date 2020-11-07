@@ -7,6 +7,7 @@ import "github.com/veandco/go-sdl2/sdl"
 type IComponent interface {
 	IObject
 	AddDelegateToRegister(IDelegate, IEntity, IComponent, TDelegateSignature) IComponent
+	CanRegisterTo(string) bool
 	DoCycleEnd()
 	DoCycleStart()
 	DoLoad(IComponent)
@@ -23,6 +24,7 @@ type IComponent interface {
 	SetActive(bool)
 	SetDelegate(IDelegate)
 	SetEntity(IEntity)
+	SetRegisterOnStart(map[string]bool)
 }
 
 // ICollisionBox represets the interface for any collider collision box.
@@ -57,11 +59,12 @@ type IText interface {
 // Component represents the default IComponent implementation.
 type Component struct {
 	*Object
-	entity    IEntity
-	active    bool
-	loaded    bool
-	delegate  IDelegate
-	registers []*Register
+	entity        IEntity
+	active        bool
+	loaded        bool
+	delegate      IDelegate
+	registers     []*Register
+	registerFlags map[string]bool
 }
 
 var _ IComponent = (*Component)(nil)
@@ -70,12 +73,13 @@ var _ IComponent = (*Component)(nil)
 func NewComponent(name string) *Component {
 	Logger.Trace().Str("component", name).Msg("new component")
 	return &Component{
-		Object:    NewObject(name),
-		entity:    nil,
-		active:    true,
-		loaded:    false,
-		delegate:  nil,
-		registers: []*Register{},
+		Object:        NewObject(name),
+		entity:        nil,
+		active:        true,
+		loaded:        false,
+		delegate:      nil,
+		registers:     []*Register{},
+		registerFlags: make(map[string]bool),
 	}
 }
 
@@ -85,6 +89,15 @@ func (c *Component) AddDelegateToRegister(delegate IDelegate, entity IEntity, co
 	register := NewRegister("new-register", entity, component, delegate, signature)
 	c.registers = append(c.registers, register)
 	return c
+}
+
+// CanRegisterTo returns if component can register to the named delegate.
+func (c *Component) CanRegisterTo(delegateName string) bool {
+	result := true
+	if flag, ok := c.registerFlags[delegateName]; ok {
+		result = flag
+	}
+	return result
 }
 
 // DoCycleEnd calls all methods to run at the end of a tick cycle.
@@ -195,4 +208,9 @@ func (c *Component) SetDelegate(delegate IDelegate) {
 // SetEntity sets component new entity instance.
 func (c *Component) SetEntity(entity IEntity) {
 	c.entity = entity
+}
+
+// SetRegisterOnStart allows to disable default component registrations.
+func (c *Component) SetRegisterOnStart(flags map[string]bool) {
+	c.registerFlags = flags
 }

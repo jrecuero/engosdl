@@ -37,29 +37,35 @@ func (c *OutOfBounds) OnStart() {
 
 // OnUpdate is called for every update tick.
 func (c *OutOfBounds) OnUpdate() {
-	w := engosdl.GetEngine().GetWidth()
-	h := engosdl.GetEngine().GetHeight()
-	x := c.GetEntity().GetTransform().GetPosition().X
-	y := c.GetEntity().GetTransform().GetPosition().Y
+	W := engosdl.GetEngine().GetWidth()
+	H := engosdl.GetEngine().GetHeight()
+	// x := c.GetEntity().GetTransform().GetPosition().X
+	// y := c.GetEntity().GetTransform().GetPosition().Y
+	// rect := c.GetEntity().GetTransform().GetRect()
+	// x := float64(rect.X)
+	// y := float64(rect.Y)
+	// w := float64(rect.W)
+	// h := float64(rect.H)
+	x, y, w, h := c.GetEntity().GetTransform().GetRectExt()
 	var testX, testY bool
 	if c.leftCorner {
-		testX = x < 0 || int32(x+c.GetEntity().GetTransform().GetDim().X) > w
-		testY = y < 0 || int32(y+c.GetEntity().GetTransform().GetDim().Y) > h
+		testX = x < 0 || int32(x+w) > W
+		testY = y < 0 || int32(y+h) > H
 	} else {
-		testX = (x+c.GetEntity().GetTransform().GetDim().X) < 0 || int32(x) > w
-		testY = (y+c.GetEntity().GetTransform().GetDim().Y) < 0 || int32(y) > h
+		testX = (x+w) < 0 || int32(x) > W
+		testY = (y+h) < 0 || int32(y) > H
 	}
 	if testX {
-		fmt.Printf("%s out of bounds %f\n", c.GetEntity().GetName(), x)
+		fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), x)
 		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
-		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), c.GetEntity())
+		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.GetEntity())
 		// engosdl.GetEngine().DestroyEntity(c.GetEntity())
 
 	}
 	if testY {
-		fmt.Printf("%s out of bounds %f\n", c.GetEntity().GetName(), y)
+		fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), y)
 		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
-		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), c.GetEntity())
+		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.GetEntity())
 		// engosdl.GetEngine().DestroyEntity(c.GetEntity())
 	}
 }

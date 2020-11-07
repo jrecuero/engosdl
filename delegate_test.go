@@ -16,7 +16,7 @@ func Benchmark_Delegate(b *testing.B) {
 		obj := engosdl.NewObject("test-object")
 		delegate := h.CreateDelegate(obj, "active")
 		h.RegisterToDelegate(delegate, test_create_register)
-		h.TriggerDelegate(delegate)
+		h.TriggerDelegate(delegate, true)
 		if len(TEST_RESULTS) != 1 {
 			b.Errorf("Trigger Delegate error method not called")
 		}
@@ -60,7 +60,7 @@ func TestDelegate_DelegateHandler(t *testing.T) {
 	obj := engosdl.NewObject("test-object")
 	delegate := h.CreateDelegate(obj, "active")
 	h.RegisterToDelegate(delegate, test_create_register)
-	h.TriggerDelegate(delegate)
+	h.TriggerDelegate(delegate, true)
 	if len(TEST_RESULTS) != 1 {
 		t.Errorf("Trigger Delegate error method not called")
 	}

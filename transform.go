@@ -7,6 +7,7 @@ type ITransform interface {
 	GetDim() *Vector
 	GetPosition() *Vector
 	GetRect() *sdl.Rect
+	GetRectExt() (float64, float64, float64, float64)
 	GetRotation() float64
 	GetScale() *Vector
 	SetDim(*Vector) ITransform
@@ -42,6 +43,11 @@ func (t *Transform) GetRect() *sdl.Rect {
 		W: int32(t.GetDim().X * t.GetScale().X),
 		H: int32(t.GetDim().Y * t.GetScale().Y),
 	}
+}
+
+// GetRectExt returns rectangle coordinates as x, y, w, and h.
+func (t *Transform) GetRectExt() (float64, float64, float64, float64) {
+	return t.GetPosition().X, t.GetPosition().Y, t.GetDim().X * t.GetScale().X, t.GetDim().Y * t.GetScale().Y
 }
 
 // GetRotation returns the transform rotation.

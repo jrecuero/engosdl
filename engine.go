@@ -176,6 +176,8 @@ func (engine *Engine) DoRun() {
 
 		// Execute all update calls.
 		engine.GetSceneHandler().OnUpdate()
+		// Call update for delegate handler.
+		engine.GetEventHandler().GetDelegateHandler().OnUpdate()
 		// Execute any post updates behavior.
 		engine.GetSceneHandler().OnAfterUpdate()
 

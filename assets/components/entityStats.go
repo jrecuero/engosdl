@@ -27,7 +27,7 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
 		c.life -= 10
-		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), c.life)
+		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.life)
 		fmt.Printf("%s [live %d] onCollision %s with %s\n",
 			c.GetEntity().GetName(),
 			c.life,
