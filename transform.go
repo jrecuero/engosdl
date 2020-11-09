@@ -24,6 +24,16 @@ type Transform struct {
 	dim      *Vector
 }
 
+// NewTransform creates a new transform instance.
+func NewTransform() *Transform {
+	return &Transform{
+		position: NewVector(0, 0),
+		rotation: 0,
+		scale:    NewVector(1, 1),
+		dim:      NewVector(0, 0),
+	}
+}
+
 //GetDim returns the transform original dimensions.
 func (t *Transform) GetDim() *Vector {
 	return t.dim
@@ -82,14 +92,4 @@ func (t *Transform) SetRotation(r float64) ITransform {
 func (t *Transform) SetScale(v *Vector) ITransform {
 	t.scale = v
 	return t
-}
-
-// NewTransform creates a new transform instance.
-func NewTransform() *Transform {
-	return &Transform{
-		position: NewVector(0, 0),
-		rotation: 0,
-		scale:    NewVector(1, 1),
-		dim:      NewVector(0, 0),
-	}
 }

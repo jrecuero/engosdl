@@ -64,7 +64,8 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	enemyOutOfBounds := components.NewOutOfBounds("enemy-out-of-bounds", true)
 	enemyMove := components.NewMoveTo("enemy-move", engosdl.NewVector(5, 0))
 	enemyMove.SetRegisterOnStart(map[string]bool{engosdl.OutOfBoundsName: false})
-	enemySprite := components.NewSprite("enemy-sprite", "images/basic_enemy.bmp", engine.GetRenderer())
+	// enemySprite := components.NewSprite("enemy-sprite", "images/basic_enemy.bmp", engine.GetRenderer())
+	enemySprite := components.NewMultiSprite("enemy-sprite", []string{"images/basic_enemy.bmp"}, engine.GetRenderer())
 	enemySprite.SetDestroyOnOutOfBounds(false)
 	// enemySprite.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, func(params ...interface{}) bool {
 	// 	speed := enemyMove.GetSpeed()
