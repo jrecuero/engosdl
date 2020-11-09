@@ -70,7 +70,7 @@ func (c *MultiSprite) OnDraw() {
 	var displayFrom *sdl.Rect
 	var displayAt *sdl.Rect
 
-	displayFrom = &sdl.Rect{X: 0, Y: 0, W: c.width, H: c.width}
+	displayFrom = &sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height}
 	displayAt = &sdl.Rect{X: int32(x), Y: int32(y), W: int32(width), H: int32(height)}
 
 	c.renderer.CopyEx(c.textures[c.index],

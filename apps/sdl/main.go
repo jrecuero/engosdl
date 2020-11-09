@@ -18,7 +18,7 @@ func createAssets(engine *engosdl.Engine) {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	maxEnemies := 3
+	maxEnemies := 1
 
 	// Scenes
 	scene := engosdl.NewScene("main scene")
