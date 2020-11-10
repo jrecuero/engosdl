@@ -47,29 +47,32 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 		SpriteSheet: components.NewSpriteSheet(name, filenames, numberOfSprites, engosdl.GetRenderer()),
 		hit:         false,
 	}
-	result.onCollisionF = func(instance engosdl.ISprite) engosdl.TDelegateSignature {
-		return func(params ...interface{}) bool {
-			collisionEntityOne := params[0].(*engosdl.Entity)
-			collisionEntityTwo := params[1].(*engosdl.Entity)
-			if collisionEntityOne.GetTag() == "bullet" || collisionEntityTwo.GetTag() == "bullet" {
-				sprite := instance.(*enemySpriteT)
-				sprite.hit = true
-			}
-			return true
-		}
-	}
+	// result.onCollisionF = func(instance engosdl.ISprite) engosdl.TDelegateSignature {
+	// 	sprite := instance.(*enemySpriteT)
+	// 	return sprite.onCollision
+	// 	// return func(params ...interface{}) bool {
+	// 	// 	collisionEntityOne := params[0].(*engosdl.Entity)
+	// 	// 	collisionEntityTwo := params[1].(*engosdl.Entity)
+	// 	// 	if collisionEntityOne.GetTag() == "bullet" || collisionEntityTwo.GetTag() == "bullet" {
+	// 	// 		sprite := instance.(*enemySpriteT)
+	// 	// 		sprite.hit = true
+	// 	// 	}
+	// 	// 	return true
+	// 	// }
+	// }
+	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	return result
 }
 
-// // onCollision checks when there is a collision with other entity.
-// func (c *enemySpriteT) onCollision(params ...interface{}) bool {
-// 	collisionEntityOne := params[0].(*engosdl.Entity)
-// 	collisionEntityTwo := params[1].(*engosdl.Entity)
-// 	if collisionEntityOne.GetTag() == "bullet" || collisionEntityTwo.GetTag() == "bullet" {
-// 		c.hit = true
-// 	}
-// 	return true
-// }
+// onCollision checks when there is a collision with other entity.
+func (c *enemySpriteT) onCollision(params ...interface{}) bool {
+	collisionEntityOne := params[0].(*engosdl.Entity)
+	collisionEntityTwo := params[1].(*engosdl.Entity)
+	if collisionEntityOne.GetTag() == "bullet" || collisionEntityTwo.GetTag() == "bullet" {
+		c.hit = true
+	}
+	return true
+}
 
 // OnUpdate is called for every update tick.
 func (c *enemySpriteT) OnUpdate() {
@@ -81,17 +84,17 @@ func (c *enemySpriteT) OnUpdate() {
 	}
 }
 
-// OnStart is called first time the component is enabled.
-func (c *enemySpriteT) OnStart() {
-	// Register to: "on-collision" and "out-of-bounds"
-	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
-	if c.CanRegisterTo(engosdl.CollisionName) {
-		delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-		// c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
-		c.AddDelegateToRegister(delegate, nil, nil, c.onCollisionF(c))
-	}
-	c.Component.OnStart()
-}
+// // OnStart is called first time the component is enabled.
+// func (c *enemySpriteT) OnStart() {
+// 	// Register to: "on-collision" and "out-of-bounds"
+// 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
+// 	if c.CanRegisterTo(engosdl.CollisionName) {
+// 		delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
+// 		// c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
+// 		c.AddDelegateToRegister(delegate, nil, nil, c.onCollisionF(c))
+// 	}
+// 	c.Component.OnStart()
+// }
 
 // createEnemyController creates enemy controller entity.
 func createEnemyController() engosdl.IEntity {

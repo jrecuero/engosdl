@@ -163,23 +163,24 @@ func (c *SpriteSheet) onOutOfBounds(params ...interface{}) bool {
 func (c *SpriteSheet) OnStart() {
 	// Register to: "on-collision" and "out-of-bounds"
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
-	if c.CanRegisterTo(engosdl.CollisionName) {
-		delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-		c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
-		// delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-		// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)
-	}
+	// if c.CanRegisterTo(engosdl.CollisionName) {
+	// 	delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
+	// 	c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
+	// 	// delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
+	// 	// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)
+	// }
 
-	if c.CanRegisterTo(engosdl.OutOfBoundsName) {
-		if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
-			if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
-				if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
-					// engosdl.GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
-					c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
-				}
-			}
-		}
-	}
+	// if c.CanRegisterTo(engosdl.OutOfBoundsName) {
+	// 	// if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
+	// 	// 	if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
+	// 	// 		if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
+	// 	// 			// engosdl.GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
+	// 	// 			c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
+	// 	// 		}
+	// 	// 	}
+	// 	// }
+	// 	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.onOutOfBounds)
+	// }
 	c.Component.OnStart()
 }
 

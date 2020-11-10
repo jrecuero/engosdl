@@ -23,6 +23,7 @@ type IEntity interface {
 	GetChildren() []IEntity
 	GetComponent(IComponent) IComponent
 	GetComponents() []IComponent
+	GetDelegateForComponent(IComponent) IDelegate
 	GetDieOnCollision() bool
 	GetLayer() int
 	GetParent() IEntity
@@ -213,6 +214,16 @@ func (entity *Entity) GetComponent(typ IComponent) IComponent {
 // GetComponents returns all entity components.
 func (entity *Entity) GetComponents() []IComponent {
 	return entity.components
+}
+
+// GetDelegateForComponent returns the delegate for the given component.
+func (entity *Entity) GetDelegateForComponent(typ IComponent) IDelegate {
+	if component := entity.GetComponent(typ); component != nil {
+		if delegate := component.GetDelegate(); delegate != nil {
+			return delegate
+		}
+	}
+	return nil
 }
 
 // GetDieOnCollision returns if the entity should be destroyed with any

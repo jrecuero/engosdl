@@ -174,7 +174,11 @@ func (c *Component) OnStart() {
 		delegate := register.GetDelegate()
 		// Retrieve delegate from entity and component provided.
 		if delegate == nil {
-			if component := register.GetEntity().GetComponent(register.GetComponent()); component != nil {
+			entity := register.GetEntity()
+			if entity == nil {
+				entity = c.GetEntity()
+			}
+			if component := entity.GetComponent(register.GetComponent()); component != nil {
 				if delegate = component.GetDelegate(); delegate != nil {
 					register.SetDelegate(delegate)
 				}
