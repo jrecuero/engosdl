@@ -42,7 +42,7 @@ func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
 	bullet := engosdl.NewEntity("bullet" + strconv.Itoa(c.counter))
 	bullet.SetTag("bullet")
 	// bulletSprite := NewSprite("bullet-sprite", "images/player_bullet.bmp", engosdl.GetEngine().GetRenderer())
-	bulletSprite := NewMultiSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, engosdl.GetEngine().GetRenderer())
+	bulletSprite := NewSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, 1, engosdl.GetEngine().GetRenderer())
 	bulletMoveTo := NewMoveTo("bullet-move-to", engosdl.NewVector(0, -5))
 	bulletOutOfBounds := NewOutOfBounds("bullet-out-of-bounds", false)
 	bulletCollider2D := NewCollider2D("bullet-collider-2D")

@@ -49,7 +49,13 @@ type ICollider interface {
 type ISprite interface {
 	IComponent
 	GetCamera() *sdl.Rect
+	GetFileImageIndex() int
 	GetFilename() []string
+	GetSpriteIndex() int
+	NextFileImage() int
+	NextSprite() int
+	PreviousFileImage() int
+	PreviousSprite() int
 	SetCamera(*sdl.Rect)
 	SetDestroyOnOutOfBounds(bool)
 }

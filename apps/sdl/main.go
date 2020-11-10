@@ -64,7 +64,7 @@ func createPlayer(engine *engosdl.Engine) engosdl.IEntity {
 	player.GetTransform().SetPosition(engosdl.NewVector(float64(engine.GetWidth())/2, float64(engine.GetHeight()-125)))
 
 	// playerSprite := components.NewSprite("player-sprite", "images/player.bmp", engine.GetRenderer())
-	playerSprite := components.NewMultiSprite("player-sprite", []string{"images/player.bmp"}, engine.GetRenderer())
+	playerSprite := components.NewSprite("player-sprite", []string{"images/player.bmp"}, 1, engine.GetRenderer())
 	playerSprite.SetDestroyOnOutOfBounds(false)
 	playerKeyboard := components.NewKeyboard("player-keyboard", engosdl.NewVector(5, 10))
 	playerKeyShooter := components.NewKeyShooter("player-key-shooter", sdl.SCANCODE_SPACE)

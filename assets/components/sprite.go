@@ -7,30 +7,38 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-// Sprite represents a component that can display a sprite texture.
+// Sprite represents a component that can display multiple
+// sprites, which can be animated.
 type Sprite struct {
 	*engosdl.Component
-	filename             string
+	filenames            []string
 	width                int32
 	height               int32
 	renderer             *sdl.Renderer
-	texture              *sdl.Texture
+	textures             []*sdl.Texture
 	destroyOnOutOfBounds bool
 	camera               *sdl.Rect
+	fileImageIndex       int
+	spriteTotal          int
+	spriteIndex          int
 }
 
 var _ engosdl.ISprite = (*Sprite)(nil)
 
 // NewSprite creates a new sprite instance.
-// It registers to on-collision and on-out-of-bounds delegate.
-func NewSprite(name string, filename string, renderer *sdl.Renderer) *Sprite {
-	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
+// It resgiters to on-collision and on-out-of-bounds delegates.
+func NewSprite(name string, filenames []string, numberOfSprites int, renderer *sdl.Renderer) *Sprite {
+	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("multi-sprite", name).Msg("new multi-sprite")
 	result := &Sprite{
 		Component:            engosdl.NewComponent(name),
-		filename:             filename,
+		filenames:            filenames,
 		renderer:             renderer,
+		textures:             []*sdl.Texture{},
 		destroyOnOutOfBounds: true,
 		camera:               nil,
+		fileImageIndex:       0,
+		spriteTotal:          numberOfSprites,
+		spriteIndex:          0,
 	}
 	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
@@ -40,7 +48,9 @@ func NewSprite(name string, filename string, renderer *sdl.Renderer) *Sprite {
 // DoUnLoad is called when component is unloaded, so all resources have
 // to be released.
 func (c *Sprite) DoUnLoad() {
-	c.texture.Destroy()
+	for _, texture := range c.textures {
+		texture.Destroy()
+	}
 }
 
 // GetCamera returns the camera used to display the sprite
@@ -48,37 +58,63 @@ func (c *Sprite) GetCamera() *sdl.Rect {
 	return c.camera
 }
 
-// GetFilename returns filename used for the sprite.
+// GetFileImageIndex returns sprite sheet file image index currently used.
+func (c *Sprite) GetFileImageIndex() int {
+	return c.fileImageIndex
+}
+
+// GetFilename returns filenames used for the sprite.
 func (c *Sprite) GetFilename() []string {
-	return []string{c.filename}
+	return c.filenames
+}
+
+// GetSpriteIndex returns sprite sheet sprite index currently used.
+func (c *Sprite) GetSpriteIndex() int {
+	return c.spriteIndex
+}
+
+// loadTexturesFromBMP creates textures for every BMP image file.
+func (c *Sprite) loadTexturesFromBMP() {
+	for _, filename := range c.filenames {
+		img, err := sdl.LoadBMP(filename)
+		if err != nil {
+			engosdl.Logger.Error().Err(err).Msg("LoadBMP error")
+			panic(err)
+		}
+		defer img.Free()
+		texture, err := c.renderer.CreateTextureFromSurface(img)
+		if err != nil {
+			engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
+			panic(err)
+		}
+		_, _, c.width, c.height, err = texture.Query()
+		if err != nil {
+			engosdl.Logger.Error().Err(err).Msg("Query error")
+			panic(err)
+		}
+		c.textures = append(c.textures, texture)
+	}
+}
+
+// NextFileImage increases by one file image index.
+func (c *Sprite) NextFileImage() int {
+	c.fileImageIndex = (c.fileImageIndex + 1) % len(c.filenames)
+	return c.fileImageIndex
+}
+
+// NextSprite increases by one the sprite index.
+func (c *Sprite) NextSprite() int {
+	c.spriteIndex = (c.spriteIndex + 1) % c.spriteTotal
+	return c.spriteIndex
 }
 
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *Sprite) OnAwake() {
-	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnAwake")
-	c.textureFromBMP()
-	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width), float64(c.height)))
-}
-
-// OnDraw is called for every draw tick.
-func (c *Sprite) OnDraw() {
-	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnDraw")
-	x := int32(c.GetEntity().GetTransform().GetPosition().X)
-	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
-	width := int32(float64(c.width) * c.GetEntity().GetTransform().GetScale().X)
-	height := int32(float64(c.height) * c.GetEntity().GetTransform().GetScale().Y)
-	var displayFrom *sdl.Rect
-	var displayAt *sdl.Rect
-	displayFrom = &sdl.Rect{X: 0, Y: 0, W: c.width, H: c.width}
-	displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
-
-	c.renderer.CopyEx(c.texture,
-		displayFrom,
-		displayAt,
-		0,
-		&sdl.Point{},
-		sdl.FLIP_NONE)
+	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("sprite", c.GetName()).Msg("OnAwake")
+	c.loadTexturesFromBMP()
+	// TODO: assuming SpriteSheet is horizontal.
+	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.spriteTotal)), float64(c.height)))
 }
 
 // onCollision checks when there is a collision with other entity.
@@ -95,6 +131,25 @@ func (c *Sprite) onCollision(params ...interface{}) bool {
 		}
 	}
 	return true
+}
+
+// OnDraw is called for every draw tick.
+func (c *Sprite) OnDraw() {
+	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnDraw")
+	x, y, width, height := c.GetEntity().GetTransform().GetRectExt()
+	var displayFrom *sdl.Rect
+	var displayAt *sdl.Rect
+	spriteX := (c.spriteIndex * int(c.width)) / int(c.spriteTotal)
+
+	displayFrom = &sdl.Rect{X: int32(spriteX), Y: 0, W: c.width / int32(c.spriteTotal), H: c.height}
+	displayAt = &sdl.Rect{X: int32(x), Y: int32(y), W: int32(width), H: int32(height)}
+
+	c.renderer.CopyEx(c.textures[c.fileImageIndex],
+		displayFrom,
+		displayAt,
+		0,
+		&sdl.Point{},
+		sdl.FLIP_NONE)
 }
 
 // onOutOfBounds checks if the entity has gone out of bounds.
@@ -115,6 +170,18 @@ func (c *Sprite) OnStart() {
 	c.Component.OnStart()
 }
 
+//PreviousFileImage decreases by one file image index.
+func (c *Sprite) PreviousFileImage() int {
+	c.fileImageIndex = (c.fileImageIndex - 1) % len(c.filenames)
+	return c.fileImageIndex
+}
+
+// PreviousSprite decreases by one sprite index.
+func (c *Sprite) PreviousSprite() int {
+	c.spriteIndex = (c.spriteIndex - 1) % c.spriteTotal
+	return c.spriteIndex
+}
+
 // SetCamera sets the camera used to display the sprite.
 func (c *Sprite) SetCamera(camera *sdl.Rect) {
 	c.camera = camera
@@ -124,24 +191,4 @@ func (c *Sprite) SetCamera(camera *sdl.Rect) {
 // it is out of bounds or no.
 func (c *Sprite) SetDestroyOnOutOfBounds(destroy bool) {
 	c.destroyOnOutOfBounds = destroy
-}
-
-// textureFromBMP creates a texture from a BMP image file.
-func (c *Sprite) textureFromBMP() {
-	img, err := sdl.LoadBMP(c.filename)
-	if err != nil {
-		engosdl.Logger.Error().Err(err).Msg("LoadBMP error")
-		panic(err)
-	}
-	defer img.Free()
-	c.texture, err = c.renderer.CreateTextureFromSurface(img)
-	if err != nil {
-		engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
-		panic(err)
-	}
-	_, _, c.width, c.height, err = c.texture.Query()
-	if err != nil {
-		engosdl.Logger.Error().Err(err).Msg("Query error")
-		panic(err)
-	}
 }

@@ -22,10 +22,11 @@ func NewScrollSprite(name string, filename string, renderer *sdl.Renderer) *Scro
 		// to any of then.
 		Sprite: &Sprite{
 			Component:            engosdl.NewComponent(name),
-			filename:             filename,
+			filenames:            []string{filename},
 			renderer:             renderer,
 			destroyOnOutOfBounds: true,
 			camera:               nil,
+			spriteTotal:          1,
 		},
 		scroll: engosdl.NewVector(0, -1),
 	}
@@ -46,21 +47,21 @@ func (c *ScrollSprite) OnDraw() {
 	}
 	displayFrom := &sdl.Rect{X: 0, Y: 0, W: width, H: height}
 	displayAt := &sdl.Rect{X: x, Y: y, W: width, H: height}
-	c.renderer.CopyEx(c.texture,
+	c.renderer.CopyEx(c.textures[0],
 		displayFrom,
 		displayAt,
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)
 	if c.scroll.Y == -1 && (y+height) < H {
-		c.renderer.CopyEx(c.texture,
+		c.renderer.CopyEx(c.textures[0],
 			&sdl.Rect{X: 0, Y: 0, W: width, H: height},
 			&sdl.Rect{X: x, Y: y + height, W: width, H: height},
 			0,
 			&sdl.Point{},
 			sdl.FLIP_NONE)
 	} else if c.scroll.X == -1 && (x+width) < W {
-		c.renderer.CopyEx(c.texture,
+		c.renderer.CopyEx(c.textures[0],
 			&sdl.Rect{X: 0, Y: 0, W: width, H: height},
 			&sdl.Rect{X: x + width, Y: y, W: width, H: height},
 			0,

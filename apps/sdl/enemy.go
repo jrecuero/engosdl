@@ -37,15 +37,15 @@ func (c *EnemyController) OnAwake() {
 }
 
 type enemySpriteT struct {
-	*components.SpriteSheet
+	*components.Sprite
 	onCollisionF func(engosdl.ISprite) engosdl.TDelegateSignature
 	hit          bool
 }
 
 func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemySpriteT {
 	result := &enemySpriteT{
-		SpriteSheet: components.NewSpriteSheet(name, filenames, numberOfSprites, engosdl.GetRenderer()),
-		hit:         false,
+		Sprite: components.NewSprite(name, filenames, numberOfSprites, engosdl.GetRenderer()),
+		hit:    false,
 	}
 	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	return result
