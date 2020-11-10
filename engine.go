@@ -13,10 +13,11 @@ type Engine struct {
 	active          bool
 	window          *sdl.Window
 	renderer        *sdl.Renderer
-	sceneHandler    ISceneHandler
-	eventHandler    IEventHandler
 	delegateHandler IDelegateHandler
+	eventHandler    IEventHandler
+	fontHandler     IFontHandler
 	resourceHandler IResourceHandler
+	sceneHandler    ISceneHandler
 	soundHandler    ISoundHandler
 }
 
@@ -28,10 +29,11 @@ func NewEngine(name string, w, h int32) *Engine {
 			name:            name,
 			width:           w,
 			height:          h,
-			sceneHandler:    NewSceneHandler("engine-scene-handler"),
-			eventHandler:    NewEventHandler("engine-event-handler"),
 			delegateHandler: NewDelegateHandler("engine-delegate-handler"),
+			eventHandler:    NewEventHandler("engine-event-handler"),
+			fontHandler:     NewFontHandler("engine-font-handler"),
 			resourceHandler: NewResourceHandler("engine-resource-handler"),
+			sceneHandler:    NewSceneHandler("engine-scene-handler"),
 			soundHandler:    NewSoundHandler("engine-sound-handler"),
 		}
 	}
@@ -85,6 +87,7 @@ func (engine *Engine) DoInitResources() {
 	engine.GetEventHandler().OnStart()
 	engine.GetDelegateHandler().OnStart()
 	engine.GetResourceHandler().OnStart()
+	engine.GetFontHandler().OnStart()
 	engine.GetSoundHandler().OnStart()
 	engine.GetSceneHandler().OnStart()
 }
@@ -176,6 +179,11 @@ func (engine *Engine) DoStart() {
 // GetDelegateHandler returns the engine delegate handler.
 func (engine *Engine) GetDelegateHandler() IDelegateHandler {
 	return engine.delegateHandler
+}
+
+// GetFontHandler returns the engine font handler.
+func (engine *Engine) GetFontHandler() IFontHandler {
+	return engine.fontHandler
 }
 
 // GetEventHandler returns the engine event handler.

@@ -17,6 +17,7 @@ type KeyShooter struct {
 }
 
 // NewKeyShooter creates a new keyshooter instance
+// It creates delegate "on-shoot".
 func NewKeyShooter(name string, key int) *KeyShooter {
 	engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", name).Msg("new key-shooter")
 	keyShooter := &KeyShooter{
@@ -32,7 +33,7 @@ func NewKeyShooter(name string, key int) *KeyShooter {
 func (c *KeyShooter) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("OnAwake")
 	// Create new delegate "shoot"
-	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "shoot"))
+	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "on-shoot"))
 }
 
 // OnStart is called first time the component is enabled.

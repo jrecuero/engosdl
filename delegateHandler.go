@@ -215,10 +215,12 @@ func (h *DelegateHandler) CreateDelegate(obj IObject, evName string) IDelegate {
 // all registers
 func (h *DelegateHandler) DeleteDelegate(delegate IDelegate) bool {
 	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("DeleteDelegate")
-	for i, delegat := range h.delegates {
+	for i := len(h.delegates) - 1; i >= 0; i-- {
+		delegat := h.delegates[i]
 		if delegat.GetID() == delegate.GetID() {
 			h.delegates = append(h.delegates[:i], h.delegates[i+1:]...)
-			for j, register := range h.registers {
+			for j := len(h.registers) - 1; j >= 0; j-- {
+				register := h.registers[j]
 				if register.GetDelegate().GetID() == delegate.GetID() {
 					h.registers = append(h.registers[:j], h.registers[j+1:]...)
 				}
@@ -231,7 +233,8 @@ func (h *DelegateHandler) DeleteDelegate(delegate IDelegate) bool {
 
 // DeregisterFromDelegate unregistered the given register from the delegate.
 func (h *DelegateHandler) DeregisterFromDelegate(registerID string) bool {
-	for i, register := range h.registers {
+	for i := len(h.registers) - 1; i >= 0; i-- {
+		register := h.registers[i]
 		if register.GetRegisterID() == registerID {
 			Logger.Trace().Str("delegate-handler", h.GetName()).Str("delegate", register.GetDelegate().GetName()).Msg("deregister-to-delegate")
 			h.registers = append(h.registers[:i], h.registers[i+1:]...)

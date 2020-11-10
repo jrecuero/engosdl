@@ -9,15 +9,20 @@ type MoveTo struct {
 }
 
 // NewMoveTo creates a new move-to instance.
-// It registers to on-out-of-bounds delegate.
+// It registers to "on-out-of-bounds" delegate.
 func NewMoveTo(name string, speed *engosdl.Vector) *MoveTo {
 	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", name).Msg("new move-to")
 	result := &MoveTo{
 		Component: engosdl.NewComponent(name),
 		speed:     speed,
 	}
-	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
 	return result
+}
+
+// DefaultAddDelegateToRegister will proceed to add default delegate to
+// register for the component.
+func (c *MoveTo) DefaultAddDelegateToRegister() {
+	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.onOutOfBounds)
 }
 
 // GetSpeed returns component speed.

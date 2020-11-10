@@ -18,7 +18,7 @@ func createAssets(engine *engosdl.Engine) {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	maxEnemies := 1
+	maxEnemies := 2
 
 	// Scenes
 	scene := engosdl.NewScene("main scene")
@@ -50,9 +50,11 @@ func createBackground(engine *engosdl.Engine) engosdl.IEntity {
 	bg := engosdl.NewEntity("background")
 	bg.SetLayer(engosdl.LayerBackground)
 	bgSprite := components.NewScrollSprite("bg-sprite", "images/space.bmp", engine.GetRenderer())
+	bgSprite.DefaultAddDelegateToRegister()
 	bgSprite.SetScroll(engosdl.NewVector(0, -1))
 	// bgSprite.SetCamera(&sdl.Rect{X: 0, Y: 0, W: 400, H: 800})
 	bgMoveTo := components.NewMoveTo("bg-move", engosdl.NewVector(0, -5))
+	bgMoveTo.DefaultAddDelegateToRegister()
 	bg.AddComponent(bgSprite)
 	bg.AddComponent(bgMoveTo)
 	return bg
@@ -66,10 +68,15 @@ func createPlayer(engine *engosdl.Engine) engosdl.IEntity {
 	// playerSprite := components.NewSprite("player-sprite", "images/player.bmp", engine.GetRenderer())
 	playerSprite := components.NewSprite("player-sprite", []string{"images/player.bmp"}, 1, engine.GetRenderer())
 	playerSprite.SetDestroyOnOutOfBounds(false)
+	playerSprite.DefaultAddDelegateToRegister()
 	playerKeyboard := components.NewKeyboard("player-keyboard", engosdl.NewVector(5, 10))
+	playerKeyboard.DefaultAddDelegateToRegister()
 	playerKeyShooter := components.NewKeyShooter("player-key-shooter", sdl.SCANCODE_SPACE)
+	playerKeyShooter.DefaultAddDelegateToRegister()
 	playerShootBullet := components.NewShootBullet("player-shoot-bullet")
+	playerShootBullet.DefaultAddDelegateToRegister()
 	playerOutOfBounds := components.NewOutOfBounds("player-out-of-bounds", true)
+	playerOutOfBounds.DefaultAddDelegateToRegister()
 
 	player.AddComponent(playerSprite)
 	player.AddComponent(playerKeyboard)
@@ -87,10 +94,11 @@ func createScore(engine *engosdl.Engine) engosdl.IEntity {
 	score.GetTransform().SetPosition(engosdl.NewVector(10, 560))
 
 	scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000", engine.GetRenderer())
+	scoreText.DefaultAddDelegateToRegister()
 	destroyDelegate := engosdl.GetDelegateHandler().GetDestroyDelegate()
 	scoreText.AddDelegateToRegister(destroyDelegate, nil, nil, func(params ...interface{}) bool {
 		entity := params[0].(engosdl.IEntity)
-		if entity.GetName() == "enemy" {
+		if entity.GetTag() == "enemy" {
 			scoreValue += 10
 			scoreText.SetMessage("Score: " + strconv.Itoa(scoreValue))
 		}

@@ -14,6 +14,7 @@ type OutOfBounds struct {
 }
 
 // NewOutOfBounds creates a new out of bounds instance
+// It creates delegate "on-out-of-bounds"
 func NewOutOfBounds(name string, leftCorner bool) *OutOfBounds {
 	return &OutOfBounds{
 		Component:  engosdl.NewComponent(name),
@@ -26,7 +27,7 @@ func NewOutOfBounds(name string, leftCorner bool) *OutOfBounds {
 func (c *OutOfBounds) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "out-of-bounds").Str("out-of-bounds", c.GetName()).Msg("OnAwake")
 	// Creates new delegate "out-of-bounds"
-	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "out-of-bounds"))
+	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "on-out-of-bounds"))
 }
 
 // OnStart is called the first time component is loaded.

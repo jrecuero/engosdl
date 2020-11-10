@@ -49,6 +49,14 @@ func GetEventHandler() IEventHandler {
 	return nil
 }
 
+// GetFontHandler returns the font handler.
+func GetFontHandler() IFontHandler {
+	if engine := GetEngine(); engine != nil {
+		return engine.GetFontHandler()
+	}
+	return nil
+}
+
 // GetRenderer returns the engine renderer.
 func GetRenderer() *sdl.Renderer {
 	if engine := GetEngine(); engine != nil {

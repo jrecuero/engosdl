@@ -11,6 +11,7 @@ import (
 type IComponent interface {
 	IObject
 	AddDelegateToRegister(IDelegate, IEntity, IComponent, TDelegateSignature) IComponent
+	DefaultAddDelegateToRegister()
 	DefaultOnCollision(...interface{}) bool
 	DefaultOnDestroy(...interface{}) bool
 	DefaultOnLoad(...interface{}) bool
@@ -98,6 +99,11 @@ func (c *Component) AddDelegateToRegister(delegate IDelegate, entity IEntity, co
 	register := NewRegister("new-register", entity, component, delegate, signature)
 	c.registers = append(c.registers, register)
 	return c
+}
+
+// DefaultAddDelegateToRegister will proceed to add default delegate to
+// register for the component.
+func (c *Component) DefaultAddDelegateToRegister() {
 }
 
 // DefaultOnCollision is the component default callback when on collision

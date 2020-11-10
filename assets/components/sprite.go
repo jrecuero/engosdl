@@ -21,12 +21,13 @@ type Sprite struct {
 	fileImageIndex       int
 	spriteTotal          int
 	spriteIndex          int
+	resources            []engosdl.IResource
 }
 
 var _ engosdl.ISprite = (*Sprite)(nil)
 
 // NewSprite creates a new sprite instance.
-// It resgiters to on-collision and on-out-of-bounds delegates.
+// It resgiters to "on-collision" and "on-out-of-bounds" delegates.
 func NewSprite(name string, filenames []string, numberOfSprites int, renderer *sdl.Renderer) *Sprite {
 	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("multi-sprite", name).Msg("new multi-sprite")
 	result := &Sprite{
@@ -39,10 +40,18 @@ func NewSprite(name string, filenames []string, numberOfSprites int, renderer *s
 		fileImageIndex:       0,
 		spriteTotal:          numberOfSprites,
 		spriteIndex:          0,
+		resources:            []engosdl.IResource{},
 	}
 	result.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
 	return result
+}
+
+// DefaultAddDelegateToRegister will proceed to add default delegate to
+// register for the component.
+func (c *Sprite) DefaultAddDelegateToRegister() {
+	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, c.onCollision)
+	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.onOutOfBounds)
 }
 
 // DoUnLoad is called when component is unloaded, so all resources have
@@ -76,22 +85,26 @@ func (c *Sprite) GetSpriteIndex() int {
 // loadTexturesFromBMP creates textures for every BMP image file.
 func (c *Sprite) loadTexturesFromBMP() {
 	for _, filename := range c.filenames {
-		img, err := sdl.LoadBMP(filename)
-		if err != nil {
-			engosdl.Logger.Error().Err(err).Msg("LoadBMP error")
-			panic(err)
-		}
-		defer img.Free()
-		texture, err := c.renderer.CreateTextureFromSurface(img)
-		if err != nil {
-			engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
-			panic(err)
-		}
+		// img, err := sdl.LoadBMP(filename)
+		// if err != nil {
+		// 	engosdl.Logger.Error().Err(err).Msg("LoadBMP error")
+		// 	panic(err)
+		// }
+		// defer img.Free()
+		// texture, err := c.renderer.CreateTextureFromSurface(img)
+		// if err != nil {
+		// 	engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
+		// 	panic(err)
+		// }
+		var err error
+		resource := engosdl.GetResourceHandler().CreateResource(c.GetName(), filename)
+		texture := resource.GetTextureFromSurface()
 		_, _, c.width, c.height, err = texture.Query()
 		if err != nil {
 			engosdl.Logger.Error().Err(err).Msg("Query error")
 			panic(err)
 		}
+		c.resources = append(c.resources, resource)
 		c.textures = append(c.textures, texture)
 	}
 }

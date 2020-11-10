@@ -5,14 +5,14 @@ import (
 
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 )
 
 // Text represents a component that can display some text.
 type Text struct {
 	*engosdl.Component
 	fontFile string
-	font     *ttf.Font
+	font     engosdl.IFont
+	// ttfFont  *ttf.Font
 	fontSize int
 	color    sdl.Color
 	message  string
@@ -40,23 +40,24 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 // loadTextureFromTTF creates a texture from a ttf file.
 func (c *Text) loadTextureFromTTF() {
 	var err error
-	c.font, err = ttf.OpenFont(c.fontFile, c.fontSize)
-	if err != nil {
-		engosdl.Logger.Error().Err(err).Msg("OpenFont error")
-		panic(err)
-	}
-	surface, err := c.font.RenderUTF8Solid(c.message, c.color)
-	if err != nil {
-		engosdl.Logger.Error().Err(err).Msg("RenderUTF8Solid error")
-		panic(err)
-	}
-	defer surface.Free()
-
-	c.texture, err = c.renderer.CreateTextureFromSurface(surface)
-	if err != nil {
-		engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
-		panic(err)
-	}
+	// c.font, err = ttf.OpenFont(c.fontFile, c.fontSize)
+	// if err != nil {
+	// 	engosdl.Logger.Error().Err(err).Msg("OpenFont error")
+	// 	panic(err)
+	// }
+	// surface, err := c.font.GetFont().RenderUTF8Solid(c.message, c.color)
+	// if err != nil {
+	// 	engosdl.Logger.Error().Err(err).Msg("RenderUTF8Solid error")
+	// 	panic(err)
+	// }
+	// defer surface.Free()
+	// c.texture, err = c.renderer.CreateTextureFromSurface(surface)
+	// if err != nil {
+	// 	engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
+	// 	panic(err)
+	// }
+	c.font = engosdl.GetFontHandler().CreateFont(c.GetName(), c.fontFile, c.fontSize)
+	c.texture = c.font.GetTextureFromFont(c.message, c.color)
 	_, _, c.width, c.height, err = c.texture.Query()
 	if err != nil {
 		engosdl.Logger.Error().Err(err).Msg("Query error")
@@ -67,13 +68,10 @@ func (c *Text) loadTextureFromTTF() {
 
 // OnRender is called for every render tick.
 func (c *Text) OnRender() {
-	x := int32(c.GetEntity().GetTransform().GetPosition().X)
-	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
-	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
-	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
+	x, y, width, height := c.GetEntity().GetTransform().GetRectExt()
 	c.renderer.CopyEx(c.texture,
 		&sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height},
-		&sdl.Rect{X: x, Y: y, W: width, H: height},
+		&sdl.Rect{X: int32(x), Y: int32(y), W: int32(width), H: int32(height)},
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)

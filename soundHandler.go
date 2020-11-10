@@ -11,6 +11,8 @@ type SoundHandler struct {
 	*Object
 }
 
+var _ ISoundHandler = (*SoundHandler)(nil)
+
 // NewSoundHandler creates a new Sound handler instance.
 func NewSoundHandler(name string) *SoundHandler {
 	Logger.Trace().Str("Sound-handler", name).Msg("new sound-handler")

@@ -55,7 +55,8 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 func (c *enemySpriteT) onCollision(params ...interface{}) bool {
 	collisionEntityOne := params[0].(*engosdl.Entity)
 	collisionEntityTwo := params[1].(*engosdl.Entity)
-	if collisionEntityOne.GetTag() == "bullet" || collisionEntityTwo.GetTag() == "bullet" {
+	if (collisionEntityOne.GetTag() == "bullet" || collisionEntityTwo.GetTag() == "bullet") &&
+		(collisionEntityOne.GetID() == c.GetEntity().GetID() || collisionEntityTwo.GetID() == c.GetEntity().GetID()) {
 		c.hit = true
 	}
 	return true
@@ -85,7 +86,7 @@ func createEnemies(engine *engosdl.Engine, maxEnemies int, enemyController engos
 	for i := 0; i < maxEnemies; i++ {
 		enemy := createEnemy(engine, i, engosdl.NewVector(x, 10), enemyController)
 		enemies = append(enemies, enemy)
-		x += 110
+		x += 150
 	}
 	return enemies
 }
@@ -95,26 +96,31 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	enemy := engosdl.NewEntity("enemy-" + strconv.Itoa(index))
 	enemy.SetTag("enemy")
 	enemy.GetTransform().SetPosition(position)
-	enemy.GetTransform().SetScale(engosdl.NewVector(0.5, 0.5))
+	// enemy.GetTransform().SetScale(engosdl.NewVector(0.5, 0.5))
 
 	enemyOutOfBounds := components.NewOutOfBounds("enemy-out-of-bounds", true)
+	enemyOutOfBounds.DefaultAddDelegateToRegister()
 	enemyMove := components.NewMoveTo("enemy-move", engosdl.NewVector(5, 0))
 	// enemySprite := components.NewSprite("enemy-sprite", "images/basic_enemy.bmp", engine.GetRenderer())
 	// enemySprite := components.NewMultiSprite("enemy-sprite", []string{"images/basic_enemy.bmp"}, engine.GetRenderer())
 	// enemySprite := components.NewSpriteSheet("enemy-sprite", []string{"images/enemies.bmp"}, 3, engine.GetRenderer())
 	enemySprite := newEnemySprite("enemy-sprite", []string{"images/enemies.bmp"}, 3)
 	enemySprite.SetDestroyOnOutOfBounds(false)
+	enemySprite.DefaultAddDelegateToRegister()
 	// enemySprite.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, func(params ...interface{}) bool {
 	// 	speed := enemyMove.GetSpeed()
 	// 	enemyMove.SetSpeed(engosdl.NewVector(speed.X*-1, speed.Y*-1))
 	// 	return true
 	// })
 	enemyStats := components.NewEntityStats("enemy-stats", 100)
+	enemyStats.DefaultAddDelegateToRegister()
+	enemyCollider := components.NewCollider2D("enemy-collider-2D")
+	enemyCollider.DefaultAddDelegateToRegister()
 
 	enemy.AddComponent(enemyMove)
 	enemy.AddComponent(enemyOutOfBounds)
 	enemy.AddComponent(enemySprite)
-	enemy.AddComponent(components.NewCollider2D("enemy-collider-2D"))
+	enemy.AddComponent(enemyCollider)
 	enemy.AddComponent(enemyStats)
 
 	if controller, ok := enemyController.GetComponent(&EnemyController{}).(*EnemyController); ok {

@@ -14,14 +14,19 @@ type ShootBullet struct {
 }
 
 // NewShootBullet creates a instance of shoot bullet.
-// It registers to on-key-shooter delegate.
+// It registers to "on-shoot" delegate.
 func NewShootBullet(name string) *ShootBullet {
 	engosdl.Logger.Trace().Str("component", "shoot-bullet").Str("shoot-bullet", name).Msg("new shoot-bullet")
 	result := &ShootBullet{
 		Component: engosdl.NewComponent(name),
 	}
-	result.AddDelegateToRegister(nil, nil, &KeyShooter{}, result.shootBulletSignature)
 	return result
+}
+
+// DefaultAddDelegateToRegister will proceed to add default delegate to
+// register for the component.
+func (c *ShootBullet) DefaultAddDelegateToRegister() {
+	c.AddDelegateToRegister(nil, nil, &KeyShooter{}, c.shootBulletSignature)
 }
 
 // OnStart is called first time the component is enabled.
@@ -43,9 +48,13 @@ func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
 	bullet.SetTag("bullet")
 	// bulletSprite := NewSprite("bullet-sprite", "images/player_bullet.bmp", engosdl.GetRenderer())
 	bulletSprite := NewSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, 1, engosdl.GetRenderer())
+	bulletSprite.DefaultAddDelegateToRegister()
 	bulletMoveTo := NewMoveTo("bullet-move-to", engosdl.NewVector(0, -5))
+	bulletMoveTo.DefaultAddDelegateToRegister()
 	bulletOutOfBounds := NewOutOfBounds("bullet-out-of-bounds", false)
+	bulletOutOfBounds.DefaultAddDelegateToRegister()
 	bulletCollider2D := NewCollider2D("bullet-collider-2D")
+	bulletCollider2D.DefaultAddDelegateToRegister()
 	bullet.SetLayer(engosdl.LayerBottom)
 	bullet.AddComponent(bulletSprite)
 	bullet.AddComponent(bulletMoveTo)
