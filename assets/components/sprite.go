@@ -22,15 +22,19 @@ type Sprite struct {
 var _ engosdl.ISprite = (*Sprite)(nil)
 
 // NewSprite creates a new sprite instance.
+// It registers to on-collision and on-out-of-bounds delegate.
 func NewSprite(name string, filename string, renderer *sdl.Renderer) *Sprite {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
-	return &Sprite{
+	result := &Sprite{
 		Component:            engosdl.NewComponent(name),
 		filename:             filename,
 		renderer:             renderer,
 		destroyOnOutOfBounds: true,
 		camera:               nil,
 	}
+	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
+	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
+	return result
 }
 
 // DoUnLoad is called when component is unloaded, so all resources have
@@ -66,11 +70,6 @@ func (c *Sprite) OnDraw() {
 	height := int32(float64(c.height) * c.GetEntity().GetTransform().GetScale().Y)
 	var displayFrom *sdl.Rect
 	var displayAt *sdl.Rect
-	// if c.centered {
-	// 	displayAt = &sdl.Rect{X: x - c.width/2, Y: y - c.height/2, W: width, H: height}
-	// } else {
-	// 	displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
-	// }
 	displayFrom = &sdl.Rect{X: 0, Y: 0, W: c.width, H: c.width}
 	displayAt = &sdl.Rect{X: x, Y: y, W: width, H: height}
 
@@ -113,23 +112,6 @@ func (c *Sprite) onOutOfBounds(params ...interface{}) bool {
 func (c *Sprite) OnStart() {
 	// Register to: "on-collision" and "out-of-bounds"
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
-	if c.CanRegisterTo(engosdl.CollisionName) {
-		delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-		c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
-		// delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-		// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)
-	}
-
-	if c.CanRegisterTo(engosdl.OutOfBoundsName) {
-		if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
-			if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
-				if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
-					// engosdl.GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
-					c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
-				}
-			}
-		}
-	}
 	c.Component.OnStart()
 }
 
@@ -148,18 +130,18 @@ func (c *Sprite) SetDestroyOnOutOfBounds(destroy bool) {
 func (c *Sprite) textureFromBMP() {
 	img, err := sdl.LoadBMP(c.filename)
 	if err != nil {
-		engosdl.Logger.Error().Err(err)
+		engosdl.Logger.Error().Err(err).Msg("LoadBMP error")
 		panic(err)
 	}
 	defer img.Free()
 	c.texture, err = c.renderer.CreateTextureFromSurface(img)
 	if err != nil {
-		engosdl.Logger.Error().Err(err)
+		engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
 		panic(err)
 	}
 	_, _, c.width, c.height, err = c.texture.Query()
 	if err != nil {
-		engosdl.Logger.Error().Err(err)
+		engosdl.Logger.Error().Err(err).Msg("Query error")
 		panic(err)
 	}
 }

@@ -13,13 +13,16 @@ type Keyboard struct {
 }
 
 // NewKeyboard creates a new keyboard instance.
+// It registers to on-out-of-bounds delegate.
 func NewKeyboard(name string, speed *engosdl.Vector) *Keyboard {
 	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", name).Msg("new keyboard")
-	return &Keyboard{
+	result := &Keyboard{
 		Component: engosdl.NewComponent(name),
 		speed:     speed,
 		position:  engosdl.NewVector(0, 0),
 	}
+	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
+	return result
 }
 
 // onOutOfBounds checks if the entity has gone out of bounds.
@@ -33,14 +36,6 @@ func (c *Keyboard) onOutOfBounds(params ...interface{}) bool {
 // OnStart is called first time the component is enabled.
 func (c *Keyboard) OnStart() {
 	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", c.GetName()).Msg("OnStart")
-	if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
-		if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
-			if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
-				// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
-				c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
-			}
-		}
-	}
 	c.Component.OnStart()
 }
 

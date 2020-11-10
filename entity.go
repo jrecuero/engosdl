@@ -95,7 +95,7 @@ func (entity *Entity) AddComponent(component IComponent) IEntity {
 	for _, comp := range entity.GetComponents() {
 		if reflect.TypeOf(comp) == reflect.TypeOf(component) {
 			err := fmt.Errorf("component type %s already exist", reflect.TypeOf(component))
-			Logger.Error().Err(err)
+			Logger.Error().Err(err).Msg("AddComponent error")
 			panic(err)
 		}
 	}

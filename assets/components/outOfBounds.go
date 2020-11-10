@@ -39,13 +39,6 @@ func (c *OutOfBounds) OnStart() {
 func (c *OutOfBounds) OnUpdate() {
 	W := engosdl.GetEngine().GetWidth()
 	H := engosdl.GetEngine().GetHeight()
-	// x := c.GetEntity().GetTransform().GetPosition().X
-	// y := c.GetEntity().GetTransform().GetPosition().Y
-	// rect := c.GetEntity().GetTransform().GetRect()
-	// x := float64(rect.X)
-	// y := float64(rect.Y)
-	// w := float64(rect.W)
-	// h := float64(rect.H)
 	x, y, w, h := c.GetEntity().GetTransform().GetRectExt()
 	var testX, testY bool
 	if c.leftCorner {
@@ -57,15 +50,11 @@ func (c *OutOfBounds) OnUpdate() {
 	}
 	if testX {
 		fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), x)
-		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
 		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.GetEntity())
-		// engosdl.GetEngine().DestroyEntity(c.GetEntity())
 
 	}
 	if testY {
 		fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), y)
-		// c.GetEntity().GetScene().DeleteEntity(c.GetEntity())
 		engosdl.GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.GetEntity())
-		// engosdl.GetEngine().DestroyEntity(c.GetEntity())
 	}
 }

@@ -68,14 +68,6 @@ func (c *Text) OnStart() {
 	engosdl.Logger.Trace().Str("component", "text").Str("text", c.GetName()).Msg("OnStart")
 	c.Component.OnStart()
 	c.textureFromTTF()
-	// if entity := c.GetEntity().GetScene().GetEntityByName("enemy"); entity != nil {
-	// 	if component := entity.GetComponent(&EntityStats{}); component != nil {
-	// 		if statsComponent, ok := component.(*EntityStats); ok {
-	// 			delegate := statsComponent.GetDelegate()
-	// 			engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onUpdateStats)
-	// 		}
-	// 	}
-	// }
 }
 
 // SetColor sets text color.
@@ -102,24 +94,24 @@ func (c *Text) textureFromTTF() {
 	var err error
 	c.font, err = ttf.OpenFont(c.fontFile, c.fontSize)
 	if err != nil {
-		engosdl.Logger.Error().Err(err)
+		engosdl.Logger.Error().Err(err).Msg("OpenFont error")
 		panic(err)
 	}
 	surface, err := c.font.RenderUTF8Solid(c.message, c.color)
 	if err != nil {
-		engosdl.Logger.Error().Err(err)
+		engosdl.Logger.Error().Err(err).Msg("RenderUTF8Solid error")
 		panic(err)
 	}
 	defer surface.Free()
 
 	c.texture, err = c.renderer.CreateTextureFromSurface(surface)
 	if err != nil {
-		engosdl.Logger.Error().Err(err)
+		engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
 		panic(err)
 	}
 	_, _, c.width, c.height, err = c.texture.Query()
 	if err != nil {
-		engosdl.Logger.Error().Err(err)
+		engosdl.Logger.Error().Err(err).Msg("Query error")
 		panic(err)
 	}
 	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width), float64(c.height)))

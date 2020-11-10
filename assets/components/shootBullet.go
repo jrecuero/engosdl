@@ -13,25 +13,25 @@ type ShootBullet struct {
 	counter int
 }
 
-// NewShootBullet creates a instance of shoot bullet
+// NewShootBullet creates a instance of shoot bullet.
+// It registers to on-key-shooter delegate.
 func NewShootBullet(name string) *ShootBullet {
 	engosdl.Logger.Trace().Str("component", "shoot-bullet").Str("shoot-bullet", name).Msg("new shoot-bullet")
-	shootBullet := &ShootBullet{
+	result := &ShootBullet{
 		Component: engosdl.NewComponent(name),
 	}
-
-	return shootBullet
+	result.AddDelegateToRegister(nil, nil, &KeyShooter{}, result.shootBulletSignature)
+	return result
 }
 
 // OnStart is called first time the component is enabled.
 func (c *ShootBullet) OnStart() {
 	engosdl.Logger.Trace().Str("component", "shoot-bullet").Str("shoot-bullet", c.GetName()).Msg("OnStart")
-	if component := c.GetEntity().GetComponent(&KeyShooter{}); component != nil {
-		if delegate := component.GetDelegate(); delegate != nil {
-			// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.shootBulletSignature)
-			c.AddDelegateToRegister(delegate, nil, nil, c.shootBulletSignature)
-		}
-	}
+	// if component := c.GetEntity().GetComponent(&KeyShooter{}); component != nil {
+	// 	if delegate := component.GetDelegate(); delegate != nil {
+	// 		c.AddDelegateToRegister(delegate, nil, nil, c.shootBulletSignature)
+	// 	}
+	// }
 	c.Component.OnStart()
 }
 

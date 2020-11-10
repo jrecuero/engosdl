@@ -26,9 +26,10 @@ type SpriteSheet struct {
 var _ engosdl.ISprite = (*SpriteSheet)(nil)
 
 // NewSpriteSheet creates a new multi sprite instance.
+// It resgiters to on-collision and on-out-of-bounds delegates.
 func NewSpriteSheet(name string, filenames []string, numberOfSprites int, renderer *sdl.Renderer) *SpriteSheet {
 	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("multi-sprite", name).Msg("new multi-sprite")
-	return &SpriteSheet{
+	result := &SpriteSheet{
 		Component:            engosdl.NewComponent(name),
 		filenames:            filenames,
 		renderer:             renderer,
@@ -39,6 +40,9 @@ func NewSpriteSheet(name string, filenames []string, numberOfSprites int, render
 		spriteTotal:          numberOfSprites,
 		spriteIndex:          0,
 	}
+	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
+	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
+	return result
 }
 
 // DoUnLoad is called when component is unloaded, so all resources have
@@ -74,18 +78,18 @@ func (c *SpriteSheet) loadTexturesFromBMP() {
 	for _, filename := range c.filenames {
 		img, err := sdl.LoadBMP(filename)
 		if err != nil {
-			engosdl.Logger.Error().Err(err)
+			engosdl.Logger.Error().Err(err).Msg("LoadBMP error")
 			panic(err)
 		}
 		defer img.Free()
 		texture, err := c.renderer.CreateTextureFromSurface(img)
 		if err != nil {
-			engosdl.Logger.Error().Err(err)
+			engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
 			panic(err)
 		}
 		_, _, c.width, c.height, err = texture.Query()
 		if err != nil {
-			engosdl.Logger.Error().Err(err)
+			engosdl.Logger.Error().Err(err).Msg("Query error")
 			panic(err)
 		}
 		c.textures = append(c.textures, texture)
@@ -163,24 +167,6 @@ func (c *SpriteSheet) onOutOfBounds(params ...interface{}) bool {
 func (c *SpriteSheet) OnStart() {
 	// Register to: "on-collision" and "out-of-bounds"
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
-	// if c.CanRegisterTo(engosdl.CollisionName) {
-	// 	delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-	// 	c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
-	// 	// delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-	// 	// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onCollision)
-	// }
-
-	// if c.CanRegisterTo(engosdl.OutOfBoundsName) {
-	// 	// if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
-	// 	// 	if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
-	// 	// 		if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
-	// 	// 			// engosdl.GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
-	// 	// 			c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
-	// 	// 		}
-	// 	// 	}
-	// 	// }
-	// 	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.onOutOfBounds)
-	// }
 	c.Component.OnStart()
 }
 

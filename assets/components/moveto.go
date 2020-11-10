@@ -9,12 +9,15 @@ type MoveTo struct {
 }
 
 // NewMoveTo creates a new move-to instance.
+// It registers to on-out-of-bounds delegate.
 func NewMoveTo(name string, speed *engosdl.Vector) *MoveTo {
 	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", name).Msg("new move-to")
-	return &MoveTo{
+	result := &MoveTo{
 		Component: engosdl.NewComponent(name),
 		speed:     speed,
 	}
+	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
+	return result
 }
 
 // GetSpeed returns component speed.
@@ -33,16 +36,6 @@ func (c *MoveTo) onOutOfBounds(params ...interface{}) bool {
 // OnStart is called first time the component is enabled.
 func (c *MoveTo) OnStart() {
 	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", c.GetName()).Msg("OnStart")
-	if c.CanRegisterTo(engosdl.OutOfBoundsName) {
-		if component := c.GetEntity().GetComponent(&OutOfBounds{}); component != nil {
-			if outOfBoundsComponent, ok := component.(*OutOfBounds); ok {
-				if delegate := outOfBoundsComponent.GetDelegate(); delegate != nil {
-					// engosdl.GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, c.onOutOfBounds)
-					c.AddDelegateToRegister(delegate, nil, nil, c.onOutOfBounds)
-				}
-			}
-		}
-	}
 	c.Component.OnStart()
 }
 

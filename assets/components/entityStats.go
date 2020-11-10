@@ -12,6 +12,18 @@ type EntityStats struct {
 	life int
 }
 
+// NewEntityStats creates a new entity stats instance.
+// It registers to on-collision delegate.
+func NewEntityStats(name string, life int) *EntityStats {
+	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", name).Msg("new entity-stats")
+	result := &EntityStats{
+		Component: engosdl.NewComponent(name),
+		life:      life,
+	}
+	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
+	return result
+}
+
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *EntityStats) OnAwake() {
@@ -43,19 +55,5 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 // OnStart is called first time the component is enabled.
 func (c *EntityStats) OnStart() {
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnStart")
-	// delegateHandler := engosdl.GetEngine().GetEventHandler().GetDelegateHandler()
-	// collisionDelegate := delegateHandler.GetCollisionDelegate()
-	// delegateHandler.RegisterToDelegate(collisionDelegate, c.onCollision)
-	delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-	c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
 	c.Component.OnStart()
-}
-
-// NewEntityStats creates a new entity stats instance.
-func NewEntityStats(name string, life int) *EntityStats {
-	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", name).Msg("new entity-stats")
-	return &EntityStats{
-		Component: engosdl.NewComponent(name),
-		life:      life,
-	}
 }

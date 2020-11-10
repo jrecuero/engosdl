@@ -17,7 +17,16 @@ var _ engosdl.ISprite = (*ScrollSprite)(nil)
 func NewScrollSprite(name string, filename string, renderer *sdl.Renderer) *ScrollSprite {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
 	return &ScrollSprite{
-		Sprite: NewSprite(name, filename, renderer),
+		// NewSprite is not called because it registers to onOutOfBounds and
+		// onCollision, and by default scroll sprite does not want to register
+		// to any of then.
+		Sprite: &Sprite{
+			Component:            engosdl.NewComponent(name),
+			filename:             filename,
+			renderer:             renderer,
+			destroyOnOutOfBounds: true,
+			camera:               nil,
+		},
 		scroll: engosdl.NewVector(0, -1),
 	}
 }
@@ -29,8 +38,6 @@ func (c *ScrollSprite) OnDraw() {
 	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
 	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
 	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
-	// var displayFrom *sdl.Rect
-	// var displayAt *sdl.Rect
 	W, H, _ := engosdl.GetEngine().GetRenderer().GetOutputSize()
 	if c.scroll.Y == -1 {
 		y = y % height
@@ -60,6 +67,13 @@ func (c *ScrollSprite) OnDraw() {
 			&sdl.Point{},
 			sdl.FLIP_NONE)
 	}
+}
+
+// OnStart is called first time the component is enabled.
+func (c *ScrollSprite) OnStart() {
+	// Register to: "on-collision" and "out-of-bounds"
+	engosdl.Logger.Trace().Str("component", "scroll-sprite").Str("scroll-sprite", c.GetName()).Msg("OnStart")
+	c.Component.OnStart()
 }
 
 // SetScroll sets sprite image scroll.

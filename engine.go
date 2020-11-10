@@ -136,7 +136,7 @@ func (engine *Engine) DoInitSdl() {
 
 	Logger.Trace().Str("engine", engine.name).Msg("init sdl module")
 	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		Logger.Error().Err(err)
+		Logger.Error().Err(err).Msg("sdl.Init error")
 		panic(err)
 	}
 
@@ -145,13 +145,13 @@ func (engine *Engine) DoInitSdl() {
 		engine.width, engine.height,
 		sdl.WINDOW_SHOWN)
 	if err != nil {
-		Logger.Error().Err(err)
+		Logger.Error().Err(err).Msg("CreateWindow error")
 		panic(err)
 	}
 
 	engine.renderer, err = sdl.CreateRenderer(engine.window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
-		Logger.Error().Err(err)
+		Logger.Error().Err(err).Msg("CreateRenderer error")
 		panic(err)
 	}
 }

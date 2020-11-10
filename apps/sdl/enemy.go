@@ -47,19 +47,6 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 		SpriteSheet: components.NewSpriteSheet(name, filenames, numberOfSprites, engosdl.GetRenderer()),
 		hit:         false,
 	}
-	// result.onCollisionF = func(instance engosdl.ISprite) engosdl.TDelegateSignature {
-	// 	sprite := instance.(*enemySpriteT)
-	// 	return sprite.onCollision
-	// 	// return func(params ...interface{}) bool {
-	// 	// 	collisionEntityOne := params[0].(*engosdl.Entity)
-	// 	// 	collisionEntityTwo := params[1].(*engosdl.Entity)
-	// 	// 	if collisionEntityOne.GetTag() == "bullet" || collisionEntityTwo.GetTag() == "bullet" {
-	// 	// 		sprite := instance.(*enemySpriteT)
-	// 	// 		sprite.hit = true
-	// 	// 	}
-	// 	// 	return true
-	// 	// }
-	// }
 	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	return result
 }
@@ -83,18 +70,6 @@ func (c *enemySpriteT) OnUpdate() {
 		}
 	}
 }
-
-// // OnStart is called first time the component is enabled.
-// func (c *enemySpriteT) OnStart() {
-// 	// Register to: "on-collision" and "out-of-bounds"
-// 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnStart")
-// 	if c.CanRegisterTo(engosdl.CollisionName) {
-// 		delegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-// 		// c.AddDelegateToRegister(delegate, nil, nil, c.onCollision)
-// 		c.AddDelegateToRegister(delegate, nil, nil, c.onCollisionF(c))
-// 	}
-// 	c.Component.OnStart()
-// }
 
 // createEnemyController creates enemy controller entity.
 func createEnemyController() engosdl.IEntity {
@@ -124,7 +99,6 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 
 	enemyOutOfBounds := components.NewOutOfBounds("enemy-out-of-bounds", true)
 	enemyMove := components.NewMoveTo("enemy-move", engosdl.NewVector(5, 0))
-	enemyMove.SetRegisterOnStart(map[string]bool{engosdl.OutOfBoundsName: false})
 	// enemySprite := components.NewSprite("enemy-sprite", "images/basic_enemy.bmp", engine.GetRenderer())
 	// enemySprite := components.NewMultiSprite("enemy-sprite", []string{"images/basic_enemy.bmp"}, engine.GetRenderer())
 	// enemySprite := components.NewSpriteSheet("enemy-sprite", []string{"images/enemies.bmp"}, 3, engine.GetRenderer())
