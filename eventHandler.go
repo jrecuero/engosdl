@@ -3,14 +3,19 @@ package engosdl
 // IEvent represents any event to be used in the pool event handler.
 type IEvent interface {
 	IObject
+	Add(IEvent) bool
+	Next() IEvent
+	Pop() IEvent
 }
 
-// IEventHandler represents the interface for the event handler.
+// IEventHandler represents the interface for the  event handler.
 type IEventHandler interface {
 	IObject
-	GetDelegateHandler() IDelegateHandler
-	GetPoolHandler() IPoolHandler
+	// AddEvent(IEvent) bool
+	// GetPool() []IEvent
+	// NextEventInPool() IEvent
 	OnStart()
+	// PopEventInPool() IEvent
 }
 
 // EventHandler is the default implementation fort the event handler
@@ -23,22 +28,11 @@ type EventHandler struct {
 // NewEventHandler creates a new event handler instance.
 func NewEventHandler(name string) *EventHandler {
 	return &EventHandler{
-		delegateHandler: NewDelegateHandler("delegate-handler"),
+		Object: NewObject(name),
 	}
-}
-
-// GetDelegateHandler returns the delegate event handler.
-func (h *EventHandler) GetDelegateHandler() IDelegateHandler {
-	return h.delegateHandler
-}
-
-// GetPoolHandler returns the pool event handler.
-func (h *EventHandler) GetPoolHandler() IPoolHandler {
-	return nil
 }
 
 // OnStart calls OnStart for all event handlers.
 func (h *EventHandler) OnStart() {
-	h.GetDelegateHandler().OnStart()
-	// h.GetPoolHandler().OnStart()
+	Logger.Trace().Str("event-handler", h.GetName()).Msg("OnStart")
 }

@@ -24,7 +24,7 @@ func NewEnemyController(name string) *EnemyController {
 func (c *EnemyController) onOutOfBounds(params ...interface{}) bool {
 	if enemy, ok := params[0].(engosdl.IEntity); ok {
 		fmt.Println("[Controller] enemy " + enemy.GetName() + " is out of bounds")
-		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), false, enemy)
+		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), false, enemy)
 	}
 	return true
 }
@@ -33,7 +33,7 @@ func (c *EnemyController) onOutOfBounds(params ...interface{}) bool {
 // non-dependent resources.
 func (c *EnemyController) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "enemy-controller").Msg("OnAwake")
-	c.SetDelegate(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().CreateDelegate(c, "enemy-controller"))
+	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "enemy-controller"))
 }
 
 type enemySpriteT struct {
@@ -47,7 +47,7 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 		Sprite: components.NewSprite(name, filenames, numberOfSprites, engosdl.GetRenderer()),
 		hit:    false,
 	}
-	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
+	result.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	return result
 }
 

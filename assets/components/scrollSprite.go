@@ -32,14 +32,14 @@ func NewScrollSprite(name string, filename string, renderer *sdl.Renderer) *Scro
 	}
 }
 
-// OnDraw is called for every draw tick.
-func (c *ScrollSprite) OnDraw() {
-	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnDraw")
+// OnRender is called for every render tick.
+func (c *ScrollSprite) OnRender() {
+	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnRender")
 	x := int32(c.GetEntity().GetTransform().GetPosition().X)
 	y := int32(c.GetEntity().GetTransform().GetPosition().Y)
 	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
 	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
-	W, H, _ := engosdl.GetEngine().GetRenderer().GetOutputSize()
+	W, H, _ := engosdl.GetRenderer().GetOutputSize()
 	if c.scroll.Y == -1 {
 		y = y % height
 	} else if c.scroll.X == -1 {

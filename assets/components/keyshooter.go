@@ -32,7 +32,7 @@ func NewKeyShooter(name string, key int) *KeyShooter {
 func (c *KeyShooter) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("OnAwake")
 	// Create new delegate "shoot"
-	c.SetDelegate(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().CreateDelegate(c, "shoot"))
+	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "shoot"))
 }
 
 // OnStart is called first time the component is enabled.
@@ -47,7 +47,7 @@ func (c *KeyShooter) OnUpdate() {
 	if keys[sdl.SCANCODE_SPACE] == 1 {
 		engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("space key pressed")
 		if time.Since(c.lastshoot) >= c.cooldown {
-			engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true)
+			engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true)
 			c.lastshoot = time.Now()
 		}
 	}

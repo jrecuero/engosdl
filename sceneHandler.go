@@ -5,8 +5,8 @@ type ISceneHandler interface {
 	IObject
 	AddScene(IScene) bool
 	DeleteScene(string) bool
-	DoCycleEnd()
-	DoCycleStart()
+	DoFrameEnd()
+	DoFrameStart()
 	GetActiveScene() IScene
 	GetScene(string) IScene
 	GetSceneByName(string) IScene
@@ -17,7 +17,7 @@ type ISceneHandler interface {
 	SetActivePrevScene() IScene
 	SetActiveScene(IScene) bool
 	OnAfterUpdate()
-	OnDraw()
+	OnRender()
 	OnEnable()
 	OnStart()
 	OnUpdate()
@@ -68,17 +68,17 @@ func (h *SceneHandler) DeleteScene(name string) bool {
 	return false
 }
 
-// DoCycleEnd calls all methods to run at the end of a tick cycle.
-func (h *SceneHandler) DoCycleEnd() {
+// DoFrameEnd calls all methods to run at the end of a tick frame.
+func (h *SceneHandler) DoFrameEnd() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
-		activeScene.DoCycleEnd()
+		activeScene.DoFrameEnd()
 	}
 }
 
-// DoCycleStart calls all methods to run at the start of a tick cycle.
-func (h *SceneHandler) DoCycleStart() {
+// DoFrameStart calls all methods to run at the start of a tick frame.
+func (h *SceneHandler) DoFrameStart() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
-		activeScene.DoCycleStart()
+		activeScene.DoFrameStart()
 	}
 }
 
@@ -129,17 +129,17 @@ func (h *SceneHandler) GetScenes() []IScene {
 }
 
 // OnAfterUpdate calls all scene OnAfterUpdate, which should run after DoUpdate
-// runs and before DoDraw.
+// runs and before DoRender.
 func (h *SceneHandler) OnAfterUpdate() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.OnAfterUpdate()
 	}
 }
 
-// OnDraw calls all scene OnDraw methods.
-func (h *SceneHandler) OnDraw() {
+// OnRender calls all scene OnRender methods.
+func (h *SceneHandler) OnRender() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
-		activeScene.OnDraw()
+		activeScene.OnRender()
 	}
 }
 

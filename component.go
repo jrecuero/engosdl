@@ -15,16 +15,16 @@ type IComponent interface {
 	DefaultOnDestroy(...interface{}) bool
 	DefaultOnLoad(...interface{}) bool
 	DefaultOnOutOfBounds(...interface{}) bool
-	DoCycleEnd()
-	DoCycleStart()
+	DoFrameEnd()
+	DoFrameStart()
 	DoLoad(IComponent)
 	DoUnLoad()
 	GetActive() bool
 	GetDelegate() IDelegate
 	GetEntity() IEntity
 	OnAwake()
-	OnDraw()
 	OnEnable()
+	OnRender()
 	OnStart()
 	OnUpdate()
 	SetActive(bool)
@@ -124,12 +124,12 @@ func (c *Component) DefaultOnOutOfBounds(...interface{}) bool {
 	return true
 }
 
-// DoCycleEnd calls all methods to run at the end of a tick cycle.
-func (c *Component) DoCycleEnd() {
+// DoFrameEnd calls all methods to run at the end of a tick frame.
+func (c *Component) DoFrameEnd() {
 }
 
-// DoCycleStart calls all methods to run at the start of a tick cycle.
-func (c *Component) DoCycleStart() {
+// DoFrameStart calls all methods to run at the start of a tick frame.
+func (c *Component) DoFrameStart() {
 }
 
 // DoLoad is called when component is loaded by the entity.
@@ -147,11 +147,11 @@ func (c *Component) DoUnLoad() {
 	Logger.Trace().Str("component", c.GetName()).Msg("DoUnLoad")
 	// Deregister all register entries from delegate handler
 	for _, register := range c.registers {
-		GetEngine().GetEventHandler().GetDelegateHandler().DeregisterFromDelegate(register.GetRegisterID())
+		GetDelegateHandler().DeregisterFromDelegate(register.GetRegisterID())
 	}
 	// Delete delegate being created.
 	if c.GetDelegate() != nil {
-		GetEngine().GetEventHandler().GetDelegateHandler().DeleteDelegate(c.GetDelegate())
+		GetDelegateHandler().DeleteDelegate(c.GetDelegate())
 	}
 	c.loaded = false
 }
@@ -177,14 +177,14 @@ func (c *Component) OnAwake() {
 	Logger.Trace().Str("component", c.name).Msg("OnAwake")
 }
 
-// OnDraw is called for every draw tick.
-func (c *Component) OnDraw() {
-	// Logger.Trace().Str("component", c.name).Msg("OnDraw")
-}
-
 // OnEnable is called every time the component is enabled.
 func (c *Component) OnEnable() {
 	Logger.Trace().Str("component", c.name).Msg("OnEnable")
+}
+
+// OnRender is called for every render tick.
+func (c *Component) OnRender() {
+	// Logger.Trace().Str("component", c.name).Msg("OnRender")
 }
 
 // OnStart is called first time the component is enabled.
@@ -205,7 +205,7 @@ func (c *Component) OnStart() {
 			}
 		}
 		if delegate != nil {
-			if registerID, ok := GetEngine().GetEventHandler().GetDelegateHandler().RegisterToDelegate(delegate, register.GetSignature()); ok {
+			if registerID, ok := GetDelegateHandler().RegisterToDelegate(delegate, register.GetSignature()); ok {
 				register.SetRegisterID(registerID)
 				continue
 			}

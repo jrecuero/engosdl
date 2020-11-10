@@ -40,7 +40,7 @@ func NewSprite(name string, filenames []string, numberOfSprites int, renderer *s
 		spriteTotal:          numberOfSprites,
 		spriteIndex:          0,
 	}
-	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
+	result.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
 	return result
 }
@@ -133,9 +133,20 @@ func (c *Sprite) onCollision(params ...interface{}) bool {
 	return true
 }
 
-// OnDraw is called for every draw tick.
-func (c *Sprite) OnDraw() {
-	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnDraw")
+// onOutOfBounds checks if the entity has gone out of bounds.
+func (c *Sprite) onOutOfBounds(params ...interface{}) bool {
+	if c.destroyOnOutOfBounds {
+		entity := params[0].(engosdl.IEntity)
+		if entity.GetID() == c.GetEntity().GetID() {
+			engosdl.GetEngine().DestroyEntity(c.GetEntity())
+		}
+	}
+	return true
+}
+
+// OnRender is called for every render tick.
+func (c *Sprite) OnRender() {
+	// engosdl.Logger.Trace().Str("sprite", spr.GetName()).Msg("OnRender")
 	x, y, width, height := c.GetEntity().GetTransform().GetRectExt()
 	var displayFrom *sdl.Rect
 	var displayAt *sdl.Rect
@@ -150,17 +161,6 @@ func (c *Sprite) OnDraw() {
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)
-}
-
-// onOutOfBounds checks if the entity has gone out of bounds.
-func (c *Sprite) onOutOfBounds(params ...interface{}) bool {
-	if c.destroyOnOutOfBounds {
-		entity := params[0].(engosdl.IEntity)
-		if entity.GetID() == c.GetEntity().GetID() {
-			engosdl.GetEngine().DestroyEntity(c.GetEntity())
-		}
-	}
-	return true
 }
 
 // OnStart is called first time the component is enabled.

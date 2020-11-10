@@ -13,8 +13,8 @@ type IEntity interface {
 	AddComponent(IComponent) IEntity
 	DeleteChild(string) bool
 	DeleteChildByName(string) bool
-	DoCycleEnd()
-	DoCycleStart()
+	DoFrameEnd()
+	DoFrameStart()
 	DoLoad()
 	DoUnLoad()
 	GetActive() bool
@@ -30,7 +30,7 @@ type IEntity interface {
 	GetScene() IScene
 	GetTag() string
 	GetTransform() ITransform
-	OnDraw()
+	OnRender()
 	OnEnable()
 	OnStart()
 	OnUpdate()
@@ -124,15 +124,15 @@ func (entity *Entity) DeleteChildByName(name string) bool {
 	return false
 }
 
-// DoCycleEnd calls all methods to run at the end of a tick cycle.
-func (entity *Entity) DoCycleEnd() {
+// DoFrameEnd calls all methods to run at the end of a tick frame.
+func (entity *Entity) DoFrameEnd() {
 }
 
-// DoCycleStart calls all methods to run at the start of a tick cycle.
-func (entity *Entity) DoCycleStart() {
+// DoFrameStart calls all methods to run at the start of a tick frame.
+func (entity *Entity) DoFrameStart() {
 	entity.loadUnloadedComponents()
 	for _, component := range entity.loadedComponents {
-		component.DoCycleStart()
+		component.DoFrameStart()
 	}
 }
 
@@ -273,11 +273,11 @@ func (entity *Entity) loadUnloadedComponents() {
 	entity.unloadedComponents = unloaded
 }
 
-// OnDraw calls all component OnDraw methods.
-func (entity *Entity) OnDraw() {
+// OnRender calls all component OnRender methods.
+func (entity *Entity) OnRender() {
 	for _, component := range entity.loadedComponents {
 		if component.GetActive() {
-			component.OnDraw()
+			component.OnRender()
 		}
 	}
 }

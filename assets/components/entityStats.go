@@ -20,7 +20,7 @@ func NewEntityStats(name string, life int) *EntityStats {
 		Component: engosdl.NewComponent(name),
 		life:      life,
 	}
-	result.AddDelegateToRegister(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
+	result.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	return result
 }
 
@@ -29,7 +29,7 @@ func NewEntityStats(name string, life int) *EntityStats {
 func (c *EntityStats) OnAwake() {
 	// Create new delegate "entity-stats"
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnAwake")
-	c.SetDelegate(engosdl.GetEngine().GetEventHandler().GetDelegateHandler().CreateDelegate(c, "entity-stats"))
+	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "entity-stats"))
 
 }
 
@@ -39,7 +39,7 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
 		c.life -= 10
-		engosdl.GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.life)
+		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.life)
 		fmt.Printf("%s [live %d] onCollision %s with %s\n",
 			c.GetEntity().GetName(),
 			c.life,

@@ -19,15 +19,15 @@ type IScene interface {
 	IObject
 	AddEntity(IEntity) bool
 	DeleteEntity(IEntity) bool
-	DoCycleEnd()
-	DoCycleStart()
+	DoFrameEnd()
+	DoFrameStart()
 	DoLoad()
 	DoUnLoad()
 	GetEntities() []IEntity
 	GetEntity(string) IEntity
 	GetEntityByName(string) IEntity
 	OnAfterUpdate()
-	OnDraw()
+	OnRender()
 	OnEnable()
 	OnStart()
 	OnUpdate()
@@ -85,23 +85,23 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 				scene.collisionCollection = append(scene.collisionCollection[:index], scene.collisionCollection[index+1:]...)
 			}
 			// Trigger destroy delegate
-			destroyDelegate := GetEngine().GetEventHandler().GetDelegateHandler().GetDestroyDelegate()
-			GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(destroyDelegate, true, entity)
+			destroyDelegate := GetDelegateHandler().GetDestroyDelegate()
+			GetDelegateHandler().TriggerDelegate(destroyDelegate, true, entity)
 			return true
 		}
 	}
 	return false
 }
 
-// DoCycleEnd calls all methods to run at the end of a tick cycle.
-func (scene *Scene) DoCycleEnd() {
+// DoFrameEnd calls all methods to run at the end of a tick frame.
+func (scene *Scene) DoFrameEnd() {
 }
 
-// DoCycleStart calls all methods to run at the start of a tick cycle.
-func (scene *Scene) DoCycleStart() {
+// DoFrameStart calls all methods to run at the start of a tick frame.
+func (scene *Scene) DoFrameStart() {
 	scene.loadUnloadedEntities()
 	for _, entity := range scene.loadedEntities {
-		entity.DoCycleStart()
+		entity.DoFrameStart()
 	}
 }
 
@@ -223,14 +223,14 @@ func (scene *Scene) loadUnloadedEntities() {
 			unloaded = append(unloaded, entity)
 		}
 		// Trigger load delegate
-		loadDelegate := GetEngine().GetEventHandler().GetDelegateHandler().GetLoadDelegate()
-		GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(loadDelegate, true, entity)
+		loadDelegate := GetDelegateHandler().GetLoadDelegate()
+		GetDelegateHandler().TriggerDelegate(loadDelegate, true, entity)
 	}
 	scene.unloadedEntities = unloaded
 }
 
 // OnAfterUpdate calls executed after all DoUpdates have been executed and
-// before OnDraw.
+// before OnRender.
 func (scene *Scene) OnAfterUpdate() {
 	// Delete all Entities being marked to be deleted
 	if len(scene.toDeleteEntities) != 0 {
@@ -250,13 +250,13 @@ func (scene *Scene) OnAfterUpdate() {
 	}
 }
 
-// OnDraw calls all Entities OnDraw methods. It call active entities using
+// OnRender calls all Entities OnRender methods. It call active entities using
 // layers struct, calling from background to top layer.
-func (scene *Scene) OnDraw() {
+func (scene *Scene) OnRender() {
 	for _, layer := range scene.layers {
 		for _, entity := range layer {
 			if entity.GetActive() {
-				entity.OnDraw()
+				entity.OnRender()
 			}
 		}
 	}
@@ -299,8 +299,8 @@ func (scene *Scene) OnUpdate() {
 			if distance < (radiusI + radiusJ) {
 				// if rectI.HasIntersection(rectJ) {
 				fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
-				delegate := GetEngine().GetEventHandler().GetDelegateHandler().GetCollisionDelegate()
-				GetEngine().GetEventHandler().GetDelegateHandler().TriggerDelegate(delegate, true, entityI, entityJ)
+				delegate := GetDelegateHandler().GetCollisionDelegate()
+				GetDelegateHandler().TriggerDelegate(delegate, true, entityI, entityJ)
 			}
 		}
 	}

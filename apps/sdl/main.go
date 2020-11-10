@@ -87,7 +87,7 @@ func createScore(engine *engosdl.Engine) engosdl.IEntity {
 	score.GetTransform().SetPosition(engosdl.NewVector(10, 560))
 
 	scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000", engine.GetRenderer())
-	destroyDelegate := engosdl.GetEngine().GetEventHandler().GetDelegateHandler().GetDestroyDelegate()
+	destroyDelegate := engosdl.GetDelegateHandler().GetDestroyDelegate()
 	scoreText.AddDelegateToRegister(destroyDelegate, nil, nil, func(params ...interface{}) bool {
 		entity := params[0].(engosdl.IEntity)
 		if entity.GetName() == "enemy" {

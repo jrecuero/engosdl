@@ -1,68 +1,23 @@
 package engosdl
 
 import (
-	"os"
-	"time"
-
-	"github.com/rs/zerolog"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
 
-// Logger is the system logger to be used by the application.
-var Logger zerolog.Logger
-
-func init() {
-	file, err := os.Create("engosdl.log")
-	if err != nil {
-		panic(err)
-	}
-	//"2006-01-02T15:04:05.999999999Z07:00"
-	zerolog.TimeFieldFormat = time.RFC3339Nano
-	Logger = zerolog.New(file).With().Timestamp().Logger()
-}
-
 // Engine represents the main game engine in charge of running the game.
 type Engine struct {
-	name         string
-	width        int32
-	height       int32
-	active       bool
-	window       *sdl.Window
-	renderer     *sdl.Renderer
-	sceneHandler ISceneHandler
-	eventHandler IEventHandler
-}
-
-var gameEngine *Engine
-
-// GetEngine returns the singleton game engine.
-func GetEngine() *Engine {
-	return gameEngine
-}
-
-// GetEventHandler returns the event handler.
-func GetEventHandler() IEventHandler {
-	if engine := GetEngine(); engine != nil {
-		return engine.GetEventHandler()
-	}
-	return nil
-}
-
-// GetRenderer returns the engine renderr.
-func GetRenderer() *sdl.Renderer {
-	if engine := GetEngine(); engine != nil {
-		return engine.GetRenderer()
-	}
-	return nil
-}
-
-// GetSceneHandler returns the engine scene handler.
-func GetSceneHandler() ISceneHandler {
-	if engine := GetEngine(); engine != nil {
-		return engine.GetSceneHandler()
-	}
-	return nil
+	name            string
+	width           int32
+	height          int32
+	active          bool
+	window          *sdl.Window
+	renderer        *sdl.Renderer
+	sceneHandler    ISceneHandler
+	eventHandler    IEventHandler
+	delegateHandler IDelegateHandler
+	resourceHandler IResourceHandler
+	soundHandler    ISoundHandler
 }
 
 // NewEngine creates a new engine instance.
@@ -70,11 +25,14 @@ func NewEngine(name string, w, h int32) *Engine {
 	Logger.Trace().Str("engine", name).Msg("new engine")
 	if GetEngine() == nil {
 		gameEngine = &Engine{
-			name:         name,
-			width:        w,
-			height:       h,
-			sceneHandler: NewSceneHandler("engine-scene-handler"),
-			eventHandler: NewEventHandler("engine-event-handler"),
+			name:            name,
+			width:           w,
+			height:          h,
+			sceneHandler:    NewSceneHandler("engine-scene-handler"),
+			eventHandler:    NewEventHandler("engine-event-handler"),
+			delegateHandler: NewDelegateHandler("engine-delegate-handler"),
+			resourceHandler: NewResourceHandler("engine-resource-handler"),
+			soundHandler:    NewSoundHandler("engine-sound-handler"),
 		}
 	}
 	return gameEngine
@@ -103,14 +61,14 @@ func (engine *Engine) DoCleanup() {
 	defer engine.renderer.Destroy()
 }
 
-// DoCycleEnd calls all methods to run at the end of a tick cycle.
-func (engine *Engine) DoCycleEnd() {
-	engine.GetSceneHandler().DoCycleEnd()
+// DoFrameEnd calls all methods to run at the end of a tick frame.
+func (engine *Engine) DoFrameEnd() {
+	engine.GetSceneHandler().DoFrameEnd()
 }
 
-// DoCycleStart calls all methods to run at the start of a tick cycle.
-func (engine *Engine) DoCycleStart() {
-	engine.GetSceneHandler().DoCycleStart()
+// DoFrameStart calls all methods to run at the start of a tick frame.
+func (engine *Engine) DoFrameStart() {
+	engine.GetSceneHandler().DoFrameStart()
 }
 
 // DoInit initializes basic engine resources.
@@ -125,6 +83,9 @@ func (engine *Engine) DoInit() {
 func (engine *Engine) DoInitResources() {
 	Logger.Trace().Str("engine", engine.name).Msg("init resources")
 	engine.GetEventHandler().OnStart()
+	engine.GetDelegateHandler().OnStart()
+	engine.GetResourceHandler().OnStart()
+	engine.GetSoundHandler().OnStart()
 	engine.GetSceneHandler().OnStart()
 }
 
@@ -162,8 +123,10 @@ func (engine *Engine) DoRun() {
 
 	for engine.active {
 
-		// Execute everything required at the start of a tick cycle.
-		engine.DoCycleStart()
+		frameStart := sdl.GetTicks()
+
+		// Execute everything required at the start of a tick frame.
+		engine.DoFrameStart()
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
@@ -177,21 +140,26 @@ func (engine *Engine) DoRun() {
 		// Execute all update calls.
 		engine.GetSceneHandler().OnUpdate()
 		// Call update for delegate handler.
-		engine.GetEventHandler().GetDelegateHandler().OnUpdate()
+		engine.GetDelegateHandler().OnUpdate()
 		// Execute any post updates behavior.
 		engine.GetSceneHandler().OnAfterUpdate()
 
 		engine.renderer.SetDrawColor(255, 255, 255, 255)
 		engine.renderer.Clear()
 
-		// Execute all draw calls.
-		engine.GetSceneHandler().OnDraw()
+		// Execute all render calls.
+		engine.GetSceneHandler().OnRender()
 
 		engine.renderer.Present()
 
-		// Execute everything required at the end of the tick cycle.
-		engine.DoCycleEnd()
-		sdl.Delay(30)
+		// Execute everything required at the end of the tick frame.
+		engine.DoFrameEnd()
+
+		frameTime := sdl.GetTicks() - frameStart
+
+		if frameTime < _delay {
+			sdl.Delay(_delay - frameTime)
+		}
 	}
 }
 
@@ -203,6 +171,11 @@ func (engine *Engine) DoStart() {
 
 	// Set first scene as the active by default.
 	engine.GetSceneHandler().SetActiveFirstScene()
+}
+
+// GetDelegateHandler returns the engine delegate handler.
+func (engine *Engine) GetDelegateHandler() IDelegateHandler {
+	return engine.delegateHandler
 }
 
 // GetEventHandler returns the engine event handler.
@@ -220,9 +193,19 @@ func (engine *Engine) GetRenderer() *sdl.Renderer {
 	return engine.renderer
 }
 
+// GetResourceHandler returns the engine resource handler.
+func (engine *Engine) GetResourceHandler() IResourceHandler {
+	return engine.resourceHandler
+}
+
 // GetSceneHandler returns the engine scene handler.
 func (engine *Engine) GetSceneHandler() ISceneHandler {
 	return engine.sceneHandler
+}
+
+// GetSoundHandler returns the engine sound handler.
+func (engine *Engine) GetSoundHandler() ISoundHandler {
+	return engine.soundHandler
 }
 
 // GetWidth returns engine window width.
