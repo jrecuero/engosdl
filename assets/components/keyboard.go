@@ -77,7 +77,13 @@ func (c *Keyboard) OnUpdate() {
 		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, sdl.SCANCODE_DOWN)
 	}
 	if keys[sdl.SCANCODE_RETURN] == 1 {
-		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, sdl.SCANCODE_RETURN)
+		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), false, sdl.SCANCODE_RETURN)
+	}
+	if keys[sdl.SCANCODE_N] == 1 {
+		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), false, sdl.SCANCODE_N)
+	}
+	if keys[sdl.SCANCODE_P] == 1 {
+		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), false, sdl.SCANCODE_P)
 	}
 	if keys[sdl.SCANCODE_SPACE] == 1 {
 		engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", c.GetName()).Msg("space key pressed")

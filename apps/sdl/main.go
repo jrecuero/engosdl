@@ -18,12 +18,18 @@ func createAssets(engine *engosdl.Engine) {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	titleScene := createSceneTitle(engine)
-	playScene := createScenePlay(engine)
+	// Scenes
+	titleScene := engosdl.NewScene("title-scene")
+	titleScene.SetSceneCode(createSceneTitle)
+	playScene := engosdl.NewScene("play-scene")
+	playScene.SetSceneCode(createScenePlay)
+	statsScene := engosdl.NewScene("stats-scene")
+	statsScene.SetSceneCode(createSceneStats)
 
 	// Add scenes to engine
 	engine.AddScene(titleScene)
 	engine.AddScene(playScene)
+	engine.AddScene(statsScene)
 }
 
 // createBackground creates the background
@@ -72,11 +78,8 @@ func createPlayer(engine *engosdl.Engine) engosdl.IEntity {
 }
 
 // createScenePlay creates the play scene.
-func createScenePlay(engine *engosdl.Engine) engosdl.IScene {
+func createScenePlay(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	maxEnemies := 2
-
-	// Scenes
-	scene := engosdl.NewScene("main scene")
 
 	// Entities
 	bg := createBackground(engine)
@@ -84,6 +87,19 @@ func createScenePlay(engine *engosdl.Engine) engosdl.IScene {
 	enemyController := createEnemyController(maxEnemies)
 	enemies := createEnemies(engine, maxEnemies, enemyController)
 	score := createScore(engine)
+	sceneController := engosdl.NewEntity("scene-controller")
+	sceneControllerKeyboard := components.NewKeyboard("scene-controller-keyboard", nil)
+	sceneControllerKeyboard.DefaultAddDelegateToRegister()
+	sceneControllerComponent := engosdl.NewComponent("scene-controller-controller")
+	sceneControllerComponent.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
+		key := params[0].(int)
+		if key == sdl.SCANCODE_N {
+			engosdl.GetEngine().GetSceneHandler().SwapFromSceneTo(engine.GetSceneHandler().GetSceneByName("stats-scene"))
+		}
+		return true
+	})
+	sceneController.AddComponent(sceneControllerKeyboard)
+	sceneController.AddComponent(sceneControllerComponent)
 
 	// Add entities to scene
 	scene.AddEntity(bg)
@@ -93,12 +109,36 @@ func createScenePlay(engine *engosdl.Engine) engosdl.IScene {
 		scene.AddEntity(enemy)
 	}
 	scene.AddEntity(score)
+	scene.AddEntity(sceneController)
 
-	return scene
+	return true
+}
+
+// createSceneStats creates stats scene
+func createSceneStats(engine *engosdl.Engine, scene engosdl.IScene) bool {
+	message := engosdl.NewEntity("message")
+	message.GetTransform().SetPosition(engosdl.NewVector(175, 100))
+	messageText := components.NewText("message-text", "fonts/lato.ttf", 16, sdl.Color{R: 0, G: 255, B: 0}, "player stats", engine.GetRenderer())
+	messageText.DefaultAddDelegateToRegister()
+	messageText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
+		key := params[0].(int)
+		if key == sdl.SCANCODE_P {
+			engosdl.GetEngine().GetSceneHandler().SwapBack()
+		}
+		return true
+	})
+	messageKeyboard := components.NewKeyboard("title-keyboard", nil)
+	messageKeyboard.DefaultAddDelegateToRegister()
+
+	message.AddComponent(messageText)
+	message.AddComponent(messageKeyboard)
+
+	scene.AddEntity(message)
+	return true
 }
 
 // createSceneTitle creates title scene.
-func createSceneTitle(engine *engosdl.Engine) engosdl.IScene {
+func createSceneTitle(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	title := engosdl.NewEntity("title")
 	title.GetTransform().SetPosition(engosdl.NewVector(175, 250))
 	titleText := components.NewText("title-text", "fonts/lato.ttf", 32, sdl.Color{R: 0, G: 0, B: 255}, "PLAY", engine.GetRenderer())
@@ -122,9 +162,8 @@ func createSceneTitle(engine *engosdl.Engine) engosdl.IScene {
 	title.AddComponent(titleOutOfBounds)
 	title.AddComponent(titleMoveIt)
 
-	scene := engosdl.NewScene("title-scene")
 	scene.AddEntity(title)
-	return scene
+	return true
 }
 
 // createScore creates all text entities.

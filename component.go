@@ -16,6 +16,7 @@ type IComponent interface {
 	DefaultOnDestroy(...interface{}) bool
 	DefaultOnLoad(...interface{}) bool
 	DefaultOnOutOfBounds(...interface{}) bool
+	DoDestroy()
 	DoFrameEnd()
 	DoFrameStart() bool
 	DoLoad(IComponent) bool
@@ -77,7 +78,7 @@ type Component struct {
 	loaded    bool
 	started   bool
 	delegate  IDelegate
-	registers []*Register
+	registers []IRegister
 }
 
 var _ IComponent = (*Component)(nil)
@@ -92,7 +93,7 @@ func NewComponent(name string) *Component {
 		loaded:    false,
 		started:   false,
 		delegate:  nil,
-		registers: []*Register{},
+		registers: []IRegister{},
 	}
 }
 
@@ -133,6 +134,24 @@ func (c *Component) DefaultOnOutOfBounds(...interface{}) bool {
 	return true
 }
 
+// DoDestroy calls all methods to clean up component.
+func (c *Component) DoDestroy() {
+	Logger.Trace().Str("component", c.GetName()).Msg("DoDestroy")
+	// Deregister all register entries from delegate handler
+	for _, register := range c.registers {
+		GetDelegateHandler().DeregisterFromDelegate(register.GetRegisterID())
+		register.SetDelegate(nil)
+	}
+	// Delete delegate being created.
+	if c.GetDelegate() != nil {
+		GetDelegateHandler().DeleteDelegate(c.GetDelegate())
+	}
+	c.registers = []IRegister{}
+	c.delegate = nil
+	c.loaded = false
+	c.started = false
+}
+
 // DoFrameEnd calls all methods to run at the end of a tick frame.
 func (c *Component) DoFrameEnd() {
 }
@@ -158,7 +177,16 @@ func (c *Component) DoUnLoad() {
 	// Deregister all register entries from delegate handler
 	for _, register := range c.registers {
 		GetDelegateHandler().DeregisterFromDelegate(register.GetRegisterID())
-		register.SetDelegate(nil)
+		// Register is created based on delegates for those belonging to the
+		// DelegateHandler. Those are unchanged and delegate does not have to
+		// be cleared.
+		if register.GetDelegate() != nil &&
+			register.GetDelegate().GetID() != GetDelegateHandler().GetCollisionDelegate().GetID() &&
+			register.GetDelegate().GetID() != GetDelegateHandler().GetDestroyDelegate().GetID() &&
+			register.GetDelegate().GetID() != GetDelegateHandler().GetLoadDelegate().GetID() {
+			register.SetDelegate(nil)
+
+		}
 	}
 	// Delete delegate being created.
 	if c.GetDelegate() != nil {

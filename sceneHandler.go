@@ -13,16 +13,18 @@ type ISceneHandler interface {
 	GetScene(string) IScene
 	GetSceneByName(string) IScene
 	GetScenes() []IScene
-	SetActiveFirstScene() IScene
-	SetActiveLastScene() IScene
-	SetActiveNextScene() IScene
-	SetActivePrevScene() IScene
-	SetActiveScene(IScene) bool
 	OnAfterUpdate()
 	OnRender()
 	OnEnable()
 	OnStart()
 	OnUpdate()
+	SetActiveFirstScene() IScene
+	SetActiveLastScene() IScene
+	SetActiveNextScene() IScene
+	SetActivePrevScene() IScene
+	SetActiveScene(IScene) bool
+	SwapBack() bool
+	SwapFromSceneTo(IScene) bool
 }
 
 // ActiveScene represents the active scene.
@@ -34,8 +36,9 @@ type ActiveScene struct {
 // SceneHandler is the default implementation for the scene handler interface.
 type SceneHandler struct {
 	*Object
-	scenes      []IScene
-	activeScene *ActiveScene
+	scenes       []IScene
+	activeScene  *ActiveScene
+	standByScene *ActiveScene
 }
 
 var _ ISceneHandler = (*SceneHandler)(nil)
@@ -44,9 +47,10 @@ var _ ISceneHandler = (*SceneHandler)(nil)
 func NewSceneHandler(name string) *SceneHandler {
 	Logger.Trace().Str("scene-handler", name).Msg("new scene handler")
 	return &SceneHandler{
-		Object:      NewObject(name),
-		scenes:      []IScene{},
-		activeScene: &ActiveScene{},
+		Object:       NewObject(name),
+		scenes:       []IScene{},
+		activeScene:  &ActiveScene{},
+		standByScene: &ActiveScene{},
 	}
 }
 
@@ -222,7 +226,8 @@ func (h *SceneHandler) setActiveScene(scene IScene, index int) {
 	GetDelegateHandler().AuditRegisters()
 	if h.activeScene.scene != nil {
 		h.activeScene.scene.AuditEntities()
-		h.activeScene.scene.DoUnLoad()
+		// h.activeScene.scene.DoUnLoad()
+		h.activeScene.scene.DoDestroy()
 	}
 	fmt.Println("Audit After UnLoading")
 	fmt.Println("---------------------")
@@ -230,6 +235,7 @@ func (h *SceneHandler) setActiveScene(scene IScene, index int) {
 	GetDelegateHandler().AuditRegisters()
 	h.activeScene.scene = scene
 	h.activeScene.index = index
+	h.activeScene.scene.GetSceneCode()(GetEngine(), h.activeScene.scene)
 	h.activeScene.scene.DoLoad()
 	h.activeScene.scene.OnStart()
 	fmt.Println("Audit After Loading")
@@ -248,4 +254,60 @@ func (h *SceneHandler) SetActiveScene(scene IScene) bool {
 		}
 	}
 	return false
+}
+
+// SwapFromSceneTo swaps from the active scene to a new one. The former active
+// scene is moved to standby.
+func (h *SceneHandler) SwapFromSceneTo(newScene IScene) bool {
+	if scene, index := h.getScene(newScene.GetID()); scene != nil {
+		fmt.Println("Audit Before Swap From")
+		fmt.Println("----------------------")
+		GetDelegateHandler().AuditDelegates()
+		GetDelegateHandler().AuditRegisters()
+		h.activeScene.scene.AuditEntities()
+
+		h.activeScene.scene.DoSwapFrom()
+		h.standByScene.scene = h.activeScene.scene
+		h.standByScene.index = h.activeScene.index
+		h.activeScene.scene = scene
+		h.activeScene.index = index
+		h.activeScene.scene.GetSceneCode()(GetEngine(), h.activeScene.scene)
+		h.activeScene.scene.DoLoad()
+		h.activeScene.scene.OnStart()
+
+		fmt.Println("Audit After Swap From")
+		fmt.Println("---------------------")
+		GetDelegateHandler().AuditDelegates()
+		GetDelegateHandler().AuditRegisters()
+		h.activeScene.scene.AuditEntities()
+
+		return true
+	}
+	return false
+}
+
+// SwapBack swaps back to the standby scene.
+func (h *SceneHandler) SwapBack() bool {
+	if h.standByScene.scene == nil {
+		return false
+	}
+	fmt.Println("Audit Before Swap Back")
+	fmt.Println("----------------------")
+	GetDelegateHandler().AuditDelegates()
+	GetDelegateHandler().AuditRegisters()
+	h.activeScene.scene.AuditEntities()
+
+	h.activeScene.scene.DoUnLoad()
+	h.activeScene.scene = h.standByScene.scene
+	h.activeScene.index = h.standByScene.index
+	h.activeScene.scene.DoSwapBack()
+	h.activeScene.scene.OnStart()
+
+	fmt.Println("Audit After Swap Back")
+	fmt.Println("---------------------")
+	GetDelegateHandler().AuditDelegates()
+	GetDelegateHandler().AuditRegisters()
+	h.activeScene.scene.AuditEntities()
+
+	return true
 }

@@ -85,8 +85,8 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 	return result
 }
 
-// onCollision checks when there is a collision with other entity.
-func (c *enemySpriteT) onCollision(params ...interface{}) bool {
+// DefaultOnCollision checks when there is a collision with other entity.
+func (c *enemySpriteT) DefaultOnCollision(params ...interface{}) bool {
 	collisionEntityOne := params[0].(*engosdl.Entity)
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	if (collisionEntityOne.GetTag() == "bullet" || collisionEntityTwo.GetTag() == "bullet") &&
@@ -140,13 +140,14 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	// enemySprite := components.NewSpriteSheet("enemy-sprite", []string{"images/enemies.bmp"}, 3, engine.GetRenderer())
 	enemySprite := newEnemySprite("enemy-sprite", []string{"images/enemies.bmp"}, 3)
 	enemySprite.SetDestroyOnOutOfBounds(false)
-	enemySprite.DefaultAddDelegateToRegister()
+	// enemySprite.DefaultAddDelegateToRegister()
+	enemySprite.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, enemySprite.DefaultOnCollision)
 	// enemySprite.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, func(params ...interface{}) bool {
 	// 	speed := enemyMove.GetSpeed()
 	// 	enemyMove.SetSpeed(engosdl.NewVector(speed.X*-1, speed.Y*-1))
 	// 	return true
 	// })
-	enemyStats := components.NewEntityStats("enemy-stats", 20)
+	enemyStats := components.NewEntityStats("enemy-stats", 50)
 	enemyStats.DefaultAddDelegateToRegister()
 	enemyCollider := components.NewCollider2D("enemy-collider-2D")
 	enemyCollider.DefaultAddDelegateToRegister()

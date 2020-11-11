@@ -13,6 +13,7 @@ type IEntity interface {
 	AddComponent(IComponent) IEntity
 	DeleteChild(string) bool
 	DeleteChildByName(string) bool
+	DoDestroy()
 	DoFrameEnd()
 	DoFrameStart()
 	DoLoad()
@@ -122,6 +123,18 @@ func (entity *Entity) DeleteChildByName(name string) bool {
 		return true
 	}
 	return false
+}
+
+// DoDestroy calls all methods to clean up entity.
+func (entity *Entity) DoDestroy() {
+	Logger.Trace().Str("entity", entity.GetName()).Msg("DoDestroy")
+	entity.loaded = false
+	for _, component := range entity.loadedComponents {
+		component.DoDestroy()
+	}
+	entity.components = []IComponent{}
+	entity.loadedComponents = []IComponent{}
+	entity.unloadedComponents = []IComponent{}
 }
 
 // DoFrameEnd calls all methods to run at the end of a tick frame.

@@ -52,12 +52,24 @@ func (c *Sprite) DefaultAddDelegateToRegister() {
 	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.onOutOfBounds)
 }
 
-// DoUnLoad is called when component is unloaded, so all resources have
-// to be released.
-func (c *Sprite) DoUnLoad() {
+// DoDestroy calls all methods to clean up sprite.
+func (c *Sprite) DoDestroy() {
 	for _, texture := range c.textures {
 		texture.Destroy()
 	}
+	c.textures = []*sdl.Texture{}
+	c.resources = []engosdl.IResource{}
+	c.Component.DoDestroy()
+}
+
+// DoUnLoad is called when component is unloaded, so all resources have
+// to be released.
+func (c *Sprite) DoUnLoad() {
+	// for _, texture := range c.textures {
+	// 	texture.Destroy()
+	// }
+	// c.textures = []*sdl.Texture{}
+	// c.resources = []engosdl.IResource{}
 	c.Component.DoUnLoad()
 }
 
@@ -87,7 +99,6 @@ func (c *Sprite) LoadSprite() {
 	c.loadTexturesFromBMP()
 	// TODO: assuming SpriteSheet is horizontal.
 	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.spriteTotal)), float64(c.height)))
-
 }
 
 // loadTexturesFromBMP creates textures for every BMP image file.

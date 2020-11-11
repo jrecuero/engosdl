@@ -14,24 +14,33 @@ const (
 	maxLayers           = 4
 )
 
+// TSceneCodeSignature represents the method to be called in order to create
+// a scene.
+type TSceneCodeSignature func(*Engine, IScene) bool
+
 // IScene represents the interface for any game scene
 type IScene interface {
 	IObject
 	AddEntity(IEntity) bool
 	AuditEntities()
 	DeleteEntity(IEntity) bool
+	DoDestroy()
 	DoFrameEnd()
 	DoFrameStart()
 	DoLoad()
+	DoSwapFrom()
+	DoSwapBack()
 	DoUnLoad()
 	GetEntities() []IEntity
 	GetEntity(string) IEntity
 	GetEntityByName(string) IEntity
+	GetSceneCode() TSceneCodeSignature
 	OnAfterUpdate()
 	OnRender()
 	OnEnable()
 	OnStart()
 	OnUpdate()
+	SetSceneCode(TSceneCodeSignature)
 }
 
 // Scene is the default implementation for IScene interface.
@@ -44,6 +53,7 @@ type Scene struct {
 	layers              [][]IEntity
 	loaded              bool
 	collisionCollection []ICollider
+	sceneCode           TSceneCodeSignature
 }
 
 var _ IScene = (*Scene)(nil)
@@ -59,6 +69,7 @@ func NewScene(name string) *Scene {
 		unloadedEntities: []IEntity{},
 		layers:           make([][]IEntity, maxLayers),
 		loaded:           false,
+		sceneCode:        nil,
 	}
 	return scene
 }
@@ -101,6 +112,20 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 	return false
 }
 
+// DoDestroy calls all methods to clean up scene.
+func (scene *Scene) DoDestroy() {
+	Logger.Trace().Str("scene", scene.GetName()).Msg("DoDestroy")
+	scene.loaded = false
+	for _, entity := range scene.loadedEntities {
+		entity.DoDestroy()
+	}
+	scene.entities = []IEntity{}
+	scene.loadedEntities = []IEntity{}
+	scene.unloadedEntities = []IEntity{}
+	scene.collisionCollection = []ICollider{}
+	scene.layers = make([][]IEntity, maxLayers)
+}
+
 // DoFrameEnd calls all methods to run at the end of a tick frame.
 func (scene *Scene) DoFrameEnd() {
 }
@@ -120,10 +145,17 @@ func (scene *Scene) DoLoad() {
 	scene.loadUnloadedEntities()
 }
 
-// DoUnLoad is called when scene is unloaded from the scene handler.
-func (scene *Scene) DoUnLoad() {
-	Logger.Trace().Str("scene", scene.GetName()).Msg("DoUnLoad")
-	scene.loaded = false
+// DoSwapBack is called when a scene is swap to.
+func (scene *Scene) DoSwapBack() {
+	Logger.Trace().Str("scene", scene.GetName()).Msg("DoResume")
+	// scene.loaded = true
+	scene.loadUnloadedEntities()
+}
+
+// DoSwapFrom is called when scene is swap from, but it is not unloaded.
+func (scene *Scene) DoSwapFrom() {
+	Logger.Trace().Str("scene", scene.GetName()).Msg("DoPause")
+	// scene.loaded = false
 	for _, entity := range scene.loadedEntities {
 		entity.DoUnLoad()
 	}
@@ -132,6 +164,23 @@ func (scene *Scene) DoUnLoad() {
 	for _, entity := range scene.GetEntities() {
 		scene.unloadedEntities = append(scene.unloadedEntities, entity)
 	}
+	scene.collisionCollection = []ICollider{}
+	scene.layers = make([][]IEntity, maxLayers)
+}
+
+// DoUnLoad is called when scene is unloaded from the scene handler.
+func (scene *Scene) DoUnLoad() {
+	Logger.Trace().Str("scene", scene.GetName()).Msg("DoUnLoad")
+	scene.loaded = false
+	for _, entity := range scene.loadedEntities {
+		entity.DoUnLoad()
+	}
+	scene.entities = []IEntity{}
+	scene.loadedEntities = []IEntity{}
+	scene.unloadedEntities = []IEntity{}
+	// for _, entity := range scene.GetEntities() {
+	// 	scene.unloadedEntities = append(scene.unloadedEntities, entity)
+	// }
 	scene.collisionCollection = []ICollider{}
 	scene.layers = make([][]IEntity, maxLayers)
 }
@@ -212,6 +261,11 @@ func (scene Scene) getIndexInUnloadedEntity(entity IEntity) (int, bool) {
 		}
 	}
 	return -1, false
+}
+
+// GetSceneCode returns the scene code.
+func (scene *Scene) GetSceneCode() TSceneCodeSignature {
+	return scene.sceneCode
 }
 
 // loadUnloadedEntities proceeds to load any unloaded entity
@@ -320,4 +374,9 @@ func (scene *Scene) OnUpdate() {
 			entity.OnUpdate()
 		}
 	}
+}
+
+// SetSceneCode sets the scene code.
+func (scene *Scene) SetSceneCode(sceneCode TSceneCodeSignature) {
+	scene.sceneCode = sceneCode
 }
