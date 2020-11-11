@@ -51,7 +51,6 @@ type Scene struct {
 	loadedEntities      []IEntity
 	unloadedEntities    []IEntity
 	layers              [][]IEntity
-	loaded              bool
 	collisionCollection []ICollider
 	sceneCode           TSceneCodeSignature
 }
@@ -68,7 +67,6 @@ func NewScene(name string) *Scene {
 		loadedEntities:   []IEntity{},
 		unloadedEntities: []IEntity{},
 		layers:           make([][]IEntity, maxLayers),
-		loaded:           false,
 		sceneCode:        nil,
 	}
 	return scene
@@ -115,7 +113,7 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 // DoDestroy calls all methods to clean up scene.
 func (scene *Scene) DoDestroy() {
 	Logger.Trace().Str("scene", scene.GetName()).Msg("DoDestroy")
-	scene.loaded = false
+	scene.SetLoaded(false)
 	for _, entity := range scene.loadedEntities {
 		entity.DoDestroy()
 	}
@@ -141,21 +139,21 @@ func (scene *Scene) DoFrameStart() {
 // DoLoad is call when scene is loaded in the scene handler.
 func (scene *Scene) DoLoad() {
 	Logger.Trace().Str("scene", scene.GetName()).Msg("DoLoad")
-	scene.loaded = true
+	scene.SetLoaded(true)
 	scene.loadUnloadedEntities()
 }
 
 // DoSwapBack is called when a scene is swap to.
 func (scene *Scene) DoSwapBack() {
 	Logger.Trace().Str("scene", scene.GetName()).Msg("DoResume")
-	// scene.loaded = true
+	// scene.SetLoaded(true)
 	scene.loadUnloadedEntities()
 }
 
 // DoSwapFrom is called when scene is swap from, but it is not unloaded.
 func (scene *Scene) DoSwapFrom() {
 	Logger.Trace().Str("scene", scene.GetName()).Msg("DoPause")
-	// scene.loaded = false
+	// scene.SetLoaded(false)
 	for _, entity := range scene.loadedEntities {
 		entity.DoUnLoad()
 	}
@@ -171,7 +169,7 @@ func (scene *Scene) DoSwapFrom() {
 // DoUnLoad is called when scene is unloaded from the scene handler.
 func (scene *Scene) DoUnLoad() {
 	Logger.Trace().Str("scene", scene.GetName()).Msg("DoUnLoad")
-	scene.loaded = false
+	scene.SetLoaded(false)
 	for _, entity := range scene.loadedEntities {
 		entity.DoUnLoad()
 	}

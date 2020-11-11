@@ -56,7 +56,7 @@ func createPlayer(engine *engosdl.Engine) engosdl.IEntity {
 	playerSprite := components.NewSprite("player-sprite", []string{"images/player.bmp"}, 1, engine.GetRenderer())
 	playerSprite.SetDestroyOnOutOfBounds(false)
 	playerSprite.DefaultAddDelegateToRegister()
-	playerKeyboard := components.NewKeyboard("player-keyboard", engosdl.NewVector(5, 10))
+	playerKeyboard := components.NewKeyboard("player-keyboard")
 	playerKeyboard.DefaultAddDelegateToRegister()
 	playerKeyShooter := components.NewKeyShooter("player-key-shooter", sdl.SCANCODE_SPACE)
 	playerKeyShooter.DefaultAddDelegateToRegister()
@@ -88,12 +88,13 @@ func createScenePlay(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	enemies := createEnemies(engine, maxEnemies, enemyController)
 	score := createScore(engine)
 	sceneController := engosdl.NewEntity("scene-controller")
-	sceneControllerKeyboard := components.NewKeyboard("scene-controller-keyboard", nil)
+	sceneControllerKeyboard := components.NewKeyboard("scene-controller-keyboard")
 	sceneControllerKeyboard.DefaultAddDelegateToRegister()
 	sceneControllerComponent := engosdl.NewComponent("scene-controller-controller")
 	sceneControllerComponent.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
 		key := params[0].(int)
-		if key == sdl.SCANCODE_N {
+		// if key == sdl.SCANCODE_N {
+		if key == sdl.SCANCODE_RETURN {
 			engosdl.GetEngine().GetSceneHandler().SwapFromSceneTo(engine.GetSceneHandler().GetSceneByName("stats-scene"))
 		}
 		return true
@@ -122,12 +123,13 @@ func createSceneStats(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	messageText.DefaultAddDelegateToRegister()
 	messageText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
 		key := params[0].(int)
-		if key == sdl.SCANCODE_P {
+		// if key == sdl.SCANCODE_P {
+		if key == sdl.SCANCODE_RETURN {
 			engosdl.GetEngine().GetSceneHandler().SwapBack()
 		}
 		return true
 	})
-	messageKeyboard := components.NewKeyboard("title-keyboard", nil)
+	messageKeyboard := components.NewKeyboard("title-keyboard")
 	messageKeyboard.DefaultAddDelegateToRegister()
 
 	message.AddComponent(messageText)
@@ -150,7 +152,7 @@ func createSceneTitle(engine *engosdl.Engine, scene engosdl.IScene) bool {
 		}
 		return true
 	})
-	titleKeyboard := components.NewKeyboard("title-keyboard", nil)
+	titleKeyboard := components.NewKeyboard("title-keyboard")
 	titleKeyboard.DefaultAddDelegateToRegister()
 	titleOutOfBounds := components.NewOutOfBounds("title-out-of-bounds", true)
 	titleOutOfBounds.DefaultAddDelegateToRegister()

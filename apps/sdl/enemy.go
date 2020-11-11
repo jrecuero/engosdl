@@ -21,6 +21,13 @@ func NewEnemyController(name string, totalEnemies int) *EnemyController {
 	}
 }
 
+// DefaultAddDelegateToRegister will proceed to add default delegate to
+// register for the component.
+func (c *EnemyController) DefaultAddDelegateToRegister() {
+	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetLoadDelegate(), nil, nil, c.onLoad)
+	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetDestroyDelegate(), nil, nil, c.onDestroy)
+}
+
 // onOutOfBounds is called when any enemy goes out of bounds.
 func (c *EnemyController) onOutOfBounds(params ...interface{}) bool {
 	if enemy, ok := params[0].(engosdl.IEntity); ok {
@@ -60,8 +67,6 @@ func (c *EnemyController) onLoad(params ...interface{}) bool {
 
 // OnStart is called first time the component is enabled.
 func (c *EnemyController) OnStart() {
-	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetLoadDelegate(), nil, nil, c.onLoad)
-	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetDestroyDelegate(), nil, nil, c.onDestroy)
 	// enemies := createEnemies(engosdl.GetEngine(), 2, c.GetEntity())
 	// for _, enemy := range enemies {
 	// 	c.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, c.onOutOfBounds)
@@ -109,7 +114,9 @@ func (c *enemySpriteT) OnUpdate() {
 // createEnemyController creates enemy controller entity.
 func createEnemyController(totalEnemies int) engosdl.IEntity {
 	enemyController := engosdl.NewEntity("enemy-controller")
-	enemyController.AddComponent(NewEnemyController("enemy-controller", totalEnemies))
+	enemyControllerComponent := NewEnemyController("enemy-controller", totalEnemies)
+	enemyControllerComponent.DefaultAddDelegateToRegister()
+	enemyController.AddComponent(enemyControllerComponent)
 	return enemyController
 }
 

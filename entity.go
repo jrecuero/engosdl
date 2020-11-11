@@ -56,7 +56,6 @@ type Entity struct {
 	components         []IComponent
 	loadedComponents   []IComponent
 	unloadedComponents []IComponent
-	loaded             bool
 	dieOnCollision     bool
 }
 
@@ -77,7 +76,6 @@ func NewEntity(name string) *Entity {
 		components:         []IComponent{},
 		loadedComponents:   []IComponent{},
 		unloadedComponents: []IComponent{},
-		loaded:             false,
 	}
 }
 
@@ -128,7 +126,7 @@ func (entity *Entity) DeleteChildByName(name string) bool {
 // DoDestroy calls all methods to clean up entity.
 func (entity *Entity) DoDestroy() {
 	Logger.Trace().Str("entity", entity.GetName()).Msg("DoDestroy")
-	entity.loaded = false
+	entity.SetLoaded(false)
 	for _, component := range entity.loadedComponents {
 		component.DoDestroy()
 	}
@@ -154,7 +152,7 @@ func (entity *Entity) DoFrameStart() {
 // DoLoad is called when object is loaded by the scene.
 func (entity *Entity) DoLoad() {
 	Logger.Trace().Str("entity", entity.GetName()).Msg("DoLoad")
-	entity.loaded = true
+	entity.SetLoaded(true)
 	// entity.OnStart()
 	entity.loadUnloadedComponents()
 }
@@ -162,7 +160,7 @@ func (entity *Entity) DoLoad() {
 // DoUnLoad is called when object is unloaded by the scene.
 func (entity *Entity) DoUnLoad() {
 	Logger.Trace().Str("entity", entity.GetName()).Msg("DoUnLoad")
-	entity.loaded = false
+	entity.SetLoaded(false)
 	for _, component := range entity.loadedComponents {
 		component.DoUnLoad()
 	}

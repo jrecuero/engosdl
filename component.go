@@ -75,8 +75,6 @@ type Component struct {
 	*Object
 	entity    IEntity
 	active    bool
-	loaded    bool
-	started   bool
 	delegate  IDelegate
 	registers []IRegister
 }
@@ -90,8 +88,6 @@ func NewComponent(name string) *Component {
 		Object:    NewObject(name),
 		entity:    nil,
 		active:    true,
-		loaded:    false,
-		started:   false,
 		delegate:  nil,
 		registers: []IRegister{},
 	}
@@ -148,8 +144,8 @@ func (c *Component) DoDestroy() {
 	}
 	c.registers = []IRegister{}
 	c.delegate = nil
-	c.loaded = false
-	c.started = false
+	c.SetLoaded(false)
+	c.SetStarted(false)
 }
 
 // DoFrameEnd calls all methods to run at the end of a tick frame.
@@ -158,7 +154,7 @@ func (c *Component) DoFrameEnd() {
 
 // DoFrameStart calls all methods to run at the start of a tick frame.
 func (c *Component) DoFrameStart() bool {
-	return c.started
+	return c.GetStarted()
 }
 
 // DoLoad is called when component is loaded by the entity.
@@ -166,7 +162,7 @@ func (c *Component) DoLoad(component IComponent) bool {
 	Logger.Trace().Str("component", c.GetName()).Msg("DoLoad")
 	// fmt.Printf("load: %#v\n", reflect.TypeOf(component).String())
 	// component.OnStart()
-	return c.loaded
+	return c.GetLoaded()
 }
 
 // DoUnLoad is called when component is unloaded by the entity. If this method
@@ -192,8 +188,8 @@ func (c *Component) DoUnLoad() {
 	if c.GetDelegate() != nil {
 		GetDelegateHandler().DeleteDelegate(c.GetDelegate())
 	}
-	c.loaded = false
-	c.started = false
+	c.SetLoaded(false)
+	c.SetStarted(false)
 }
 
 // GetActive returns if component is active or not
@@ -215,7 +211,7 @@ func (c *Component) GetEntity() IEntity {
 // with any other component or entity.
 func (c *Component) OnAwake() {
 	Logger.Trace().Str("component", c.name).Msg("OnAwake")
-	c.loaded = true
+	c.SetLoaded(true)
 }
 
 // OnEnable is called every time the component is enabled.
@@ -231,7 +227,7 @@ func (c *Component) OnRender() {
 // OnStart is called first time the component is enabled.
 func (c *Component) OnStart() {
 	Logger.Trace().Str("component", c.name).Msg("OnStart")
-	if !c.started {
+	if !c.GetStarted() {
 		for _, register := range c.registers {
 			delegate := register.GetDelegate()
 			// Retrieve delegate from entity and component provided.
@@ -255,7 +251,7 @@ func (c *Component) OnStart() {
 			Logger.Error().Err(fmt.Errorf("register for component %s failed", c.GetName())).Str("component", c.GetName()).Msg("registration error")
 			// panic("Failure at register " + register.GetName())
 		}
-		c.started = true
+		c.SetStarted(true)
 	}
 }
 
