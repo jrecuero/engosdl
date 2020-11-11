@@ -40,22 +40,6 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 // loadTextureFromTTF creates a texture from a ttf file.
 func (c *Text) loadTextureFromTTF() {
 	var err error
-	// c.font, err = ttf.OpenFont(c.fontFile, c.fontSize)
-	// if err != nil {
-	// 	engosdl.Logger.Error().Err(err).Msg("OpenFont error")
-	// 	panic(err)
-	// }
-	// surface, err := c.font.GetFont().RenderUTF8Solid(c.message, c.color)
-	// if err != nil {
-	// 	engosdl.Logger.Error().Err(err).Msg("RenderUTF8Solid error")
-	// 	panic(err)
-	// }
-	// defer surface.Free()
-	// c.texture, err = c.renderer.CreateTextureFromSurface(surface)
-	// if err != nil {
-	// 	engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
-	// 	panic(err)
-	// }
 	c.font = engosdl.GetFontHandler().CreateFont(c.GetName(), c.fontFile, c.fontSize)
 	c.texture = c.font.GetTextureFromFont(c.message, c.color)
 	_, _, c.width, c.height, err = c.texture.Query()

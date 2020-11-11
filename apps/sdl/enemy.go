@@ -81,7 +81,7 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 		Sprite: components.NewSprite(name, filenames, numberOfSprites, engosdl.GetRenderer()),
 		hit:    false,
 	}
-	result.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
+	// result.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
 	return result
 }
 

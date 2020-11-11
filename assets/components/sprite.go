@@ -58,6 +58,7 @@ func (c *Sprite) DoUnLoad() {
 	for _, texture := range c.textures {
 		texture.Destroy()
 	}
+	c.Component.DoUnLoad()
 }
 
 // GetCamera returns the camera used to display the sprite
