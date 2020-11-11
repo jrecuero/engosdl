@@ -81,15 +81,13 @@ func createScenePlay(engine *engosdl.Engine) engosdl.IScene {
 	// Entities
 	bg := createBackground(engine)
 	player := createPlayer(engine)
-	enemyController := createEnemyController()
-	// enemy := createEnemy(engine, engosdl.NewVector(200, 10))
+	enemyController := createEnemyController(maxEnemies)
 	enemies := createEnemies(engine, maxEnemies, enemyController)
 	score := createScore(engine)
 
 	// Add entities to scene
 	scene.AddEntity(bg)
 	scene.AddEntity(player)
-	// scene.AddEntity(enemy)
 	scene.AddEntity(enemyController)
 	for _, enemy := range enemies {
 		scene.AddEntity(enemy)

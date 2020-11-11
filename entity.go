@@ -100,7 +100,7 @@ func (entity *Entity) AddComponent(component IComponent) IEntity {
 		}
 	}
 	component.SetEntity(entity)
-	component.OnAwake()
+	// component.OnAwake()
 	entity.components = append(entity.components, component)
 	entity.unloadedComponents = append(entity.unloadedComponents, component)
 	return entity
@@ -132,7 +132,9 @@ func (entity *Entity) DoFrameEnd() {
 func (entity *Entity) DoFrameStart() {
 	entity.loadUnloadedComponents()
 	for _, component := range entity.loadedComponents {
-		component.DoFrameStart()
+		if started := component.DoFrameStart(); !started {
+			component.OnStart()
+		}
 	}
 }
 
@@ -140,7 +142,7 @@ func (entity *Entity) DoFrameStart() {
 func (entity *Entity) DoLoad() {
 	Logger.Trace().Str("entity", entity.GetName()).Msg("DoLoad")
 	entity.loaded = true
-	entity.OnStart()
+	// entity.OnStart()
 	entity.loadUnloadedComponents()
 }
 
@@ -153,6 +155,9 @@ func (entity *Entity) DoUnLoad() {
 	}
 	entity.loadedComponents = []IComponent{}
 	entity.unloadedComponents = []IComponent{}
+	for _, component := range entity.GetComponents() {
+		entity.unloadedComponents = append(entity.unloadedComponents, component)
+	}
 }
 
 // GetActive returns if the entity is active (enable) or not (disable).
@@ -262,9 +267,9 @@ func (entity *Entity) loadUnloadedComponents() {
 	unloaded := []IComponent{}
 	for _, component := range entity.unloadedComponents {
 		if component.GetActive() {
-			// fmt.Printf("calling load: %#v\n", reflect.TypeOf(component).String())
-			component.DoLoad(component)
-			// component.OnStart()
+			if loaded := component.DoLoad(component); !loaded {
+				component.OnAwake()
+			}
 			entity.loadedComponents = append(entity.loadedComponents, component)
 		} else {
 			unloaded = append(unloaded, component)
@@ -291,9 +296,12 @@ func (entity *Entity) OnEnable() {
 
 // OnStart calls all component OnStart methods.
 func (entity *Entity) OnStart() {
-	// for _, component := range entity.GetComponents() {
-	// 	component.OnStart()
-	// }
+	Logger.Trace().Str("entity", entity.GetName()).Msg("OnStart")
+	for _, component := range entity.GetComponents() {
+		if component.GetActive() {
+			component.OnStart()
+		}
+	}
 }
 
 // OnUpdate calls all component OnUpdate methods.

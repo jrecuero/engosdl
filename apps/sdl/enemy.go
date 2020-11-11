@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/jrecuero/engosdl"
@@ -11,19 +10,21 @@ import (
 // EnemyController represents a component that control enemy entities.
 type EnemyController struct {
 	*engosdl.Component
+	totalEnemies int
 }
 
 // NewEnemyController creates new instance for component enemy controller.
-func NewEnemyController(name string) *EnemyController {
+func NewEnemyController(name string, totalEnemies int) *EnemyController {
 	return &EnemyController{
-		Component: engosdl.NewComponent(name),
+		Component:    engosdl.NewComponent(name),
+		totalEnemies: totalEnemies,
 	}
 }
 
 // onOutOfBounds is called when any enemy goes out of bounds.
 func (c *EnemyController) onOutOfBounds(params ...interface{}) bool {
 	if enemy, ok := params[0].(engosdl.IEntity); ok {
-		fmt.Println("[Controller] enemy " + enemy.GetName() + " is out of bounds")
+		// fmt.Println("[Controller] enemy " + enemy.GetName() + " is out of bounds")
 		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), false, enemy)
 	}
 	return true
@@ -34,6 +35,39 @@ func (c *EnemyController) onOutOfBounds(params ...interface{}) bool {
 func (c *EnemyController) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "enemy-controller").Msg("OnAwake")
 	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "enemy-controller"))
+	c.Component.OnAwake()
+}
+
+// onDestroy is called when any entity is removed from the scenario.
+func (c *EnemyController) onDestroy(params ...interface{}) bool {
+	entity := params[0].(engosdl.IEntity)
+	// fmt.Printf("Entity %s has been destroyed\n", entity.GetName())
+	if entity.GetTag() == "enemy" {
+		c.totalEnemies--
+		if c.totalEnemies == 0 {
+			engosdl.GetEngine().GetSceneHandler().SetActiveFirstScene()
+		}
+	}
+	return true
+}
+
+// onLoad is called when any entity is loaded in the scene.
+func (c *EnemyController) onLoad(params ...interface{}) bool {
+	// entity := params[0].(engosdl.IEntity)
+	// fmt.Printf("Entity %s has been loaded\n", entity.GetName())
+	return true
+}
+
+// OnStart is called first time the component is enabled.
+func (c *EnemyController) OnStart() {
+	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetLoadDelegate(), nil, nil, c.onLoad)
+	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetDestroyDelegate(), nil, nil, c.onDestroy)
+	// enemies := createEnemies(engosdl.GetEngine(), 2, c.GetEntity())
+	// for _, enemy := range enemies {
+	// 	c.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, c.onOutOfBounds)
+	// 	c.GetEntity().GetScene().AddEntity(enemy)
+	// }
+	c.Component.OnStart()
 }
 
 type enemySpriteT struct {
@@ -73,9 +107,9 @@ func (c *enemySpriteT) OnUpdate() {
 }
 
 // createEnemyController creates enemy controller entity.
-func createEnemyController() engosdl.IEntity {
+func createEnemyController(totalEnemies int) engosdl.IEntity {
 	enemyController := engosdl.NewEntity("enemy-controller")
-	enemyController.AddComponent(NewEnemyController("enemy-controller"))
+	enemyController.AddComponent(NewEnemyController("enemy-controller", totalEnemies))
 	return enemyController
 }
 
@@ -112,7 +146,7 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	// 	enemyMove.SetSpeed(engosdl.NewVector(speed.X*-1, speed.Y*-1))
 	// 	return true
 	// })
-	enemyStats := components.NewEntityStats("enemy-stats", 100)
+	enemyStats := components.NewEntityStats("enemy-stats", 20)
 	enemyStats.DefaultAddDelegateToRegister()
 	enemyCollider := components.NewCollider2D("enemy-collider-2D")
 	enemyCollider.DefaultAddDelegateToRegister()
@@ -125,17 +159,13 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 
 	if controller, ok := enemyController.GetComponent(&EnemyController{}).(*EnemyController); ok {
 		controller.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, controller.onOutOfBounds)
-		enemySprite.AddDelegateToRegister(controller.GetDelegate(), nil, nil, func(params ...interface{}) bool {
+		enemySprite.AddDelegateToRegister(nil, controller.GetEntity(), controller, func(params ...interface{}) bool {
 			speed := enemyMove.GetSpeed()
 			enemyMove.SetSpeed(engosdl.NewVector(speed.X*-1, speed.Y*-1))
-			// if enemy, ok := params[0].(engosdl.IEntity); ok {
-			// if enemy.GetID() == enemySprite.GetEntity().GetID() {
 			enemy := enemySprite.GetEntity()
 			position := enemy.GetTransform().GetPosition()
 			enemy.GetTransform().SetPosition(engosdl.NewVector(position.X-speed.X, position.Y-speed.Y))
 			_ = enemy
-			// }
-			// }
 			return true
 		})
 	}

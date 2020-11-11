@@ -28,6 +28,7 @@ func (c *OutOfBounds) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "out-of-bounds").Str("out-of-bounds", c.GetName()).Msg("OnAwake")
 	// Creates new delegate "out-of-bounds"
 	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "on-out-of-bounds"))
+	c.Component.OnAwake()
 }
 
 // OnStart is called the first time component is loaded.
@@ -50,7 +51,7 @@ func (c *OutOfBounds) OnUpdate() {
 		testY = (y+h) < 0 || int32(y) > H
 	}
 	if testX {
-		fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), x)
+		// fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), x)
 		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.GetEntity())
 
 	}

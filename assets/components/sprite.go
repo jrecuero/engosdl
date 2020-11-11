@@ -42,8 +42,6 @@ func NewSprite(name string, filenames []string, numberOfSprites int, renderer *s
 		spriteIndex:          0,
 		resources:            []engosdl.IResource{},
 	}
-	result.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
-	result.AddDelegateToRegister(nil, nil, &OutOfBounds{}, result.onOutOfBounds)
 	return result
 }
 
@@ -82,30 +80,30 @@ func (c *Sprite) GetSpriteIndex() int {
 	return c.spriteIndex
 }
 
+// LoadSprite loads the sprite from the filename.
+func (c *Sprite) LoadSprite() {
+	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("sprite", c.GetName()).Msg("LoadSprite")
+	c.loadTexturesFromBMP()
+	// TODO: assuming SpriteSheet is horizontal.
+	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.spriteTotal)), float64(c.height)))
+
+}
+
 // loadTexturesFromBMP creates textures for every BMP image file.
 func (c *Sprite) loadTexturesFromBMP() {
 	for _, filename := range c.filenames {
-		// img, err := sdl.LoadBMP(filename)
-		// if err != nil {
-		// 	engosdl.Logger.Error().Err(err).Msg("LoadBMP error")
-		// 	panic(err)
-		// }
-		// defer img.Free()
-		// texture, err := c.renderer.CreateTextureFromSurface(img)
-		// if err != nil {
-		// 	engosdl.Logger.Error().Err(err).Msg("CreateTextureFromSurface error")
-		// 	panic(err)
-		// }
-		var err error
-		resource := engosdl.GetResourceHandler().CreateResource(c.GetName(), filename)
-		texture := resource.GetTextureFromSurface()
-		_, _, c.width, c.height, err = texture.Query()
-		if err != nil {
-			engosdl.Logger.Error().Err(err).Msg("Query error")
-			panic(err)
+		if len(c.resources) == 0 && len(c.textures) == 0 {
+			var err error
+			resource := engosdl.GetResourceHandler().CreateResource(c.GetName(), filename)
+			texture := resource.GetTextureFromSurface()
+			_, _, c.width, c.height, err = texture.Query()
+			if err != nil {
+				engosdl.Logger.Error().Err(err).Msg("Query error")
+				panic(err)
+			}
+			c.resources = append(c.resources, resource)
+			c.textures = append(c.textures, texture)
 		}
-		c.resources = append(c.resources, resource)
-		c.textures = append(c.textures, texture)
 	}
 }
 
@@ -128,6 +126,7 @@ func (c *Sprite) OnAwake() {
 	c.loadTexturesFromBMP()
 	// TODO: assuming SpriteSheet is horizontal.
 	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.spriteTotal)), float64(c.height)))
+	c.Component.OnAwake()
 }
 
 // onCollision checks when there is a collision with other entity.

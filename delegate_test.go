@@ -15,7 +15,7 @@ func Benchmark_Delegate(b *testing.B) {
 		h := engosdl.NewDelegateHandler("test-handler")
 		obj := engosdl.NewObject("test-object")
 		delegate := h.CreateDelegate(obj, "active")
-		h.RegisterToDelegate(delegate, test_create_register)
+		h.RegisterToDelegate(obj, delegate, test_create_register)
 		h.TriggerDelegate(delegate, true)
 		if len(TEST_RESULTS) != 1 {
 			b.Errorf("Trigger Delegate error method not called")
@@ -45,7 +45,7 @@ func test_create_register(...interface{}) bool {
 func TestDelegate_CreateRegister(t *testing.T) {
 	obj := engosdl.NewObject("test-object")
 	delegate := engosdl.NewDelegate("test-delegate", obj, "active")
-	register := engosdl.NewRegister("register-test", nil, nil, delegate, test_create_register)
+	register := engosdl.NewRegister("register-test", obj, nil, nil, delegate, test_create_register)
 	if register.GetDelegate() != delegate {
 		t.Errorf("new register delegate error\nexp: %#v\ngot: %#v", delegate, register.GetDelegate())
 	}
@@ -59,7 +59,7 @@ func TestDelegate_DelegateHandler(t *testing.T) {
 	h := engosdl.NewDelegateHandler("test-handler")
 	obj := engosdl.NewObject("test-object")
 	delegate := h.CreateDelegate(obj, "active")
-	h.RegisterToDelegate(delegate, test_create_register)
+	h.RegisterToDelegate(obj, delegate, test_create_register)
 	h.TriggerDelegate(delegate, true)
 	if len(TEST_RESULTS) != 1 {
 		t.Errorf("Trigger Delegate error method not called")

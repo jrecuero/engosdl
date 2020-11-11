@@ -1,5 +1,7 @@
 package engosdl
 
+import "fmt"
+
 // ISceneHandler represents the interface for the scene handler.
 type ISceneHandler interface {
 	IObject
@@ -153,9 +155,9 @@ func (h *SceneHandler) OnEnable() {
 // OnStart calls all scene OnStart methods.
 func (h *SceneHandler) OnStart() {
 	Logger.Trace().Str("scene-handler", h.GetName()).Msg("OnStart")
-	if activeScene := h.GetActiveScene(); activeScene != nil {
-		activeScene.OnStart()
-	}
+	// if activeScene := h.GetActiveScene(); activeScene != nil {
+	// 	activeScene.OnStart()
+	// }
 }
 
 // OnUpdate calls all scene OnUpdate methods.
@@ -214,12 +216,25 @@ func (h *SceneHandler) SetActivePrevScene() IScene {
 // setActiveScene set the given scene and index and active one. It proceeds
 // to unload previous scene active and load new one.
 func (h *SceneHandler) setActiveScene(scene IScene, index int) {
+	fmt.Println("Audit Before UnLoading")
+	fmt.Println("----------------------")
+	GetDelegateHandler().AuditDelegates()
+	GetDelegateHandler().AuditRegisters()
 	if h.activeScene.scene != nil {
 		h.activeScene.scene.DoUnLoad()
 	}
+	fmt.Println("Audit After UnLoading")
+	fmt.Println("---------------------")
+	GetDelegateHandler().AuditDelegates()
+	GetDelegateHandler().AuditRegisters()
 	h.activeScene.scene = scene
 	h.activeScene.index = index
 	h.activeScene.scene.DoLoad()
+	h.activeScene.scene.OnStart()
+	fmt.Println("Audit After Loading")
+	fmt.Println("-------------------")
+	GetDelegateHandler().AuditDelegates()
+	GetDelegateHandler().AuditRegisters()
 }
 
 // SetActiveScene sets the given scene as the active scene.

@@ -17,8 +17,8 @@ type IComponent interface {
 	DefaultOnLoad(...interface{}) bool
 	DefaultOnOutOfBounds(...interface{}) bool
 	DoFrameEnd()
-	DoFrameStart()
-	DoLoad(IComponent)
+	DoFrameStart() bool
+	DoLoad(IComponent) bool
 	DoUnLoad()
 	GetActive() bool
 	GetDelegate() IDelegate
@@ -52,6 +52,7 @@ type ISprite interface {
 	GetCamera() *sdl.Rect
 	GetFileImageIndex() int
 	GetFilename() []string
+	LoadSprite()
 	GetSpriteIndex() int
 	NextFileImage() int
 	NextSprite() int
@@ -74,6 +75,7 @@ type Component struct {
 	entity    IEntity
 	active    bool
 	loaded    bool
+	started   bool
 	delegate  IDelegate
 	registers []*Register
 }
@@ -88,6 +90,7 @@ func NewComponent(name string) *Component {
 		entity:    nil,
 		active:    true,
 		loaded:    false,
+		started:   false,
 		delegate:  nil,
 		registers: []*Register{},
 	}
@@ -96,7 +99,7 @@ func NewComponent(name string) *Component {
 // AddDelegateToRegister adds a new delegate that component should register.
 func (c *Component) AddDelegateToRegister(delegate IDelegate, entity IEntity, component IComponent, signature TDelegateSignature) IComponent {
 	Logger.Trace().Str("component", c.GetName()).Msg("AddDelegateToRegister")
-	register := NewRegister("new-register", entity, component, delegate, signature)
+	register := NewRegister("new-register", c, entity, component, delegate, signature)
 	c.registers = append(c.registers, register)
 	return c
 }
@@ -135,15 +138,16 @@ func (c *Component) DoFrameEnd() {
 }
 
 // DoFrameStart calls all methods to run at the start of a tick frame.
-func (c *Component) DoFrameStart() {
+func (c *Component) DoFrameStart() bool {
+	return c.started
 }
 
 // DoLoad is called when component is loaded by the entity.
-func (c *Component) DoLoad(component IComponent) {
+func (c *Component) DoLoad(component IComponent) bool {
 	Logger.Trace().Str("component", c.GetName()).Msg("DoLoad")
-	c.loaded = true
 	// fmt.Printf("load: %#v\n", reflect.TypeOf(component).String())
-	component.OnStart()
+	// component.OnStart()
+	return c.loaded
 }
 
 // DoUnLoad is called when component is unloaded by the entity. If this method
@@ -160,6 +164,7 @@ func (c *Component) DoUnLoad() {
 		GetDelegateHandler().DeleteDelegate(c.GetDelegate())
 	}
 	c.loaded = false
+	c.started = false
 }
 
 // GetActive returns if component is active or not
@@ -181,6 +186,7 @@ func (c *Component) GetEntity() IEntity {
 // with any other component or entity.
 func (c *Component) OnAwake() {
 	Logger.Trace().Str("component", c.name).Msg("OnAwake")
+	c.loaded = true
 }
 
 // OnEnable is called every time the component is enabled.
@@ -196,28 +202,31 @@ func (c *Component) OnRender() {
 // OnStart is called first time the component is enabled.
 func (c *Component) OnStart() {
 	Logger.Trace().Str("component", c.name).Msg("OnStart")
-	for _, register := range c.registers {
-		delegate := register.GetDelegate()
-		// Retrieve delegate from entity and component provided.
-		if delegate == nil {
-			entity := register.GetEntity()
-			if entity == nil {
-				entity = c.GetEntity()
-			}
-			if component := entity.GetComponent(register.GetComponent()); component != nil {
-				if delegate = component.GetDelegate(); delegate != nil {
-					register.SetDelegate(delegate)
+	if !c.started {
+		for _, register := range c.registers {
+			delegate := register.GetDelegate()
+			// Retrieve delegate from entity and component provided.
+			if delegate == nil {
+				entity := register.GetEntity()
+				if entity == nil {
+					entity = c.GetEntity()
+				}
+				if component := entity.GetComponent(register.GetComponent()); component != nil {
+					if delegate = component.GetDelegate(); delegate != nil {
+						register.SetDelegate(delegate)
+					}
 				}
 			}
-		}
-		if delegate != nil {
-			if registerID, ok := GetDelegateHandler().RegisterToDelegate(delegate, register.GetSignature()); ok {
-				register.SetRegisterID(registerID)
-				continue
+			if delegate != nil {
+				if registerID, ok := GetDelegateHandler().RegisterToDelegate(c, delegate, register.GetSignature()); ok {
+					register.SetRegisterID(registerID)
+					continue
+				}
 			}
+			Logger.Error().Err(fmt.Errorf("register for component %s failed", c.GetName())).Str("component", c.GetName()).Msg("registration error")
+			// panic("Failure at register " + register.GetName())
 		}
-		Logger.Error().Err(fmt.Errorf("register for component %s failed", c.GetName())).Str("component", c.GetName()).Msg("registration error")
-		// panic("Failure at register " + register.GetName())
+		c.started = true
 	}
 }
 

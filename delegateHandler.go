@@ -1,5 +1,7 @@
 package engosdl
 
+import "fmt"
+
 const (
 	// CollisionName represents on collision delegate.
 	CollisionName = "on-collision"
@@ -39,6 +41,7 @@ type IRegister interface {
 	GetParams() []interface{}
 	GetRegisterID() string
 	GetSignature() TDelegateSignature
+	GetObject() IObject
 	SetComponent(IComponent) IRegister
 	SetDelegate(IDelegate) IRegister
 	SetEntity(IEntity) IRegister
@@ -50,6 +53,8 @@ type IRegister interface {
 // IDelegateHandler represents the interface for the delefate event handler.
 type IDelegateHandler interface {
 	IObject
+	AuditDelegates()
+	AuditRegisters()
 	CreateDelegate(IObject, string) IDelegate
 	DeleteDelegate(IDelegate) bool
 	DeregisterFromDelegate(string) bool
@@ -58,7 +63,7 @@ type IDelegateHandler interface {
 	GetLoadDelegate() IDelegate
 	OnStart()
 	OnUpdate()
-	RegisterToDelegate(IDelegate, TDelegateSignature) (string, bool)
+	RegisterToDelegate(IObject, IDelegate, TDelegateSignature) (string, bool)
 	TriggerDelegate(IDelegate, bool, ...interface{})
 }
 
@@ -94,6 +99,7 @@ func NewDelegate(name string, obj IObject, evName string) *Delegate {
 // Register is the structure used to store any delegate registration
 type Register struct {
 	*Object
+	obj        IObject
 	entity     IEntity
 	component  IComponent
 	delegate   IDelegate
@@ -105,10 +111,11 @@ type Register struct {
 var _ IRegister = (*Register)(nil)
 
 // NewRegister creates a new register instance.
-func NewRegister(name string, entity IEntity, component IComponent, delegate IDelegate, signature TDelegateSignature) *Register {
+func NewRegister(name string, obj IObject, entity IEntity, component IComponent, delegate IDelegate, signature TDelegateSignature) *Register {
 	Logger.Trace().Str("register", name).Msg("create new register")
 	return &Register{
 		Object:    NewObject(name),
+		obj:       obj,
 		entity:    entity,
 		component: component,
 		delegate:  delegate,
@@ -130,6 +137,11 @@ func (r *Register) GetDelegate() IDelegate {
 // GetEntity returns register entity.
 func (r *Register) GetEntity() IEntity {
 	return r.entity
+}
+
+// GetObject returns object that has registered.
+func (r *Register) GetObject() IObject {
+	return r.obj
 }
 
 // GetParams returns register parameters.
@@ -200,6 +212,21 @@ func NewDelegateHandler(name string) *DelegateHandler {
 		registers:  []IRegister{},
 		defaults:   make(map[string]IDelegate),
 		toBeCalled: []IRegister{},
+	}
+}
+
+// AuditDelegates displays all delegates for audit purposes.
+func (h *DelegateHandler) AuditDelegates() {
+	for i, delegate := range h.delegates {
+		fmt.Printf("%d delegate: [%s] %s %s\n", i, delegate.GetID(), delegate.GetName(), delegate.GetObject().GetName())
+	}
+}
+
+// AuditRegisters displays all registers for audit purposes.
+func (h *DelegateHandler) AuditRegisters() {
+	for i, register := range h.registers {
+		delegate := register.GetDelegate()
+		fmt.Printf("%d register: [%s] %s %s\n", i, delegate.GetID(), delegate.GetName(), register.GetObject().GetName())
 	}
 }
 
@@ -279,9 +306,9 @@ func (h *DelegateHandler) OnUpdate() {
 }
 
 // RegisterToDelegate registers a method to a delegate.
-func (h *DelegateHandler) RegisterToDelegate(delegate IDelegate, signature TDelegateSignature) (string, bool) {
+func (h *DelegateHandler) RegisterToDelegate(obj IObject, delegate IDelegate, signature TDelegateSignature) (string, bool) {
 	Logger.Trace().Str("delegate-handler", h.GetName()).Str("delegate", delegate.GetName()).Msg("register-to-delegate")
-	register := NewRegister("", nil, nil, delegate, signature)
+	register := NewRegister("", obj, nil, nil, delegate, signature)
 	register.SetRegisterID(register.GetID())
 	h.registers = append(h.registers, register)
 	return register.GetRegisterID(), true
@@ -294,7 +321,7 @@ func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, now bool, params .
 			if now {
 				register.GetSignature()(params...)
 			} else {
-				storeRegister := NewRegister(register.GetName(), register.GetEntity(), register.GetComponent(), register.GetDelegate(), register.GetSignature())
+				storeRegister := NewRegister(register.GetName(), register.GetObject(), register.GetEntity(), register.GetComponent(), register.GetDelegate(), register.GetSignature())
 				storeRegister.SetRegisterID(register.GetRegisterID())
 				storeRegister.SetParams(params)
 				h.toBeCalled = append(h.toBeCalled, storeRegister)

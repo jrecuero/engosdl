@@ -60,6 +60,7 @@ func (c *ShootBullet) shootBulletSignature(...interface{}) bool {
 	bullet.AddComponent(bulletMoveTo)
 	bullet.AddComponent(bulletOutOfBounds)
 	bullet.AddComponent(bulletCollider2D)
+	bulletSprite.LoadSprite()
 	bulletW, bulletH := bullet.GetTransform().GetDim().Get()
 	bullet.GetTransform().SetPosition(engosdl.NewVector((x + w/2 - bulletW/2), (y + h/2 - bulletH/2)))
 	bullet.SetDieOnCollision(true)

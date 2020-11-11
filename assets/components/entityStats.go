@@ -36,6 +36,7 @@ func (c *EntityStats) OnAwake() {
 	// Create new delegate "entity-stats"
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnAwake")
 	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "on-entity-stats"))
+	c.Component.OnAwake()
 
 }
 

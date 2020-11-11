@@ -121,6 +121,9 @@ func (scene *Scene) DoUnLoad() {
 	}
 	scene.loadedEntities = []IEntity{}
 	scene.unloadedEntities = []IEntity{}
+	for _, entity := range scene.GetEntities() {
+		scene.unloadedEntities = append(scene.unloadedEntities, entity)
+	}
 	scene.collisionCollection = []ICollider{}
 	scene.layers = make([][]IEntity, maxLayers)
 }

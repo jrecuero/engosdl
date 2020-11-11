@@ -34,6 +34,7 @@ func (c *KeyShooter) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("OnAwake")
 	// Create new delegate "shoot"
 	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "on-shoot"))
+	c.Component.OnAwake()
 }
 
 // OnStart is called first time the component is enabled.

@@ -37,6 +37,7 @@ func (c *Keyboard) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", c.GetName()).Msg("OnAwake")
 	// Create new delegate "on-keyboard"
 	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "on-keyboard"))
+	c.Component.OnAwake()
 }
 
 // onOutOfBounds checks if the entity has gone out of bounds.
