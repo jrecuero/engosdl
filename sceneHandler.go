@@ -221,6 +221,7 @@ func (h *SceneHandler) setActiveScene(scene IScene, index int) {
 	GetDelegateHandler().AuditDelegates()
 	GetDelegateHandler().AuditRegisters()
 	if h.activeScene.scene != nil {
+		h.activeScene.scene.AuditEntities()
 		h.activeScene.scene.DoUnLoad()
 	}
 	fmt.Println("Audit After UnLoading")
@@ -235,6 +236,7 @@ func (h *SceneHandler) setActiveScene(scene IScene, index int) {
 	fmt.Println("-------------------")
 	GetDelegateHandler().AuditDelegates()
 	GetDelegateHandler().AuditRegisters()
+	h.activeScene.scene.AuditEntities()
 }
 
 // SetActiveScene sets the given scene as the active scene.

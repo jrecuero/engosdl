@@ -158,6 +158,7 @@ func (c *Component) DoUnLoad() {
 	// Deregister all register entries from delegate handler
 	for _, register := range c.registers {
 		GetDelegateHandler().DeregisterFromDelegate(register.GetRegisterID())
+		register.SetDelegate(nil)
 	}
 	// Delete delegate being created.
 	if c.GetDelegate() != nil {

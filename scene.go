@@ -18,6 +18,7 @@ const (
 type IScene interface {
 	IObject
 	AddEntity(IEntity) bool
+	AuditEntities()
 	DeleteEntity(IEntity) bool
 	DoFrameEnd()
 	DoFrameStart()
@@ -69,6 +70,13 @@ func (scene *Scene) AddEntity(entity IEntity) bool {
 	scene.unloadedEntities = append(scene.unloadedEntities, entity)
 	entity.SetScene(scene)
 	return true
+}
+
+// AuditEntities displays all entities for audit purposes.
+func (scene *Scene) AuditEntities() {
+	for i, entity := range scene.GetEntities() {
+		fmt.Printf("%d entity: [%s] %s\n", i, entity.GetID(), entity.GetName())
+	}
 }
 
 // DeleteEntity deletes a entity from the scene.
