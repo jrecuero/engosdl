@@ -18,31 +18,12 @@ func createAssets(engine *engosdl.Engine) {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	maxEnemies := 2
-
-	// Scenes
-	scene := engosdl.NewScene("main scene")
-
-	// Entities
-	bg := createBackground(engine)
-	player := createPlayer(engine)
-	enemyController := createEnemyController()
-	// enemy := createEnemy(engine, engosdl.NewVector(200, 10))
-	enemies := createEnemies(engine, maxEnemies, enemyController)
-	score := createScore(engine)
-
-	// Add entities to scene
-	scene.AddEntity(bg)
-	scene.AddEntity(player)
-	// scene.AddEntity(enemy)
-	scene.AddEntity(enemyController)
-	for _, enemy := range enemies {
-		scene.AddEntity(enemy)
-	}
-	scene.AddEntity(score)
+	titleScene := createSceneTitle(engine)
+	playScene := createScenePlay(engine)
 
 	// Add scenes to engine
-	engine.AddScene(scene)
+	engine.AddScene(titleScene)
+	engine.AddScene(playScene)
 }
 
 // createBackground creates the background
@@ -77,14 +58,75 @@ func createPlayer(engine *engosdl.Engine) engosdl.IEntity {
 	playerShootBullet.DefaultAddDelegateToRegister()
 	playerOutOfBounds := components.NewOutOfBounds("player-out-of-bounds", true)
 	playerOutOfBounds.DefaultAddDelegateToRegister()
+	playerMoveIt := components.NewMoveIt("player-move-it", engosdl.NewVector(5, 0))
+	playerMoveIt.DefaultAddDelegateToRegister()
 
 	player.AddComponent(playerSprite)
 	player.AddComponent(playerKeyboard)
 	player.AddComponent(playerKeyShooter)
 	player.AddComponent(playerShootBullet)
 	player.AddComponent(playerOutOfBounds)
+	player.AddComponent(playerMoveIt)
 
 	return player
+}
+
+// createScenePlay creates the play scene.
+func createScenePlay(engine *engosdl.Engine) engosdl.IScene {
+	maxEnemies := 2
+
+	// Scenes
+	scene := engosdl.NewScene("main scene")
+
+	// Entities
+	bg := createBackground(engine)
+	player := createPlayer(engine)
+	enemyController := createEnemyController()
+	// enemy := createEnemy(engine, engosdl.NewVector(200, 10))
+	enemies := createEnemies(engine, maxEnemies, enemyController)
+	score := createScore(engine)
+
+	// Add entities to scene
+	scene.AddEntity(bg)
+	scene.AddEntity(player)
+	// scene.AddEntity(enemy)
+	scene.AddEntity(enemyController)
+	for _, enemy := range enemies {
+		scene.AddEntity(enemy)
+	}
+	scene.AddEntity(score)
+
+	return scene
+}
+
+// createSceneTitle creates title scene.
+func createSceneTitle(engine *engosdl.Engine) engosdl.IScene {
+	title := engosdl.NewEntity("title")
+	title.GetTransform().SetPosition(engosdl.NewVector(175, 250))
+	titleText := components.NewText("title-text", "fonts/lato.ttf", 32, sdl.Color{R: 0, G: 0, B: 255}, "PLAY", engine.GetRenderer())
+	titleText.DefaultAddDelegateToRegister()
+	titleText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
+		key := params[0].(int)
+		if key == sdl.SCANCODE_RETURN {
+			engosdl.GetEngine().GetSceneHandler().SetActiveNextScene()
+		}
+		return true
+	})
+	titleKeyboard := components.NewKeyboard("title-keyboard", nil)
+	titleKeyboard.DefaultAddDelegateToRegister()
+	titleOutOfBounds := components.NewOutOfBounds("title-out-of-bounds", true)
+	titleOutOfBounds.DefaultAddDelegateToRegister()
+	titleMoveIt := components.NewMoveIt("title-move-it", engosdl.NewVector(5, 0))
+	titleMoveIt.DefaultAddDelegateToRegister()
+
+	title.AddComponent(titleText)
+	title.AddComponent(titleKeyboard)
+	title.AddComponent(titleOutOfBounds)
+	title.AddComponent(titleMoveIt)
+
+	scene := engosdl.NewScene("title-scene")
+	scene.AddEntity(title)
+	return scene
 }
 
 // createScore creates all text entities.
@@ -115,6 +157,6 @@ func main() {
 	engine.DoInit()
 	if engine != nil {
 		createAssets(engine)
-		engine.RunEngine()
+		engine.RunEngine(nil)
 	}
 }

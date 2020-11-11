@@ -168,12 +168,16 @@ func (engine *Engine) DoRun() {
 
 // DoStart starts the game engine. At this point all scenes and entities have
 // been already added to the engine.
-func (engine *Engine) DoStart() {
+func (engine *Engine) DoStart(scene IScene) {
 	Logger.Trace().Str("engine", engine.name).Msg("DoStart")
 	engine.active = true
 
 	// Set first scene as the active by default.
-	engine.GetSceneHandler().SetActiveFirstScene()
+	if scene != nil {
+		engine.GetSceneHandler().SetActiveScene(scene)
+	} else {
+		engine.GetSceneHandler().SetActiveFirstScene()
+	}
 }
 
 // GetDelegateHandler returns the engine delegate handler.
@@ -222,8 +226,8 @@ func (engine *Engine) GetWidth() int32 {
 }
 
 // RunEngine runs the game engine.
-func (engine *Engine) RunEngine() bool {
-	engine.DoStart()
+func (engine *Engine) RunEngine(scene IScene) bool {
+	engine.DoStart(scene)
 	engine.DoRun()
 	engine.DoCleanup()
 	return true
