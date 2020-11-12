@@ -84,9 +84,9 @@ func (r *Resource) New() {
 	r.counter++
 }
 
-// IResourceHandler represents the handler that is in charge of all graphical
+// IResourceManager represents the handler that is in charge of all graphical
 // resources.
-type IResourceHandler interface {
+type IResourceManager interface {
 	IObject
 	Clear()
 	CreateResource(string, string) IResource
@@ -98,18 +98,18 @@ type IResourceHandler interface {
 	OnStart()
 }
 
-// ResourceHandler is the default implementation for the resource handler.
-type ResourceHandler struct {
+// ResourceManager is the default implementation for the resource handler.
+type ResourceManager struct {
 	*Object
 	resources []IResource
 }
 
-var _ IResourceHandler = (*ResourceHandler)(nil)
+var _ IResourceManager = (*ResourceManager)(nil)
 
-// NewResourceHandler creates a new resource handler instance.
-func NewResourceHandler(name string) *ResourceHandler {
+// NewResourceManager creates a new resource handler instance.
+func NewResourceManager(name string) *ResourceManager {
 	Logger.Trace().Str("resource-handler", name).Msg("new resource-handler")
-	return &ResourceHandler{
+	return &ResourceManager{
 		Object:    NewObject(name),
 		resources: []IResource{},
 	}
@@ -117,7 +117,7 @@ func NewResourceHandler(name string) *ResourceHandler {
 }
 
 // Clear removes all resources from the resource handler.
-func (h *ResourceHandler) Clear() {
+func (h *ResourceManager) Clear() {
 	Logger.Trace().Str("resource-handler", h.GetName()).Msg("Clear")
 	for _, r := range h.resources {
 		r.Clear()
@@ -127,7 +127,7 @@ func (h *ResourceHandler) Clear() {
 
 // CreateResource creates a new resource. If the same resource has already
 // been created with the same filename, existing resource is returned.
-func (h *ResourceHandler) CreateResource(name string, filename string) IResource {
+func (h *ResourceManager) CreateResource(name string, filename string) IResource {
 	Logger.Trace().Str("resource-handler", h.GetName()).Str("name", name).Str("filename", filename).Msg("CreateResource")
 	for _, resource := range h.resources {
 		if resource.GetFilename() == filename {
@@ -142,7 +142,7 @@ func (h *ResourceHandler) CreateResource(name string, filename string) IResource
 
 // DeleteResource deletes resource from the handler. Memory resources are
 // released from the given resource.
-func (h *ResourceHandler) DeleteResource(resource IResource) bool {
+func (h *ResourceManager) DeleteResource(resource IResource) bool {
 	Logger.Trace().Str("resource-handler", h.GetName()).Str("name", resource.GetName()).Str("filename", resource.GetFilename()).Msg("DeleteResource")
 	for i := len(h.resources) - 1; i >= 0; i-- {
 		r := h.resources[i]
@@ -157,7 +157,7 @@ func (h *ResourceHandler) DeleteResource(resource IResource) bool {
 }
 
 // GetResource returns a resource with the given resource ID.
-func (h *ResourceHandler) GetResource(id string) IResource {
+func (h *ResourceManager) GetResource(id string) IResource {
 	for _, resource := range h.resources {
 		if resource.GetID() == id {
 			return resource
@@ -167,7 +167,7 @@ func (h *ResourceHandler) GetResource(id string) IResource {
 }
 
 // GetResourceByFilename returns the resource with the given filename.
-func (h *ResourceHandler) GetResourceByFilename(filename string) IResource {
+func (h *ResourceManager) GetResourceByFilename(filename string) IResource {
 	for _, resource := range h.resources {
 		if resource.GetFilename() == filename {
 			return resource
@@ -177,7 +177,7 @@ func (h *ResourceHandler) GetResourceByFilename(filename string) IResource {
 }
 
 // GetResourceByName returns the resource with the given name.
-func (h *ResourceHandler) GetResourceByName(name string) IResource {
+func (h *ResourceManager) GetResourceByName(name string) IResource {
 	for _, resource := range h.resources {
 		if resource.GetName() == name {
 			return resource
@@ -187,11 +187,11 @@ func (h *ResourceHandler) GetResourceByName(name string) IResource {
 }
 
 // GetResources returns all resources.
-func (h *ResourceHandler) GetResources() []IResource {
+func (h *ResourceManager) GetResources() []IResource {
 	return h.resources
 }
 
 // OnStart initializes all resource handler structure.
-func (h *ResourceHandler) OnStart() {
+func (h *ResourceManager) OnStart() {
 	Logger.Trace().Str("resource-handler", h.GetName()).Msg("OnStart")
 }

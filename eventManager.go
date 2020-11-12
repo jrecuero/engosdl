@@ -8,8 +8,8 @@ type IEvent interface {
 	Pop() IEvent
 }
 
-// IEventHandler represents the interface for the  event handler.
-type IEventHandler interface {
+// IEventManager represents the interface for the  event handler.
+type IEventManager interface {
 	IObject
 	// AddEvent(IEvent) bool
 	// GetPool() []IEvent
@@ -18,21 +18,21 @@ type IEventHandler interface {
 	// PopEventInPool() IEvent
 }
 
-// EventHandler is the default implementation fort the event handler
+// EventManager is the default implementation fort the event handler
 // interface.
-type EventHandler struct {
+type EventManager struct {
 	*Object
-	delegateHandler IDelegateHandler
+	delegateManager IDelegateManager
 }
 
-// NewEventHandler creates a new event handler instance.
-func NewEventHandler(name string) *EventHandler {
-	return &EventHandler{
+// NewEventManager creates a new event handler instance.
+func NewEventManager(name string) *EventManager {
+	return &EventManager{
 		Object: NewObject(name),
 	}
 }
 
 // OnStart calls OnStart for all event handlers.
-func (h *EventHandler) OnStart() {
+func (h *EventManager) OnStart() {
 	Logger.Trace().Str("event-handler", h.GetName()).Msg("OnStart")
 }

@@ -137,12 +137,12 @@ func (c *Component) DoDestroy() {
 	Logger.Trace().Str("component", c.GetName()).Msg("DoDestroy")
 	// Deregister all register entries from delegate handler
 	for _, register := range c.registers {
-		GetDelegateHandler().DeregisterFromDelegate(register.GetRegisterID())
+		GetDelegateManager().DeregisterFromDelegate(register.GetRegisterID())
 		register.SetDelegate(nil)
 	}
 	// Delete delegate being created.
 	if c.GetDelegate() != nil {
-		GetDelegateHandler().DeleteDelegate(c.GetDelegate())
+		GetDelegateManager().DeleteDelegate(c.GetDelegate())
 	}
 	c.registers = []IRegister{}
 	c.delegate = nil
@@ -181,21 +181,21 @@ func (c *Component) DoUnLoad() {
 	Logger.Trace().Str("component", c.GetName()).Msg("DoUnLoad")
 	// Deregister all register entries from delegate handler
 	for _, register := range c.registers {
-		GetDelegateHandler().DeregisterFromDelegate(register.GetRegisterID())
+		GetDelegateManager().DeregisterFromDelegate(register.GetRegisterID())
 		// Register is created based on delegates for those belonging to the
-		// DelegateHandler. Those are unchanged and delegate does not have to
+		// DelegateManager. Those are unchanged and delegate does not have to
 		// be cleared.
 		if register.GetDelegate() != nil &&
-			register.GetDelegate().GetID() != GetDelegateHandler().GetCollisionDelegate().GetID() &&
-			register.GetDelegate().GetID() != GetDelegateHandler().GetDestroyDelegate().GetID() &&
-			register.GetDelegate().GetID() != GetDelegateHandler().GetLoadDelegate().GetID() {
+			register.GetDelegate().GetID() != GetDelegateManager().GetCollisionDelegate().GetID() &&
+			register.GetDelegate().GetID() != GetDelegateManager().GetDestroyDelegate().GetID() &&
+			register.GetDelegate().GetID() != GetDelegateManager().GetLoadDelegate().GetID() {
 			register.SetDelegate(nil)
 
 		}
 	}
 	// Delete delegate being created.
 	if c.GetDelegate() != nil {
-		GetDelegateHandler().DeleteDelegate(c.GetDelegate())
+		GetDelegateManager().DeleteDelegate(c.GetDelegate())
 	}
 	c.SetLoaded(false)
 	c.SetStarted(false)
@@ -252,7 +252,7 @@ func (c *Component) OnStart() {
 				}
 			}
 			if delegate != nil {
-				if registerID, ok := GetDelegateHandler().RegisterToDelegate(c, delegate, register.GetSignature()); ok {
+				if registerID, ok := GetDelegateManager().RegisterToDelegate(c, delegate, register.GetSignature()); ok {
 					register.SetRegisterID(registerID)
 					continue
 				}

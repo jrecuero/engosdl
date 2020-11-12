@@ -12,7 +12,7 @@ var TEST_RESULTS []string = []string{}
 func Benchmark_Delegate(b *testing.B) {
 	for i := 0; i < 10000; i++ {
 		TEST_RESULTS = []string{}
-		h := engosdl.NewDelegateHandler("test-handler")
+		h := engosdl.NewDelegateManager("test-handler")
 		obj := engosdl.NewObject("test-object")
 		delegate := h.CreateDelegate(obj, "active")
 		h.RegisterToDelegate(obj, delegate, test_create_register)
@@ -54,9 +54,9 @@ func TestDelegate_CreateRegister(t *testing.T) {
 	}
 }
 
-func TestDelegate_DelegateHandler(t *testing.T) {
+func TestDelegate_DelegateManager(t *testing.T) {
 	TEST_RESULTS = []string{}
-	h := engosdl.NewDelegateHandler("test-handler")
+	h := engosdl.NewDelegateManager("test-handler")
 	obj := engosdl.NewObject("test-object")
 	delegate := h.CreateDelegate(obj, "active")
 	h.RegisterToDelegate(obj, delegate, test_create_register)

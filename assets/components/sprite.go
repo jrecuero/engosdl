@@ -54,7 +54,7 @@ func NewSprite(name string, filenames []string, numberOfSprites int, renderer *s
 // DefaultAddDelegateToRegister will proceed to add default delegate to
 // register for the component.
 func (c *Sprite) DefaultAddDelegateToRegister() {
-	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, c.onCollision)
+	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.onCollision)
 	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.onOutOfBounds)
 }
 
@@ -112,7 +112,7 @@ func (c *Sprite) loadTexturesFromBMP() {
 	for _, filename := range c.Filenames {
 		if len(c.resources) == 0 && len(c.textures) == 0 {
 			var err error
-			resource := engosdl.GetResourceHandler().CreateResource(c.GetName(), filename)
+			resource := engosdl.GetResourceManager().CreateResource(c.GetName(), filename)
 			texture := resource.GetTextureFromSurface()
 			_, _, c.width, c.height, err = texture.Query()
 			if err != nil {

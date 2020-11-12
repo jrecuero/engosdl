@@ -13,12 +13,13 @@ type Engine struct {
 	active          bool
 	window          *sdl.Window
 	renderer        *sdl.Renderer
-	delegateHandler IDelegateHandler
-	eventHandler    IEventHandler
-	fontHandler     IFontHandler
-	resourceHandler IResourceHandler
-	sceneHandler    ISceneHandler
-	soundHandler    ISoundHandler
+	delegateManager IDelegateManager
+	eventManager    IEventManager
+	fontManager     IFontManager
+	resourceManager IResourceManager
+	sceneManager    ISceneManager
+	soundManager    ISoundManager
+	gameManager     IGameManager
 }
 
 // NewEngine creates a new engine instance.
@@ -29,12 +30,12 @@ func NewEngine(name string, w, h int32) *Engine {
 			name:            name,
 			width:           w,
 			height:          h,
-			delegateHandler: NewDelegateHandler("engine-delegate-handler"),
-			eventHandler:    NewEventHandler("engine-event-handler"),
-			fontHandler:     NewFontHandler("engine-font-handler"),
-			resourceHandler: NewResourceHandler("engine-resource-handler"),
-			sceneHandler:    NewSceneHandler("engine-scene-handler"),
-			soundHandler:    NewSoundHandler("engine-sound-handler"),
+			delegateManager: NewDelegateManager("engine-delegate-handler"),
+			eventManager:    NewEventManager("engine-event-handler"),
+			fontManager:     NewFontManager("engine-font-handler"),
+			resourceManager: NewResourceManager("engine-resource-handler"),
+			sceneManager:    NewSceneManager("engine-scene-handler"),
+			soundManager:    NewSoundManager("engine-sound-handler"),
 		}
 	}
 	return gameEngine
@@ -43,7 +44,7 @@ func NewEngine(name string, w, h int32) *Engine {
 // AddScene adds a new scene to the engine.
 func (engine *Engine) AddScene(scene IScene) bool {
 	Logger.Trace().Str("engine", engine.name).Msg("AddScene")
-	return engine.GetSceneHandler().AddScene(scene)
+	return engine.GetSceneManager().AddScene(scene)
 }
 
 // DestroyEntity removes the given entity from the game.
@@ -65,12 +66,12 @@ func (engine *Engine) DoCleanup() {
 
 // DoFrameEnd calls all methods to run at the end of a tick frame.
 func (engine *Engine) DoFrameEnd() {
-	engine.GetSceneHandler().DoFrameEnd()
+	engine.GetSceneManager().DoFrameEnd()
 }
 
 // DoFrameStart calls all methods to run at the start of a tick frame.
 func (engine *Engine) DoFrameStart() {
-	engine.GetSceneHandler().DoFrameStart()
+	engine.GetSceneManager().DoFrameStart()
 }
 
 // DoInit initializes basic engine resources.
@@ -84,12 +85,12 @@ func (engine *Engine) DoInit() {
 // event handler.
 func (engine *Engine) DoInitResources() {
 	Logger.Trace().Str("engine", engine.name).Msg("init resources")
-	engine.GetEventHandler().OnStart()
-	engine.GetDelegateHandler().OnStart()
-	engine.GetResourceHandler().OnStart()
-	engine.GetFontHandler().OnStart()
-	engine.GetSoundHandler().OnStart()
-	engine.GetSceneHandler().OnStart()
+	engine.GetEventManager().OnStart()
+	engine.GetDelegateManager().OnStart()
+	engine.GetResourceManager().OnStart()
+	engine.GetFontManager().OnStart()
+	engine.GetSoundManager().OnStart()
+	engine.GetSceneManager().OnStart()
 }
 
 // DoInitSdl initializes all engine sdl structures.
@@ -141,17 +142,17 @@ func (engine *Engine) DoRun() {
 		}
 
 		// Execute all update calls.
-		engine.GetSceneHandler().OnUpdate()
+		engine.GetSceneManager().OnUpdate()
 		// Call update for delegate handler.
-		engine.GetDelegateHandler().OnUpdate()
+		engine.GetDelegateManager().OnUpdate()
 		// Execute any post updates behavior.
-		engine.GetSceneHandler().OnAfterUpdate()
+		engine.GetSceneManager().OnAfterUpdate()
 
 		engine.renderer.SetDrawColor(255, 255, 255, 255)
 		engine.renderer.Clear()
 
 		// Execute all render calls.
-		engine.GetSceneHandler().OnRender()
+		engine.GetSceneManager().OnRender()
 
 		engine.renderer.Present()
 
@@ -174,25 +175,25 @@ func (engine *Engine) DoStart(scene IScene) {
 
 	// Set first scene as the active by default.
 	if scene != nil {
-		engine.GetSceneHandler().SetActiveScene(scene)
+		engine.GetSceneManager().SetActiveScene(scene)
 	} else {
-		engine.GetSceneHandler().SetActiveFirstScene()
+		engine.GetSceneManager().SetActiveFirstScene()
 	}
 }
 
-// GetDelegateHandler returns the engine delegate handler.
-func (engine *Engine) GetDelegateHandler() IDelegateHandler {
-	return engine.delegateHandler
+// GetDelegateManager returns the engine delegate handler.
+func (engine *Engine) GetDelegateManager() IDelegateManager {
+	return engine.delegateManager
 }
 
-// GetFontHandler returns the engine font handler.
-func (engine *Engine) GetFontHandler() IFontHandler {
-	return engine.fontHandler
+// GetFontManager returns the engine font handler.
+func (engine *Engine) GetFontManager() IFontManager {
+	return engine.fontManager
 }
 
-// GetEventHandler returns the engine event handler.
-func (engine *Engine) GetEventHandler() IEventHandler {
-	return engine.eventHandler
+// GetEventManager returns the engine event handler.
+func (engine *Engine) GetEventManager() IEventManager {
+	return engine.eventManager
 }
 
 // GetHeight returns engine window height
@@ -205,19 +206,19 @@ func (engine *Engine) GetRenderer() *sdl.Renderer {
 	return engine.renderer
 }
 
-// GetResourceHandler returns the engine resource handler.
-func (engine *Engine) GetResourceHandler() IResourceHandler {
-	return engine.resourceHandler
+// GetResourceManager returns the engine resource handler.
+func (engine *Engine) GetResourceManager() IResourceManager {
+	return engine.resourceManager
 }
 
-// GetSceneHandler returns the engine scene handler.
-func (engine *Engine) GetSceneHandler() ISceneHandler {
-	return engine.sceneHandler
+// GetSceneManager returns the engine scene handler.
+func (engine *Engine) GetSceneManager() ISceneManager {
+	return engine.sceneManager
 }
 
-// GetSoundHandler returns the engine sound handler.
-func (engine *Engine) GetSoundHandler() ISoundHandler {
-	return engine.soundHandler
+// GetSoundManager returns the engine sound handler.
+func (engine *Engine) GetSoundManager() ISoundManager {
+	return engine.soundManager
 }
 
 // GetWidth returns engine window width.

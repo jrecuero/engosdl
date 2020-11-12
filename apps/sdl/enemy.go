@@ -24,15 +24,15 @@ func NewEnemyController(name string, totalEnemies int) *EnemyController {
 // DefaultAddDelegateToRegister will proceed to add default delegate to
 // register for the component.
 func (c *EnemyController) DefaultAddDelegateToRegister() {
-	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetLoadDelegate(), nil, nil, c.onLoad)
-	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetDestroyDelegate(), nil, nil, c.onDestroy)
+	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetLoadDelegate(), nil, nil, c.onLoad)
+	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetDestroyDelegate(), nil, nil, c.onDestroy)
 }
 
 // onOutOfBounds is called when any enemy goes out of bounds.
 func (c *EnemyController) onOutOfBounds(params ...interface{}) bool {
 	if enemy, ok := params[0].(engosdl.IEntity); ok {
 		// fmt.Println("[Controller] enemy " + enemy.GetName() + " is out of bounds")
-		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), false, enemy)
+		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), false, enemy)
 	}
 	return true
 }
@@ -41,7 +41,7 @@ func (c *EnemyController) onOutOfBounds(params ...interface{}) bool {
 // non-dependent resources.
 func (c *EnemyController) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "enemy-controller").Msg("OnAwake")
-	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "enemy-controller"))
+	c.SetDelegate(engosdl.GetDelegateManager().CreateDelegate(c, "enemy-controller"))
 	c.Component.OnAwake()
 }
 
@@ -52,7 +52,7 @@ func (c *EnemyController) onDestroy(params ...interface{}) bool {
 	if entity.GetTag() == "enemy" {
 		c.totalEnemies--
 		if c.totalEnemies == 0 {
-			engosdl.GetEngine().GetSceneHandler().SetActiveFirstScene()
+			engosdl.GetEngine().GetSceneManager().SetActiveFirstScene()
 		}
 	}
 	return true
@@ -86,7 +86,7 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 		Sprite: components.NewSprite(name, filenames, numberOfSprites, engosdl.GetRenderer()),
 		hit:    false,
 	}
-	// result.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, result.onCollision)
+	// result.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, result.onCollision)
 	return result
 }
 
@@ -150,7 +150,7 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	enemySprite := newEnemySprite("enemy-sprite", []string{"images/enemies.bmp"}, 3)
 	enemySprite.SetDestroyOnOutOfBounds(false)
 	// enemySprite.DefaultAddDelegateToRegister()
-	enemySprite.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, enemySprite.DefaultOnCollision)
+	enemySprite.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, enemySprite.DefaultOnCollision)
 	// enemySprite.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, func(params ...interface{}) bool {
 	// 	speed := enemyMove.GetSpeed()
 	// 	enemyMove.SetSpeed(engosdl.NewVector(speed.X*-1, speed.Y*-1))

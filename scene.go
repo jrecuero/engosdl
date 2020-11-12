@@ -102,8 +102,8 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 				scene.collisionCollection = append(scene.collisionCollection[:index], scene.collisionCollection[index+1:]...)
 			}
 			// Trigger destroy delegate
-			destroyDelegate := GetDelegateHandler().GetDestroyDelegate()
-			GetDelegateHandler().TriggerDelegate(destroyDelegate, true, entity)
+			destroyDelegate := GetDelegateManager().GetDestroyDelegate()
+			GetDelegateManager().TriggerDelegate(destroyDelegate, true, entity)
 			return true
 		}
 	}
@@ -286,8 +286,8 @@ func (scene *Scene) loadUnloadedEntities() {
 			unloaded = append(unloaded, entity)
 		}
 		// Trigger load delegate
-		loadDelegate := GetDelegateHandler().GetLoadDelegate()
-		GetDelegateHandler().TriggerDelegate(loadDelegate, true, entity)
+		loadDelegate := GetDelegateManager().GetLoadDelegate()
+		GetDelegateManager().TriggerDelegate(loadDelegate, true, entity)
 	}
 	scene.unloadedEntities = unloaded
 }
@@ -362,8 +362,8 @@ func (scene *Scene) OnUpdate() {
 			if distance < (radiusI + radiusJ) {
 				// if rectI.HasIntersection(rectJ) {
 				fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
-				delegate := GetDelegateHandler().GetCollisionDelegate()
-				GetDelegateHandler().TriggerDelegate(delegate, true, entityI, entityJ)
+				delegate := GetDelegateManager().GetCollisionDelegate()
+				GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
 			}
 		}
 	}

@@ -96,9 +96,9 @@ func (r *Font) New() {
 	r.counter++
 }
 
-// IFontHandler represents the handler that is in charge of all graphical
+// IFontManager represents the handler that is in charge of all graphical
 // fonts.
-type IFontHandler interface {
+type IFontManager interface {
 	IObject
 	Clear()
 	CreateFont(string, string, int) IFont
@@ -110,18 +110,18 @@ type IFontHandler interface {
 	OnStart()
 }
 
-// FontHandler is the default implementation for the font handler.
-type FontHandler struct {
+// FontManager is the default implementation for the font handler.
+type FontManager struct {
 	*Object
 	fonts []IFont
 }
 
-var _ IFontHandler = (*FontHandler)(nil)
+var _ IFontManager = (*FontManager)(nil)
 
-// NewFontHandler creates a new font handler instance.
-func NewFontHandler(name string) *FontHandler {
+// NewFontManager creates a new font handler instance.
+func NewFontManager(name string) *FontManager {
 	Logger.Trace().Str("font-handler", name).Msg("new font-handler")
-	return &FontHandler{
+	return &FontManager{
 		Object: NewObject(name),
 		fonts:  []IFont{},
 	}
@@ -129,7 +129,7 @@ func NewFontHandler(name string) *FontHandler {
 }
 
 // Clear removes all fonts from the font handler.
-func (h *FontHandler) Clear() {
+func (h *FontManager) Clear() {
 	Logger.Trace().Str("font-handler", h.GetName()).Msg("Clear")
 	for _, r := range h.fonts {
 		r.Clear()
@@ -139,7 +139,7 @@ func (h *FontHandler) Clear() {
 
 // CreateFont creates a new font. If the same font has already
 // been created with the same filename, existing font is returned.
-func (h *FontHandler) CreateFont(name string, filename string, fontSize int) IFont {
+func (h *FontManager) CreateFont(name string, filename string, fontSize int) IFont {
 	Logger.Trace().Str("font-handler", h.GetName()).Str("name", name).Str("filename", filename).Msg("CreateFont")
 	for _, font := range h.fonts {
 		if font.GetFilename() == filename {
@@ -154,7 +154,7 @@ func (h *FontHandler) CreateFont(name string, filename string, fontSize int) IFo
 
 // DeleteFont deletes font from the handler. Memory fonts are
 // released from the given font.
-func (h *FontHandler) DeleteFont(font IFont) bool {
+func (h *FontManager) DeleteFont(font IFont) bool {
 	Logger.Trace().Str("font-handler", h.GetName()).Str("name", font.GetName()).Str("filename", font.GetFilename()).Msg("DeleteFont")
 	for i := len(h.fonts) - 1; i >= 0; i-- {
 		r := h.fonts[i]
@@ -169,7 +169,7 @@ func (h *FontHandler) DeleteFont(font IFont) bool {
 }
 
 // GetFont returns a font with the given font ID.
-func (h *FontHandler) GetFont(id string) IFont {
+func (h *FontManager) GetFont(id string) IFont {
 	for _, font := range h.fonts {
 		if font.GetID() == id {
 			return font
@@ -179,7 +179,7 @@ func (h *FontHandler) GetFont(id string) IFont {
 }
 
 // GetFontByFilename returns the font with the given filename.
-func (h *FontHandler) GetFontByFilename(filename string) IFont {
+func (h *FontManager) GetFontByFilename(filename string) IFont {
 	for _, font := range h.fonts {
 		if font.GetFilename() == filename {
 			return font
@@ -189,7 +189,7 @@ func (h *FontHandler) GetFontByFilename(filename string) IFont {
 }
 
 // GetFontByName returns the font with the given name.
-func (h *FontHandler) GetFontByName(name string) IFont {
+func (h *FontManager) GetFontByName(name string) IFont {
 	for _, font := range h.fonts {
 		if font.GetName() == name {
 			return font
@@ -199,11 +199,11 @@ func (h *FontHandler) GetFontByName(name string) IFont {
 }
 
 // GetFonts returns all fonts.
-func (h *FontHandler) GetFonts() []IFont {
+func (h *FontManager) GetFonts() []IFont {
 	return h.fonts
 }
 
 // OnStart initializes all font handler structure.
-func (h *FontHandler) OnStart() {
+func (h *FontManager) OnStart() {
 	Logger.Trace().Str("font-handler", h.GetName()).Msg("OnStart")
 }

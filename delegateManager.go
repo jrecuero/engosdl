@@ -12,13 +12,13 @@ const (
 	// OutOfBoundsName represents on out of bounds delegate.
 	OutOfBoundsName = "on-out-of-bounds"
 
-	delegateHandlerName   = "delegate-handler"
+	delegateManagerName   = "delegate-handler"
 	collisionDelegate     = CollisionName
-	collisionDelegateName = delegateHandlerName + "/" + collisionDelegate
+	collisionDelegateName = delegateManagerName + "/" + collisionDelegate
 	destroyDelegate       = DestroyName
-	destroyDelegateName   = delegateHandlerName + "/" + destroyDelegate
+	destroyDelegateName   = delegateManagerName + "/" + destroyDelegate
 	loadDelegate          = LoadName
-	loadDelegateName      = delegateHandlerName + "/" + loadDelegate
+	loadDelegateName      = delegateManagerName + "/" + loadDelegate
 )
 
 // IDelegate represents any delegate to be used in the delegate event handler.
@@ -50,8 +50,8 @@ type IRegister interface {
 	SetSignature(TDelegateSignature) IRegister
 }
 
-// IDelegateHandler represents the interface for the delefate event handler.
-type IDelegateHandler interface {
+// IDelegateManager represents the interface for the delefate event handler.
+type IDelegateManager interface {
 	IObject
 	AuditDelegates()
 	AuditRegisters()
@@ -194,8 +194,8 @@ func (r *Register) SetSignature(signature TDelegateSignature) IRegister {
 	return r
 }
 
-// DelegateHandler is the default implementation for event handler interface.
-type DelegateHandler struct {
+// DelegateManager is the default implementation for event handler interface.
+type DelegateManager struct {
 	*Object
 	delegates  []IDelegate
 	registers  []IRegister
@@ -203,10 +203,10 @@ type DelegateHandler struct {
 	toBeCalled []IRegister
 }
 
-// NewDelegateHandler creates a new delegate handler instance.
-func NewDelegateHandler(name string) *DelegateHandler {
+// NewDelegateManager creates a new delegate handler instance.
+func NewDelegateManager(name string) *DelegateManager {
 	Logger.Trace().Str("delegate-handler", name).Msg("new delegate handler")
-	return &DelegateHandler{
+	return &DelegateManager{
 		Object:     NewObject(name),
 		delegates:  []IDelegate{},
 		registers:  []IRegister{},
@@ -216,14 +216,14 @@ func NewDelegateHandler(name string) *DelegateHandler {
 }
 
 // AuditDelegates displays all delegates for audit purposes.
-func (h *DelegateHandler) AuditDelegates() {
+func (h *DelegateManager) AuditDelegates() {
 	for i, delegate := range h.delegates {
 		fmt.Printf("%d delegate: [%s] %s %s\n", i, delegate.GetID(), delegate.GetName(), delegate.GetObject().GetName())
 	}
 }
 
 // AuditRegisters displays all registers for audit purposes.
-func (h *DelegateHandler) AuditRegisters() {
+func (h *DelegateManager) AuditRegisters() {
 	for i, register := range h.registers {
 		delegate := register.GetDelegate()
 		fmt.Printf("%d register: [%s] %s %s\n", i, delegate.GetID(), delegate.GetName(), register.GetObject().GetName())
@@ -231,7 +231,7 @@ func (h *DelegateHandler) AuditRegisters() {
 }
 
 // CreateDelegate creates a new delefate in the delegate handler
-func (h *DelegateHandler) CreateDelegate(obj IObject, evName string) IDelegate {
+func (h *DelegateManager) CreateDelegate(obj IObject, evName string) IDelegate {
 	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("CreateDelegate")
 	delegate := NewDelegate(obj.GetName()+"/"+evName, obj, evName)
 	h.delegates = append(h.delegates, delegate)
@@ -240,7 +240,7 @@ func (h *DelegateHandler) CreateDelegate(obj IObject, evName string) IDelegate {
 
 // DeleteDelegate deletes the given delegate from delegate handler and
 // all registers
-func (h *DelegateHandler) DeleteDelegate(delegate IDelegate) bool {
+func (h *DelegateManager) DeleteDelegate(delegate IDelegate) bool {
 	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("DeleteDelegate")
 	for i := len(h.delegates) - 1; i >= 0; i-- {
 		delegat := h.delegates[i]
@@ -259,7 +259,7 @@ func (h *DelegateHandler) DeleteDelegate(delegate IDelegate) bool {
 }
 
 // DeregisterFromDelegate unregistered the given register from the delegate.
-func (h *DelegateHandler) DeregisterFromDelegate(registerID string) bool {
+func (h *DelegateManager) DeregisterFromDelegate(registerID string) bool {
 	for i := len(h.registers) - 1; i >= 0; i-- {
 		register := h.registers[i]
 		if register.GetRegisterID() == registerID {
@@ -272,22 +272,22 @@ func (h *DelegateHandler) DeregisterFromDelegate(registerID string) bool {
 }
 
 // GetCollisionDelegate returns default delegate for collisions.
-func (h *DelegateHandler) GetCollisionDelegate() IDelegate {
+func (h *DelegateManager) GetCollisionDelegate() IDelegate {
 	return h.defaults[collisionDelegate]
 }
 
 // GetDestroyDelegate returns default delegate when entity is destroyed.
-func (h *DelegateHandler) GetDestroyDelegate() IDelegate {
+func (h *DelegateManager) GetDestroyDelegate() IDelegate {
 	return h.defaults[destroyDelegate]
 }
 
 // GetLoadDelegate returns default delegate when entity is loaded/created.
-func (h *DelegateHandler) GetLoadDelegate() IDelegate {
+func (h *DelegateManager) GetLoadDelegate() IDelegate {
 	return h.defaults[loadDelegate]
 }
 
 // OnStart initializes all delegate handler structure.
-func (h *DelegateHandler) OnStart() {
+func (h *DelegateManager) OnStart() {
 	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("OnStart")
 	h.defaults[collisionDelegate] = h.CreateDelegate(h, collisionDelegate)
 	h.defaults[destroyDelegate] = h.CreateDelegate(h, destroyDelegate)
@@ -297,7 +297,7 @@ func (h *DelegateHandler) OnStart() {
 // OnUpdate is called after all other OnUpdate methods have been called for
 // all entities and components in the scene. It will execute all registers
 // still pending.
-func (h *DelegateHandler) OnUpdate() {
+func (h *DelegateManager) OnUpdate() {
 	for i := 0; i < len(h.toBeCalled); i++ {
 		register := h.toBeCalled[i]
 		register.GetSignature()(register.GetParams()...)
@@ -306,7 +306,7 @@ func (h *DelegateHandler) OnUpdate() {
 }
 
 // RegisterToDelegate registers a method to a delegate.
-func (h *DelegateHandler) RegisterToDelegate(obj IObject, delegate IDelegate, signature TDelegateSignature) (string, bool) {
+func (h *DelegateManager) RegisterToDelegate(obj IObject, delegate IDelegate, signature TDelegateSignature) (string, bool) {
 	Logger.Trace().Str("delegate-handler", h.GetName()).Str("delegate", delegate.GetName()).Msg("register-to-delegate")
 	register := NewRegister("", obj, nil, nil, delegate, signature)
 	register.SetRegisterID(register.GetID())
@@ -315,7 +315,7 @@ func (h *DelegateHandler) RegisterToDelegate(obj IObject, delegate IDelegate, si
 }
 
 // TriggerDelegate calls all signatures registered to a given delegate.
-func (h *DelegateHandler) TriggerDelegate(delegate IDelegate, now bool, params ...interface{}) {
+func (h *DelegateManager) TriggerDelegate(delegate IDelegate, now bool, params ...interface{}) {
 	for _, register := range h.registers {
 		if register.GetDelegate() != nil && register.GetDelegate().GetID() == delegate.GetID() {
 			if now {

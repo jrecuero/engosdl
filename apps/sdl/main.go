@@ -97,7 +97,7 @@ func createScenePlay(engine *engosdl.Engine, scene engosdl.IScene) bool {
 		key := params[0].(int)
 		// if key == sdl.SCANCODE_N {
 		if key == sdl.SCANCODE_RETURN {
-			engosdl.GetEngine().GetSceneHandler().SwapFromSceneTo(engine.GetSceneHandler().GetSceneByName("stats-scene"))
+			engosdl.GetEngine().GetSceneManager().SwapFromSceneTo(engine.GetSceneManager().GetSceneByName("stats-scene"))
 		}
 		return true
 	})
@@ -127,7 +127,7 @@ func createSceneStats(engine *engosdl.Engine, scene engosdl.IScene) bool {
 		key := params[0].(int)
 		// if key == sdl.SCANCODE_P {
 		if key == sdl.SCANCODE_RETURN {
-			engosdl.GetEngine().GetSceneHandler().SwapBack()
+			engosdl.GetEngine().GetSceneManager().SwapBack()
 		}
 		return true
 	})
@@ -150,7 +150,7 @@ func createSceneTitle(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	titleText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
 		key := params[0].(int)
 		if key == sdl.SCANCODE_RETURN {
-			engosdl.GetEngine().GetSceneHandler().SetActiveNextScene()
+			engosdl.GetEngine().GetSceneManager().SetActiveNextScene()
 		}
 		return true
 	})
@@ -178,7 +178,7 @@ func createScore(engine *engosdl.Engine) engosdl.IEntity {
 
 	scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000", engine.GetRenderer())
 	scoreText.DefaultAddDelegateToRegister()
-	destroyDelegate := engosdl.GetDelegateHandler().GetDestroyDelegate()
+	destroyDelegate := engosdl.GetDelegateManager().GetDestroyDelegate()
 	scoreText.AddDelegateToRegister(destroyDelegate, nil, nil, func(params ...interface{}) bool {
 		entity := params[0].(engosdl.IEntity)
 		if entity.GetTag() == "enemy" {

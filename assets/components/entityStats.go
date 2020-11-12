@@ -33,7 +33,7 @@ func NewEntityStats(name string, life int) *EntityStats {
 // DefaultAddDelegateToRegister will proceed to add default delegate to
 // register for the component.
 func (c *EntityStats) DefaultAddDelegateToRegister() {
-	c.AddDelegateToRegister(engosdl.GetDelegateHandler().GetCollisionDelegate(), nil, nil, c.onCollision)
+	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.onCollision)
 }
 
 // OnAwake should create all component resources that don't have any dependency
@@ -41,7 +41,7 @@ func (c *EntityStats) DefaultAddDelegateToRegister() {
 func (c *EntityStats) OnAwake() {
 	// Create new delegate "entity-stats"
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnAwake")
-	c.SetDelegate(engosdl.GetDelegateHandler().CreateDelegate(c, "on-entity-stats"))
+	c.SetDelegate(engosdl.GetDelegateManager().CreateDelegate(c, "on-entity-stats"))
 	c.Component.OnAwake()
 
 }
@@ -52,7 +52,7 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
 		c.Life -= 10
-		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.Life)
+		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.Life)
 		fmt.Printf("%s [live %d] onCollision %s with %s\n",
 			c.GetEntity().GetName(),
 			c.Life,

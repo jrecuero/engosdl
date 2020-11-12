@@ -49,26 +49,26 @@ func GetEngine() *Engine {
 	return gameEngine
 }
 
-// GetDelegateHandler returns the delegate handler.
-func GetDelegateHandler() IDelegateHandler {
+// GetDelegateManager returns the delegate handler.
+func GetDelegateManager() IDelegateManager {
 	if engine := GetEngine(); engine != nil {
-		return engine.GetDelegateHandler()
+		return engine.GetDelegateManager()
 	}
 	return nil
 }
 
-// GetEventHandler returns the event handler.
-func GetEventHandler() IEventHandler {
+// GetEventManager returns the event handler.
+func GetEventManager() IEventManager {
 	if engine := GetEngine(); engine != nil {
-		return engine.GetEventHandler()
+		return engine.GetEventManager()
 	}
 	return nil
 }
 
-// GetFontHandler returns the font handler.
-func GetFontHandler() IFontHandler {
+// GetFontManager returns the font handler.
+func GetFontManager() IFontManager {
 	if engine := GetEngine(); engine != nil {
-		return engine.GetFontHandler()
+		return engine.GetFontManager()
 	}
 	return nil
 }
@@ -81,26 +81,26 @@ func GetRenderer() *sdl.Renderer {
 	return nil
 }
 
-// GetResourceHandler returns the engine resource handler.
-func GetResourceHandler() IResourceHandler {
+// GetResourceManager returns the engine resource handler.
+func GetResourceManager() IResourceManager {
 	if engine := GetEngine(); engine != nil {
-		return engine.GetResourceHandler()
+		return engine.GetResourceManager()
 	}
 	return nil
 }
 
-// GetSceneHandler returns the engine scene handler.
-func GetSceneHandler() ISceneHandler {
+// GetSceneManager returns the engine scene handler.
+func GetSceneManager() ISceneManager {
 	if engine := GetEngine(); engine != nil {
-		return engine.GetSceneHandler()
+		return engine.GetSceneManager()
 	}
 	return nil
 }
 
-// GetSoundHandler returns the engine sound handler.
-func GetSoundHandler() ISoundHandler {
+// GetSoundManager returns the engine sound handler.
+func GetSoundManager() ISoundManager {
 	if engine := GetEngine(); engine != nil {
-		return engine.GetSoundHandler()
+		return engine.GetSoundManager()
 	}
 	return nil
 }

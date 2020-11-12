@@ -2,8 +2,8 @@ package engosdl
 
 import "fmt"
 
-// ISceneHandler represents the interface for the scene handler.
-type ISceneHandler interface {
+// ISceneManager represents the interface for the scene handler.
+type ISceneManager interface {
 	IObject
 	AddScene(IScene) bool
 	DeleteScene(string) bool
@@ -33,20 +33,20 @@ type ActiveScene struct {
 	index int
 }
 
-// SceneHandler is the default implementation for the scene handler interface.
-type SceneHandler struct {
+// SceneManager is the default implementation for the scene handler interface.
+type SceneManager struct {
 	*Object
 	scenes       []IScene
 	activeScene  *ActiveScene
 	standByScene *ActiveScene
 }
 
-var _ ISceneHandler = (*SceneHandler)(nil)
+var _ ISceneManager = (*SceneManager)(nil)
 
-// NewSceneHandler creates a new scene handler instance.
-func NewSceneHandler(name string) *SceneHandler {
+// NewSceneManager creates a new scene handler instance.
+func NewSceneManager(name string) *SceneManager {
 	Logger.Trace().Str("scene-handler", name).Msg("new scene handler")
-	return &SceneHandler{
+	return &SceneManager{
 		Object:       NewObject(name),
 		scenes:       []IScene{},
 		activeScene:  &ActiveScene{},
@@ -55,7 +55,7 @@ func NewSceneHandler(name string) *SceneHandler {
 }
 
 // AddScene adds a new scene to the scene handler
-func (h *SceneHandler) AddScene(scene IScene) bool {
+func (h *SceneManager) AddScene(scene IScene) bool {
 	Logger.Trace().Str("scene-handler", h.GetName()).Msg("AddScene")
 	if scene := h.GetScene(scene.GetID()); scene != nil {
 		return false
@@ -65,7 +65,7 @@ func (h *SceneHandler) AddScene(scene IScene) bool {
 }
 
 // DeleteScene deletes the scene given by the name.
-func (h *SceneHandler) DeleteScene(name string) bool {
+func (h *SceneManager) DeleteScene(name string) bool {
 	Logger.Trace().Str("scene-handler", h.GetName()).Msg("DeleteScene")
 	if scene, i := h.getScene(name); scene != nil {
 		h.scenes = append(h.scenes[:i], h.scenes[i+1:]...)
@@ -75,26 +75,26 @@ func (h *SceneHandler) DeleteScene(name string) bool {
 }
 
 // DoFrameEnd calls all methods to run at the end of a tick frame.
-func (h *SceneHandler) DoFrameEnd() {
+func (h *SceneManager) DoFrameEnd() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.DoFrameEnd()
 	}
 }
 
 // DoFrameStart calls all methods to run at the start of a tick frame.
-func (h *SceneHandler) DoFrameStart() {
+func (h *SceneManager) DoFrameStart() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.DoFrameStart()
 	}
 }
 
 // GetActiveScene returns the scene handler active scene at that time.
-func (h *SceneHandler) GetActiveScene() IScene {
+func (h *SceneManager) GetActiveScene() IScene {
 	return h.activeScene.scene
 }
 
 // getScene returns the scene and index by the given scene name.
-func (h *SceneHandler) getScene(id string) (IScene, int) {
+func (h *SceneManager) getScene(id string) (IScene, int) {
 	for i, scene := range h.GetScenes() {
 		if scene.GetID() == id {
 			return scene, i
@@ -104,7 +104,7 @@ func (h *SceneHandler) getScene(id string) (IScene, int) {
 }
 
 // getSceneByName returns the scene and index by the given scene name.
-func (h *SceneHandler) getSceneByName(name string) (IScene, int) {
+func (h *SceneManager) getSceneByName(name string) (IScene, int) {
 	for i, scene := range h.GetScenes() {
 		if scene.GetName() == name {
 			return scene, i
@@ -114,7 +114,7 @@ func (h *SceneHandler) getSceneByName(name string) (IScene, int) {
 }
 
 // GetScene returns the scene for the given name.
-func (h *SceneHandler) GetScene(id string) IScene {
+func (h *SceneManager) GetScene(id string) IScene {
 	if scene, _ := h.getScene(id); scene != nil {
 		return scene
 	}
@@ -122,7 +122,7 @@ func (h *SceneHandler) GetScene(id string) IScene {
 }
 
 // GetSceneByName returns the scene for the given name.
-func (h *SceneHandler) GetSceneByName(name string) IScene {
+func (h *SceneManager) GetSceneByName(name string) IScene {
 	if scene, _ := h.getSceneByName(name); scene != nil {
 		return scene
 	}
@@ -130,34 +130,34 @@ func (h *SceneHandler) GetSceneByName(name string) IScene {
 }
 
 // GetScenes returns all scenes in the scene handler.
-func (h *SceneHandler) GetScenes() []IScene {
+func (h *SceneManager) GetScenes() []IScene {
 	return h.scenes
 }
 
 // OnAfterUpdate calls all scene OnAfterUpdate, which should run after DoUpdate
 // runs and before DoRender.
-func (h *SceneHandler) OnAfterUpdate() {
+func (h *SceneManager) OnAfterUpdate() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.OnAfterUpdate()
 	}
 }
 
 // OnRender calls all scene OnRender methods.
-func (h *SceneHandler) OnRender() {
+func (h *SceneManager) OnRender() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.OnRender()
 	}
 }
 
 // OnEnable calls all scene OnEnable methods.
-func (h *SceneHandler) OnEnable() {
+func (h *SceneManager) OnEnable() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.OnEnable()
 	}
 }
 
 // OnStart calls all scene OnStart methods.
-func (h *SceneHandler) OnStart() {
+func (h *SceneManager) OnStart() {
 	Logger.Trace().Str("scene-handler", h.GetName()).Msg("OnStart")
 	// if activeScene := h.GetActiveScene(); activeScene != nil {
 	// 	activeScene.OnStart()
@@ -165,14 +165,14 @@ func (h *SceneHandler) OnStart() {
 }
 
 // OnUpdate calls all scene OnUpdate methods.
-func (h *SceneHandler) OnUpdate() {
+func (h *SceneManager) OnUpdate() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.OnUpdate()
 	}
 }
 
 // SetActiveFirstScene sets the first scene as the active one.
-func (h *SceneHandler) SetActiveFirstScene() IScene {
+func (h *SceneManager) SetActiveFirstScene() IScene {
 	if len(h.GetScenes()) > 0 {
 
 		scene := h.GetScenes()[0]
@@ -183,7 +183,7 @@ func (h *SceneHandler) SetActiveFirstScene() IScene {
 }
 
 // SetActiveLastScene sets the last scene as the active one.
-func (h *SceneHandler) SetActiveLastScene() IScene {
+func (h *SceneManager) SetActiveLastScene() IScene {
 	length := len(h.GetScenes())
 	if length > 0 {
 		scene := h.GetScenes()[length-1]
@@ -194,7 +194,7 @@ func (h *SceneHandler) SetActiveLastScene() IScene {
 }
 
 // SetActiveNextScene sets the next scene as the active one.
-func (h *SceneHandler) SetActiveNextScene() IScene {
+func (h *SceneManager) SetActiveNextScene() IScene {
 	length := len(h.GetScenes())
 	if length > 0 && h.activeScene.scene != nil && h.activeScene.index < length-1 {
 		index := h.activeScene.index + 1
@@ -206,7 +206,7 @@ func (h *SceneHandler) SetActiveNextScene() IScene {
 }
 
 // SetActivePrevScene set the previous scene as the active one.
-func (h *SceneHandler) SetActivePrevScene() IScene {
+func (h *SceneManager) SetActivePrevScene() IScene {
 	length := len(h.GetScenes())
 	if length > 0 && h.activeScene.scene != nil && h.activeScene.index > 0 {
 		index := h.activeScene.index - 1
@@ -219,11 +219,11 @@ func (h *SceneHandler) SetActivePrevScene() IScene {
 
 // setActiveScene set the given scene and index and active one. It proceeds
 // to unload previous scene active and load new one.
-func (h *SceneHandler) setActiveScene(scene IScene, index int) {
+func (h *SceneManager) setActiveScene(scene IScene, index int) {
 	fmt.Println("Audit Before UnLoading")
 	fmt.Println("----------------------")
-	GetDelegateHandler().AuditDelegates()
-	GetDelegateHandler().AuditRegisters()
+	GetDelegateManager().AuditDelegates()
+	GetDelegateManager().AuditRegisters()
 	if h.activeScene.scene != nil {
 		h.activeScene.scene.AuditEntities()
 		// h.activeScene.scene.DoUnLoad()
@@ -231,8 +231,8 @@ func (h *SceneHandler) setActiveScene(scene IScene, index int) {
 	}
 	fmt.Println("Audit After UnLoading")
 	fmt.Println("---------------------")
-	GetDelegateHandler().AuditDelegates()
-	GetDelegateHandler().AuditRegisters()
+	GetDelegateManager().AuditDelegates()
+	GetDelegateManager().AuditRegisters()
 	h.activeScene.scene = scene
 	h.activeScene.index = index
 	h.activeScene.scene.GetSceneCode()(GetEngine(), h.activeScene.scene)
@@ -240,13 +240,13 @@ func (h *SceneHandler) setActiveScene(scene IScene, index int) {
 	h.activeScene.scene.OnStart()
 	fmt.Println("Audit After Loading")
 	fmt.Println("-------------------")
-	GetDelegateHandler().AuditDelegates()
-	GetDelegateHandler().AuditRegisters()
+	GetDelegateManager().AuditDelegates()
+	GetDelegateManager().AuditRegisters()
 	h.activeScene.scene.AuditEntities()
 }
 
 // SetActiveScene sets the given scene as the active scene.
-func (h *SceneHandler) SetActiveScene(scene IScene) bool {
+func (h *SceneManager) SetActiveScene(scene IScene) bool {
 	for i, scn := range h.GetScenes() {
 		if scn == scene {
 			h.setActiveScene(scene, i)
@@ -258,12 +258,12 @@ func (h *SceneHandler) SetActiveScene(scene IScene) bool {
 
 // SwapFromSceneTo swaps from the active scene to a new one. The former active
 // scene is moved to standby.
-func (h *SceneHandler) SwapFromSceneTo(newScene IScene) bool {
+func (h *SceneManager) SwapFromSceneTo(newScene IScene) bool {
 	if scene, index := h.getScene(newScene.GetID()); scene != nil {
 		fmt.Println("Audit Before Swap From")
 		fmt.Println("----------------------")
-		GetDelegateHandler().AuditDelegates()
-		GetDelegateHandler().AuditRegisters()
+		GetDelegateManager().AuditDelegates()
+		GetDelegateManager().AuditRegisters()
 		h.activeScene.scene.AuditEntities()
 
 		h.activeScene.scene.DoSwapFrom()
@@ -277,8 +277,8 @@ func (h *SceneHandler) SwapFromSceneTo(newScene IScene) bool {
 
 		fmt.Println("Audit After Swap From")
 		fmt.Println("---------------------")
-		GetDelegateHandler().AuditDelegates()
-		GetDelegateHandler().AuditRegisters()
+		GetDelegateManager().AuditDelegates()
+		GetDelegateManager().AuditRegisters()
 		h.activeScene.scene.AuditEntities()
 
 		return true
@@ -287,14 +287,14 @@ func (h *SceneHandler) SwapFromSceneTo(newScene IScene) bool {
 }
 
 // SwapBack swaps back to the standby scene.
-func (h *SceneHandler) SwapBack() bool {
+func (h *SceneManager) SwapBack() bool {
 	if h.standByScene.scene == nil {
 		return false
 	}
 	fmt.Println("Audit Before Swap Back")
 	fmt.Println("----------------------")
-	GetDelegateHandler().AuditDelegates()
-	GetDelegateHandler().AuditRegisters()
+	GetDelegateManager().AuditDelegates()
+	GetDelegateManager().AuditRegisters()
 	h.activeScene.scene.AuditEntities()
 
 	h.activeScene.scene.DoUnLoad()
@@ -305,8 +305,8 @@ func (h *SceneHandler) SwapBack() bool {
 
 	fmt.Println("Audit After Swap Back")
 	fmt.Println("---------------------")
-	GetDelegateHandler().AuditDelegates()
-	GetDelegateHandler().AuditRegisters()
+	GetDelegateManager().AuditDelegates()
+	GetDelegateManager().AuditRegisters()
 	h.activeScene.scene.AuditEntities()
 
 	return true
