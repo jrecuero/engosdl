@@ -318,6 +318,14 @@ func (h *DelegateManager) RegisterToDelegate(obj IObject, delegate IDelegate, si
 func (h *DelegateManager) TriggerDelegate(delegate IDelegate, now bool, params ...interface{}) {
 	for _, register := range h.registers {
 		if register.GetDelegate() != nil && register.GetDelegate().GetID() == delegate.GetID() {
+			// Check if the entity for the component in the register belongs
+			// to the active scene.
+			if source, ok := register.GetObject().(IComponent); ok {
+				entity := source.GetEntity()
+				if entity.GetScene().GetID() != GetSceneManager().GetActiveScene().GetID() {
+					continue
+				}
+			}
 			if now {
 				register.GetSignature()(params...)
 			} else {

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/jrecuero/engosdl"
 )
 
@@ -32,7 +30,7 @@ func (h *GameManager) DoFrameStart() {
 	activeScene := engosdl.GetSceneManager().GetActiveScene()
 	if activeScene.GetTag() == "battle" {
 		enemies := activeScene.GetEntitiesByTag("enemy")
-		fmt.Printf("there are %d enemies\n", len(enemies))
+		// fmt.Printf("there are %d enemies\n", len(enemies))
 		if len(enemies) == 0 {
 			// engosdl.GetEngine().GetSceneManager().SetActiveFirstScene()
 			winner := activeScene.GetEntityByName("winner")
