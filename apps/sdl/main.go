@@ -19,11 +19,11 @@ func createAssets(engine *engosdl.Engine) {
 	}()
 
 	// Scenes
-	titleScene := engosdl.NewScene("title-scene")
+	titleScene := engosdl.NewScene("title-scene", "title")
 	titleScene.SetSceneCode(createSceneTitle)
-	playScene := engosdl.NewScene("play-scene")
+	playScene := engosdl.NewScene("play-scene", "battle")
 	playScene.SetSceneCode(createScenePlay)
-	statsScene := engosdl.NewScene("stats-scene")
+	statsScene := engosdl.NewScene("stats-scene", "stats")
 	statsScene.SetSceneCode(createSceneStats)
 
 	// Add scenes to engine
@@ -95,14 +95,30 @@ func createScenePlay(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	sceneControllerComponent := engosdl.NewComponent("scene-controller-controller")
 	sceneControllerComponent.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
 		key := params[0].(int)
-		// if key == sdl.SCANCODE_N {
-		if key == sdl.SCANCODE_RETURN {
+		if key == sdl.SCANCODE_N {
+			// if key == sdl.SCANCODE_RETURN {
 			engosdl.GetEngine().GetSceneManager().SwapFromSceneTo(engine.GetSceneManager().GetSceneByName("stats-scene"))
 		}
 		return true
 	})
 	sceneController.AddComponent(sceneControllerKeyboard)
 	sceneController.AddComponent(sceneControllerComponent)
+	winner := engosdl.NewEntity("winner")
+	winnerKeyboard := components.NewKeyboard("winner-keyboard")
+	winnerKeyboard.DefaultAddDelegateToRegister()
+	winnerText := components.NewText("winner-text", "fonts/lato.ttf", 24, sdl.Color{R: 0, G: 0, B: 255}, "You Won...type any key", engosdl.GetRenderer())
+	winnerText.DefaultAddDelegateToRegister()
+	winnerText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
+		key := params[0].(int)
+		if key == sdl.SCANCODE_RETURN {
+			engosdl.GetEngine().GetSceneManager().SetActiveFirstScene()
+		}
+		return true
+	})
+	winner.AddComponent(winnerKeyboard)
+	winner.AddComponent(winnerText)
+	winner.SetActive(false)
+	winner.SetTag("winner")
 
 	// Add entities to scene
 	scene.AddEntity(bg)
@@ -113,6 +129,7 @@ func createScenePlay(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	}
 	scene.AddEntity(score)
 	scene.AddEntity(sceneController)
+	scene.AddEntity(winner)
 
 	return true
 }
@@ -194,7 +211,7 @@ func createScore(engine *engosdl.Engine) engosdl.IEntity {
 
 func main() {
 	fmt.Println("engosdl app")
-	engine := engosdl.NewEngine("engosdl app", 400, 600)
+	engine := engosdl.NewEngine("engosdl app", 400, 600, NewGameManager("app-game-manager"))
 	engine.DoInit()
 	if engine != nil {
 		createAssets(engine)

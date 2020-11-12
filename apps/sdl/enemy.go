@@ -24,8 +24,8 @@ func NewEnemyController(name string, totalEnemies int) *EnemyController {
 // DefaultAddDelegateToRegister will proceed to add default delegate to
 // register for the component.
 func (c *EnemyController) DefaultAddDelegateToRegister() {
-	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetLoadDelegate(), nil, nil, c.onLoad)
-	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetDestroyDelegate(), nil, nil, c.onDestroy)
+	// c.AddDelegateToRegister(engosdl.GetDelegateManager().GetLoadDelegate(), nil, nil, c.onLoad)
+	// c.AddDelegateToRegister(engosdl.GetDelegateManager().GetDestroyDelegate(), nil, nil, c.onDestroy)
 }
 
 // onOutOfBounds is called when any enemy goes out of bounds.

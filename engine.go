@@ -23,9 +23,12 @@ type Engine struct {
 }
 
 // NewEngine creates a new engine instance.
-func NewEngine(name string, w, h int32) *Engine {
+func NewEngine(name string, w, h int32, gameManager IGameManager) *Engine {
 	Logger.Trace().Str("engine", name).Msg("new engine")
 	if GetEngine() == nil {
+		if gameManager == nil {
+			gameManager = NewGameManager("engine-game-manager")
+		}
 		gameEngine = &Engine{
 			name:            name,
 			width:           w,
@@ -36,6 +39,7 @@ func NewEngine(name string, w, h int32) *Engine {
 			resourceManager: NewResourceManager("engine-resource-handler"),
 			sceneManager:    NewSceneManager("engine-scene-handler"),
 			soundManager:    NewSoundManager("engine-sound-handler"),
+			gameManager:     gameManager,
 		}
 	}
 	return gameEngine
@@ -66,11 +70,13 @@ func (engine *Engine) DoCleanup() {
 
 // DoFrameEnd calls all methods to run at the end of a tick frame.
 func (engine *Engine) DoFrameEnd() {
+	engine.GetGameManager().DoFrameEnd()
 	engine.GetSceneManager().DoFrameEnd()
 }
 
 // DoFrameStart calls all methods to run at the start of a tick frame.
 func (engine *Engine) DoFrameStart() {
+	engine.GetGameManager().DoFrameStart()
 	engine.GetSceneManager().DoFrameStart()
 }
 
@@ -186,14 +192,19 @@ func (engine *Engine) GetDelegateManager() IDelegateManager {
 	return engine.delegateManager
 }
 
+// GetEventManager returns the engine event handler.
+func (engine *Engine) GetEventManager() IEventManager {
+	return engine.eventManager
+}
+
 // GetFontManager returns the engine font handler.
 func (engine *Engine) GetFontManager() IFontManager {
 	return engine.fontManager
 }
 
-// GetEventManager returns the engine event handler.
-func (engine *Engine) GetEventManager() IEventManager {
-	return engine.eventManager
+// GetGameManager returns the engine game manager.
+func (engine *Engine) GetGameManager() IGameManager {
+	return engine.gameManager
 }
 
 // GetHeight returns engine window height

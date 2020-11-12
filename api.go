@@ -73,6 +73,14 @@ func GetFontManager() IFontManager {
 	return nil
 }
 
+// GetGameManager returns the game manager.
+func GetGameManager() IGameManager {
+	if engine := GetEngine(); engine != nil {
+		return engine.GetGameManager()
+	}
+	return nil
+}
+
 // GetRenderer returns the engine renderer.
 func GetRenderer() *sdl.Renderer {
 	if engine := GetEngine(); engine != nil {

@@ -32,15 +32,18 @@ type IScene interface {
 	DoSwapBack()
 	DoUnLoad()
 	GetEntities() []IEntity
+	GetEntitiesByTag(string) []IEntity
 	GetEntity(string) IEntity
 	GetEntityByName(string) IEntity
 	GetSceneCode() TSceneCodeSignature
+	GetTag() string
 	OnAfterUpdate()
 	OnRender()
 	OnEnable()
 	OnStart()
 	OnUpdate()
 	SetSceneCode(TSceneCodeSignature)
+	SetTag(string)
 }
 
 // Scene is the default implementation for IScene interface.
@@ -53,12 +56,13 @@ type Scene struct {
 	layers              [][]IEntity
 	collisionCollection []ICollider
 	sceneCode           TSceneCodeSignature
+	tag                 string
 }
 
 var _ IScene = (*Scene)(nil)
 
 // NewScene creates a new scene instance
-func NewScene(name string) *Scene {
+func NewScene(name string, tag string) *Scene {
 	Logger.Trace().Str("scene", name).Msg("new scene")
 	scene := &Scene{
 		Object:           NewObject(name),
@@ -68,6 +72,7 @@ func NewScene(name string) *Scene {
 		unloadedEntities: []IEntity{},
 		layers:           make([][]IEntity, maxLayers),
 		sceneCode:        nil,
+		tag:              tag,
 	}
 	return scene
 }
@@ -208,6 +213,17 @@ func (scene *Scene) GetEntities() []IEntity {
 	return scene.entities
 }
 
+// GetEntitiesByTag returns all entities in the scene with the given tag.
+func (scene *Scene) GetEntitiesByTag(tag string) []IEntity {
+	result := []IEntity{}
+	for _, entity := range scene.GetEntities() {
+		if entity.GetTag() == tag {
+			result = append(result, entity)
+		}
+	}
+	return result
+}
+
 // GetEntity returns a entity for the entity ID.
 func (scene *Scene) GetEntity(id string) IEntity {
 	for _, entity := range scene.entities {
@@ -264,6 +280,11 @@ func (scene Scene) getIndexInUnloadedEntity(entity IEntity) (int, bool) {
 // GetSceneCode returns the scene code.
 func (scene *Scene) GetSceneCode() TSceneCodeSignature {
 	return scene.sceneCode
+}
+
+// GetTag returns the scene tag.
+func (scene *Scene) GetTag() string {
+	return scene.tag
 }
 
 // loadUnloadedEntities proceeds to load any unloaded entity
@@ -336,7 +357,9 @@ func (scene *Scene) OnEnable() {
 func (scene *Scene) OnStart() {
 	Logger.Trace().Str("scene", scene.GetName()).Msg("OnStart")
 	for _, entity := range scene.entities {
-		entity.OnStart()
+		if entity.GetActive() {
+			entity.OnStart()
+		}
 	}
 }
 
@@ -377,4 +400,9 @@ func (scene *Scene) OnUpdate() {
 // SetSceneCode sets the scene code.
 func (scene *Scene) SetSceneCode(sceneCode TSceneCodeSignature) {
 	scene.sceneCode = sceneCode
+}
+
+// SetTag sets the scene tag.
+func (scene *Scene) SetTag(tag string) {
+	scene.tag = tag
 }
