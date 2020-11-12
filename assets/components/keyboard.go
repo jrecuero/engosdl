@@ -5,6 +5,12 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&Keyboard{})
+	}
+}
+
 // Keyboard represents a component that can take keyboard input
 type Keyboard struct {
 	*engosdl.Component

@@ -7,12 +7,18 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&KeyShooter{})
+	}
+}
+
 // KeyShooter represents a component that can create a entity when
 // a key is being pressed.
 type KeyShooter struct {
 	*engosdl.Component
-	key       int
-	cooldown  time.Duration
+	Key       int           `json:"key"`
+	Cooldown  time.Duration `json:"cooldown"`
 	lastshoot time.Time
 }
 
@@ -22,8 +28,8 @@ func NewKeyShooter(name string, key int) *KeyShooter {
 	engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", name).Msg("new key-shooter")
 	keyShooter := &KeyShooter{
 		Component: engosdl.NewComponent(name),
-		key:       key,
-		cooldown:  500 * time.Millisecond,
+		Key:       key,
+		Cooldown:  500 * time.Millisecond,
 	}
 	return keyShooter
 }
@@ -48,7 +54,7 @@ func (c *KeyShooter) OnUpdate() {
 	keys := sdl.GetKeyboardState()
 	if keys[sdl.SCANCODE_SPACE] == 1 {
 		engosdl.Logger.Trace().Str("component", "key-shooter").Str("key-shooter", c.GetName()).Msg("space key pressed")
-		if time.Since(c.lastshoot) >= c.cooldown {
+		if time.Since(c.lastshoot) >= c.Cooldown {
 			engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true)
 			c.lastshoot = time.Now()
 		}

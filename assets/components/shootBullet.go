@@ -6,6 +6,12 @@ import (
 	"github.com/jrecuero/engosdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&ShootBullet{})
+	}
+}
+
 // ShootBullet represents a component that shoot a bullet.
 type ShootBullet struct {
 	*engosdl.Component

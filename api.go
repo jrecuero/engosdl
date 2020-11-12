@@ -10,7 +10,13 @@ import (
 
 // Logger is the system logger to be used by the application.
 var Logger zerolog.Logger
+
+// gameEngine is the game engine singlenton instance.
 var gameEngine *Engine
+
+// componentManager is the component manager in charge of tracking all
+// components registered in the application.
+var componentManager *ComponentManager
 
 func init() {
 	file, err := os.Create("engosdl.log")
@@ -21,12 +27,22 @@ func init() {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 	Logger = zerolog.New(file).With().Timestamp().Logger()
 	Logger.Info().Msg("start engosdl")
+	Logger.Info().Msg("create component manager")
+	componentManager = &ComponentManager{
+		Object:     NewObject("component-manager"),
+		components: []IComponent{},
+	}
 }
 
 const (
 	_fps   uint32 = 30
 	_delay uint32 = 1000 / _fps
 )
+
+// GetComponentManager gets the component manager.
+func GetComponentManager() *ComponentManager {
+	return componentManager
+}
 
 // GetEngine returns the singleton game engine.
 func GetEngine() *Engine {

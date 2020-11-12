@@ -7,15 +7,20 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&Text{})
+	}
+}
+
 // Text represents a component that can display some text.
 type Text struct {
 	*engosdl.Component
-	fontFile string
+	FontFile string `json:"font-filename"`
 	font     engosdl.IFont
-	// ttfFont  *ttf.Font
-	fontSize int
-	color    sdl.Color
-	message  string
+	FontSize int       `json:"font-size"`
+	Color    sdl.Color `json:"color"`
+	Message  string    `json:"message"`
 	renderer *sdl.Renderer
 	texture  *sdl.Texture
 	width    int32
@@ -29,10 +34,10 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 	engosdl.Logger.Trace().Str("component", "text").Str("text", name).Msg("new text")
 	return &Text{
 		Component: engosdl.NewComponent(name),
-		fontFile:  fontFile,
-		fontSize:  fontSize,
-		color:     color,
-		message:   message,
+		FontFile:  fontFile,
+		FontSize:  fontSize,
+		Color:     color,
+		Message:   message,
 		renderer:  renderer,
 	}
 }
@@ -40,8 +45,8 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 // loadTextureFromTTF creates a texture from a ttf file.
 func (c *Text) loadTextureFromTTF() {
 	var err error
-	c.font = engosdl.GetFontHandler().CreateFont(c.GetName(), c.fontFile, c.fontSize)
-	c.texture = c.font.GetTextureFromFont(c.message, c.color)
+	c.font = engosdl.GetFontHandler().CreateFont(c.GetName(), c.FontFile, c.FontSize)
+	c.texture = c.font.GetTextureFromFont(c.Message, c.Color)
 	_, _, c.width, c.height, err = c.texture.Query()
 	if err != nil {
 		engosdl.Logger.Error().Err(err).Msg("Query error")
@@ -74,7 +79,7 @@ func (c *Text) onUpdateStats(params ...interface{}) bool {
 	if life == 0 {
 		c.SetActive(false)
 	} else {
-		c.message = "Enemy Life: " + strconv.Itoa(life)
+		c.Message = "Enemy Life: " + strconv.Itoa(life)
 		c.loadTextureFromTTF()
 	}
 	return true
@@ -82,19 +87,19 @@ func (c *Text) onUpdateStats(params ...interface{}) bool {
 
 // SetColor sets text color.
 func (c *Text) SetColor(color sdl.Color) engosdl.IText {
-	c.color = color
+	c.Color = color
 	return c
 }
 
 // SetFontFilename sets the filename with the font.
 func (c *Text) SetFontFilename(filename string) engosdl.IText {
-	c.fontFile = filename
+	c.FontFile = filename
 	return c
 }
 
 // SetMessage sets the message to be displayed by the text component.
 func (c *Text) SetMessage(message string) engosdl.IText {
-	c.message = message
+	c.Message = message
 	c.loadTextureFromTTF()
 	return c
 }

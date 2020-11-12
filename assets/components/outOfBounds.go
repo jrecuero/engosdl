@@ -6,11 +6,17 @@ import (
 	"github.com/jrecuero/engosdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&OutOfBounds{})
+	}
+}
+
 // OutOfBounds represents a component that check if entity is inside
 // window bounds
 type OutOfBounds struct {
 	*engosdl.Component
-	leftCorner bool
+	LeftCorner bool `json:"left-corner"`
 }
 
 // NewOutOfBounds creates a new out of bounds instance
@@ -18,7 +24,7 @@ type OutOfBounds struct {
 func NewOutOfBounds(name string, leftCorner bool) *OutOfBounds {
 	return &OutOfBounds{
 		Component:  engosdl.NewComponent(name),
-		leftCorner: leftCorner,
+		LeftCorner: leftCorner,
 	}
 }
 
@@ -43,7 +49,7 @@ func (c *OutOfBounds) OnUpdate() {
 	H := engosdl.GetEngine().GetHeight()
 	x, y, w, h := c.GetEntity().GetTransform().GetRectExt()
 	var testX, testY bool
-	if c.leftCorner {
+	if c.LeftCorner {
 		testX = x < 0 || int32(x+w) > W
 		testY = y < 0 || int32(y+h) > H
 	} else {

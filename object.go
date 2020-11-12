@@ -13,8 +13,8 @@ type IObject interface {
 
 // Object is the default implementation for IObject interface.
 type Object struct {
-	id      string
-	name    string
+	ID      string `json:"id"`
+	Name    string `json:"name"`
 	loaded  bool
 	started bool
 }
@@ -24,8 +24,8 @@ var _ IObject = (*Object)(nil)
 // NewObject returns a new object instance.
 func NewObject(name string) *Object {
 	return &Object{
-		id:      nextIder(),
-		name:    name,
+		ID:      nextIder(),
+		Name:    name,
 		loaded:  false,
 		started: false,
 	}
@@ -33,7 +33,7 @@ func NewObject(name string) *Object {
 
 // GetID returns the object id.
 func (obj *Object) GetID() string {
-	return obj.id
+	return obj.ID
 }
 
 // GetLoaded returns if object has been loaded.
@@ -43,7 +43,7 @@ func (obj *Object) GetLoaded() bool {
 
 // GetName returns the object name
 func (obj *Object) GetName() string {
-	return obj.name
+	return obj.Name
 }
 
 // GetStarted returns if object has been started.
@@ -58,7 +58,7 @@ func (obj *Object) SetLoaded(loaded bool) {
 
 // SetName sets the object name
 func (obj *Object) SetName(name string) IObject {
-	obj.name = name
+	obj.Name = name
 	return obj
 }
 

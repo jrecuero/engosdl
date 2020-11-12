@@ -7,19 +7,25 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&Sprite{})
+	}
+}
+
 // Sprite represents a component that can display multiple
 // sprites, which can be animated.
 type Sprite struct {
 	*engosdl.Component
-	filenames            []string
+	Filenames            []string `json:"filenames"`
 	width                int32
 	height               int32
 	renderer             *sdl.Renderer
 	textures             []*sdl.Texture
-	destroyOnOutOfBounds bool
+	DestroyOnOutOfBounds bool `json:"destroy-on-out-of-bounds"`
 	camera               *sdl.Rect
 	fileImageIndex       int
-	spriteTotal          int
+	SpriteTotal          int `json:"sprite-total"`
 	spriteIndex          int
 	resources            []engosdl.IResource
 }
@@ -32,13 +38,13 @@ func NewSprite(name string, filenames []string, numberOfSprites int, renderer *s
 	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("multi-sprite", name).Msg("new multi-sprite")
 	result := &Sprite{
 		Component:            engosdl.NewComponent(name),
-		filenames:            filenames,
+		Filenames:            filenames,
 		renderer:             renderer,
 		textures:             []*sdl.Texture{},
-		destroyOnOutOfBounds: true,
+		DestroyOnOutOfBounds: true,
 		camera:               nil,
 		fileImageIndex:       0,
-		spriteTotal:          numberOfSprites,
+		SpriteTotal:          numberOfSprites,
 		spriteIndex:          0,
 		resources:            []engosdl.IResource{},
 	}
@@ -85,7 +91,7 @@ func (c *Sprite) GetFileImageIndex() int {
 
 // GetFilename returns filenames used for the sprite.
 func (c *Sprite) GetFilename() []string {
-	return c.filenames
+	return c.Filenames
 }
 
 // GetSpriteIndex returns sprite sheet sprite index currently used.
@@ -98,12 +104,12 @@ func (c *Sprite) LoadSprite() {
 	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("sprite", c.GetName()).Msg("LoadSprite")
 	c.loadTexturesFromBMP()
 	// TODO: assuming SpriteSheet is horizontal.
-	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.spriteTotal)), float64(c.height)))
+	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.SpriteTotal)), float64(c.height)))
 }
 
 // loadTexturesFromBMP creates textures for every BMP image file.
 func (c *Sprite) loadTexturesFromBMP() {
-	for _, filename := range c.filenames {
+	for _, filename := range c.Filenames {
 		if len(c.resources) == 0 && len(c.textures) == 0 {
 			var err error
 			resource := engosdl.GetResourceHandler().CreateResource(c.GetName(), filename)
@@ -121,13 +127,13 @@ func (c *Sprite) loadTexturesFromBMP() {
 
 // NextFileImage increases by one file image index.
 func (c *Sprite) NextFileImage() int {
-	c.fileImageIndex = (c.fileImageIndex + 1) % len(c.filenames)
+	c.fileImageIndex = (c.fileImageIndex + 1) % len(c.Filenames)
 	return c.fileImageIndex
 }
 
 // NextSprite increases by one the sprite index.
 func (c *Sprite) NextSprite() int {
-	c.spriteIndex = (c.spriteIndex + 1) % c.spriteTotal
+	c.spriteIndex = (c.spriteIndex + 1) % c.SpriteTotal
 	return c.spriteIndex
 }
 
@@ -137,7 +143,7 @@ func (c *Sprite) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("sprite", c.GetName()).Msg("OnAwake")
 	c.loadTexturesFromBMP()
 	// TODO: assuming SpriteSheet is horizontal.
-	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.spriteTotal)), float64(c.height)))
+	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.SpriteTotal)), float64(c.height)))
 	c.Component.OnAwake()
 }
 
@@ -159,7 +165,7 @@ func (c *Sprite) onCollision(params ...interface{}) bool {
 
 // onOutOfBounds checks if the entity has gone out of bounds.
 func (c *Sprite) onOutOfBounds(params ...interface{}) bool {
-	if c.destroyOnOutOfBounds {
+	if c.DestroyOnOutOfBounds {
 		entity := params[0].(engosdl.IEntity)
 		if entity.GetID() == c.GetEntity().GetID() {
 			engosdl.GetEngine().DestroyEntity(c.GetEntity())
@@ -174,9 +180,9 @@ func (c *Sprite) OnRender() {
 	x, y, width, height := c.GetEntity().GetTransform().GetRectExt()
 	var displayFrom *sdl.Rect
 	var displayAt *sdl.Rect
-	spriteX := (c.spriteIndex * int(c.width)) / int(c.spriteTotal)
+	spriteX := (c.spriteIndex * int(c.width)) / int(c.SpriteTotal)
 
-	displayFrom = &sdl.Rect{X: int32(spriteX), Y: 0, W: c.width / int32(c.spriteTotal), H: c.height}
+	displayFrom = &sdl.Rect{X: int32(spriteX), Y: 0, W: c.width / int32(c.SpriteTotal), H: c.height}
 	displayAt = &sdl.Rect{X: int32(x), Y: int32(y), W: int32(width), H: int32(height)}
 
 	c.renderer.CopyEx(c.textures[c.fileImageIndex],
@@ -196,13 +202,13 @@ func (c *Sprite) OnStart() {
 
 //PreviousFileImage decreases by one file image index.
 func (c *Sprite) PreviousFileImage() int {
-	c.fileImageIndex = (c.fileImageIndex - 1) % len(c.filenames)
+	c.fileImageIndex = (c.fileImageIndex - 1) % len(c.Filenames)
 	return c.fileImageIndex
 }
 
 // PreviousSprite decreases by one sprite index.
 func (c *Sprite) PreviousSprite() int {
-	c.spriteIndex = (c.spriteIndex - 1) % c.spriteTotal
+	c.spriteIndex = (c.spriteIndex - 1) % c.SpriteTotal
 	return c.spriteIndex
 }
 
@@ -214,5 +220,5 @@ func (c *Sprite) SetCamera(camera *sdl.Rect) {
 // SetDestroyOnOutOfBounds sets internal attribute used to destroy sprite when
 // it is out of bounds or no.
 func (c *Sprite) SetDestroyOnOutOfBounds(destroy bool) {
-	c.destroyOnOutOfBounds = destroy
+	c.DestroyOnOutOfBounds = destroy
 }

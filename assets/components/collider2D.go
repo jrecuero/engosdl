@@ -7,6 +7,12 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&Collider2D{})
+	}
+}
+
 type collisionBox struct {
 	rect   *sdl.Rect
 	center *engosdl.Vector

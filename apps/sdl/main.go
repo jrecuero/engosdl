@@ -74,6 +74,8 @@ func createPlayer(engine *engosdl.Engine) engosdl.IEntity {
 	player.AddComponent(playerOutOfBounds)
 	player.AddComponent(playerMoveIt)
 
+	player.DoDump()
+
 	return player
 }
 

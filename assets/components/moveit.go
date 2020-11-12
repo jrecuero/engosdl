@@ -5,10 +5,16 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&MoveIt{})
+	}
+}
+
 // MoveIt represents a component that can take move-it input
 type MoveIt struct {
 	*engosdl.Component
-	speed    *engosdl.Vector
+	Speed    *engosdl.Vector `json:"speed"`
 	position *engosdl.Vector
 }
 
@@ -18,7 +24,7 @@ func NewMoveIt(name string, speed *engosdl.Vector) *MoveIt {
 	engosdl.Logger.Trace().Str("component", "move-it").Str("move-it", name).Msg("new move-it")
 	result := &MoveIt{
 		Component: engosdl.NewComponent(name),
-		speed:     speed,
+		Speed:     speed,
 		position:  engosdl.NewVector(0, 0),
 	}
 	return result
@@ -44,16 +50,16 @@ func (c *MoveIt) onKeyboard(params ...interface{}) bool {
 	key := params[0].(int)
 	switch key {
 	case sdl.SCANCODE_LEFT:
-		position.X -= c.speed.X
+		position.X -= c.Speed.X
 		break
 	case sdl.SCANCODE_RIGHT:
-		position.X += c.speed.X
+		position.X += c.Speed.X
 		break
 	case sdl.SCANCODE_UP:
-		position.Y -= c.speed.Y
+		position.Y -= c.Speed.Y
 		break
 	case sdl.SCANCODE_DOWN:
-		position.Y += c.speed.Y
+		position.Y += c.Speed.Y
 		break
 	}
 	return true

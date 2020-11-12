@@ -1,6 +1,7 @@
 package engosdl
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -17,6 +18,7 @@ type IComponent interface {
 	DefaultOnLoad(...interface{}) bool
 	DefaultOnOutOfBounds(...interface{}) bool
 	DoDestroy()
+	DoDump(IComponent)
 	DoFrameEnd()
 	DoFrameStart() bool
 	DoLoad(IComponent) bool
@@ -148,6 +150,13 @@ func (c *Component) DoDestroy() {
 	c.SetStarted(false)
 }
 
+// DoDump dumps component in JSON format.
+func (c *Component) DoDump(component IComponent) {
+	if result, err := json.Marshal(component); err == nil {
+		fmt.Printf("%s\n", result)
+	}
+}
+
 // DoFrameEnd calls all methods to run at the end of a tick frame.
 func (c *Component) DoFrameEnd() {
 }
@@ -210,23 +219,23 @@ func (c *Component) GetEntity() IEntity {
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *Component) OnAwake() {
-	Logger.Trace().Str("component", c.name).Msg("OnAwake")
+	Logger.Trace().Str("component", c.GetName()).Msg("OnAwake")
 	c.SetLoaded(true)
 }
 
 // OnEnable is called every time the component is enabled.
 func (c *Component) OnEnable() {
-	Logger.Trace().Str("component", c.name).Msg("OnEnable")
+	Logger.Trace().Str("component", c.GetName()).Msg("OnEnable")
 }
 
 // OnRender is called for every render tick.
 func (c *Component) OnRender() {
-	// Logger.Trace().Str("component", c.name).Msg("OnRender")
+	// Logger.Trace().Str("component", c.GetName()).Msg("OnRender")
 }
 
 // OnStart is called first time the component is enabled.
 func (c *Component) OnStart() {
-	Logger.Trace().Str("component", c.name).Msg("OnStart")
+	Logger.Trace().Str("component", c.GetName()).Msg("OnStart")
 	if !c.GetStarted() {
 		for _, register := range c.registers {
 			delegate := register.GetDelegate()
@@ -257,7 +266,7 @@ func (c *Component) OnStart() {
 
 // OnUpdate is called for every update tick.
 func (c *Component) OnUpdate() {
-	// Logger.Trace().Str("component", c.name).Msg("OnUpdate")
+	// Logger.Trace().Str("component", c.GetName()).Msg("OnUpdate")
 }
 
 // SetActive sets component active attribute

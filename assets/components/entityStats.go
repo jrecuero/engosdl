@@ -6,10 +6,16 @@ import (
 	"github.com/jrecuero/engosdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&EntityStats{})
+	}
+}
+
 // EntityStats represents a component that contains generic entity stats.
 type EntityStats struct {
 	*engosdl.Component
-	life int
+	Life int `json:"life"`
 }
 
 // NewEntityStats creates a new entity stats instance.
@@ -19,7 +25,7 @@ func NewEntityStats(name string, life int) *EntityStats {
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", name).Msg("new entity-stats")
 	result := &EntityStats{
 		Component: engosdl.NewComponent(name),
-		life:      life,
+		Life:      life,
 	}
 	return result
 }
@@ -45,14 +51,14 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 	collisionEntityOne := params[0].(*engosdl.Entity)
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
-		c.life -= 10
-		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.life)
+		c.Life -= 10
+		engosdl.GetDelegateHandler().TriggerDelegate(c.GetDelegate(), true, c.Life)
 		fmt.Printf("%s [live %d] onCollision %s with %s\n",
 			c.GetEntity().GetName(),
-			c.life,
+			c.Life,
 			collisionEntityOne.GetName(),
 			collisionEntityTwo.GetName())
-		if c.life == 0 {
+		if c.Life == 0 {
 			engosdl.GetEngine().DestroyEntity(c.GetEntity())
 		}
 	}

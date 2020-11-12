@@ -2,10 +2,16 @@ package components
 
 import "github.com/jrecuero/engosdl"
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&MoveTo{})
+	}
+}
+
 // MoveTo represents a component that moves a entity.
 type MoveTo struct {
 	*engosdl.Component
-	speed *engosdl.Vector
+	Speed *engosdl.Vector `json:"speed"`
 }
 
 // NewMoveTo creates a new move-to instance.
@@ -14,7 +20,7 @@ func NewMoveTo(name string, speed *engosdl.Vector) *MoveTo {
 	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", name).Msg("new move-to")
 	result := &MoveTo{
 		Component: engosdl.NewComponent(name),
-		speed:     speed,
+		Speed:     speed,
 	}
 	return result
 }
@@ -27,14 +33,14 @@ func (c *MoveTo) DefaultAddDelegateToRegister() {
 
 // GetSpeed returns component speed.
 func (c *MoveTo) GetSpeed() *engosdl.Vector {
-	return c.speed
+	return c.Speed
 }
 
 // onOutOfBounds checks if the entity has gone out of bounds.
 func (c *MoveTo) onOutOfBounds(params ...interface{}) bool {
 	position := c.GetEntity().GetTransform().GetPosition()
-	position.X -= c.speed.X
-	position.Y -= c.speed.Y
+	position.X -= c.Speed.X
+	position.Y -= c.Speed.Y
 	return true
 }
 
@@ -47,11 +53,11 @@ func (c *MoveTo) OnStart() {
 // OnUpdate is called for every update tick.
 func (c *MoveTo) OnUpdate() {
 	position := c.GetEntity().GetTransform().GetPosition()
-	position.X += c.speed.X
-	position.Y += c.speed.Y
+	position.X += c.Speed.X
+	position.Y += c.Speed.Y
 }
 
 // SetSpeed sets movement speed.
 func (c *MoveTo) SetSpeed(speed *engosdl.Vector) {
-	c.speed = speed
+	c.Speed = speed
 }

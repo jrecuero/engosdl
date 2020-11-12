@@ -1,6 +1,7 @@
 package engosdl
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -14,6 +15,7 @@ type IEntity interface {
 	DeleteChild(string) bool
 	DeleteChildByName(string) bool
 	DoDestroy()
+	DoDump()
 	DoFrameEnd()
 	DoFrameStart()
 	DoLoad()
@@ -47,16 +49,16 @@ type IEntity interface {
 type Entity struct {
 	*Object
 	active             bool
-	layer              int
-	tag                string
+	Layer              int    `json:"layer"`
+	Tag                string `json:"tag"`
 	parent             IEntity
 	children           []IEntity
 	scene              IScene
-	transform          ITransform
+	Transform          ITransform `json:"transform"`
 	components         []IComponent
 	loadedComponents   []IComponent
 	unloadedComponents []IComponent
-	dieOnCollision     bool
+	DieOnCollision     bool `json:"die-on-collision"`
 }
 
 var _ IEntity = (*Entity)(nil)
@@ -67,12 +69,12 @@ func NewEntity(name string) *Entity {
 	return &Entity{
 		Object:             NewObject(name),
 		active:             true,
-		layer:              LayerMiddle,
-		tag:                "",
+		Layer:              LayerMiddle,
+		Tag:                "",
 		parent:             nil,
 		children:           []IEntity{},
 		scene:              nil,
-		transform:          NewTransform(),
+		Transform:          NewTransform(),
 		components:         []IComponent{},
 		loadedComponents:   []IComponent{},
 		unloadedComponents: []IComponent{},
@@ -87,7 +89,7 @@ func (entity *Entity) AddChild(child IEntity) bool {
 
 // AddComponent adds a new component to the entity.
 func (entity *Entity) AddComponent(component IComponent) IEntity {
-	Logger.Trace().Str("entity", entity.name).
+	Logger.Trace().Str("entity", entity.GetName()).
 		Str("component", component.GetName()).
 		Str("type", reflect.TypeOf(component).String()).
 		Msg("add component")
@@ -133,6 +135,17 @@ func (entity *Entity) DoDestroy() {
 	entity.components = []IComponent{}
 	entity.loadedComponents = []IComponent{}
 	entity.unloadedComponents = []IComponent{}
+}
+
+// DoDump dumps entity in JSON format.
+func (entity *Entity) DoDump() {
+	if result, err := json.Marshal(entity); err == nil {
+		fmt.Printf("%s\n", result)
+		for i, component := range entity.GetComponents() {
+			fmt.Printf("%d %s\n", i, reflect.TypeOf(component))
+			component.DoDump(component)
+		}
+	}
 }
 
 // DoFrameEnd calls all methods to run at the end of a tick frame.
@@ -245,12 +258,12 @@ func (entity *Entity) GetDelegateForComponent(typ IComponent) IDelegate {
 // GetDieOnCollision returns if the entity should be destroyed with any
 // collision.
 func (entity *Entity) GetDieOnCollision() bool {
-	return entity.dieOnCollision
+	return entity.DieOnCollision
 }
 
 // GetLayer returns the  layer where the entity has been placed.
 func (entity *Entity) GetLayer() int {
-	return entity.layer
+	return entity.Layer
 }
 
 // GetParent returns entity parent.
@@ -265,12 +278,12 @@ func (entity *Entity) GetScene() IScene {
 
 // GetTag returns the entity tag.
 func (entity *Entity) GetTag() string {
-	return entity.tag
+	return entity.Tag
 }
 
 // GetTransform returns the entity transform.
 func (entity *Entity) GetTransform() ITransform {
-	return entity.transform
+	return entity.Transform
 }
 
 // loadUnloadedComponents proceeds to load any unloaded component.
@@ -332,13 +345,13 @@ func (entity *Entity) SetActive(active bool) IEntity {
 
 // SetDieOnCollision sets if the entity should be destroyed in any collision.
 func (entity *Entity) SetDieOnCollision(die bool) IEntity {
-	entity.dieOnCollision = true
+	entity.DieOnCollision = true
 	return entity
 }
 
 // SetLayer sets the entity layer where it will be placed.
 func (entity *Entity) SetLayer(layer int) IEntity {
-	entity.layer = layer
+	entity.Layer = layer
 	return entity
 }
 
@@ -356,6 +369,6 @@ func (entity *Entity) SetScene(scene IScene) IEntity {
 
 // SetTag sets the entity tag.
 func (entity *Entity) SetTag(tag string) IEntity {
-	entity.tag = tag
+	entity.Tag = tag
 	return entity
 }

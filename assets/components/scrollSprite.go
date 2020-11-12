@@ -5,10 +5,16 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterComponent(&ScrollSprite{})
+	}
+}
+
 // ScrollSprite represents an sprite that scroll across the display.
 type ScrollSprite struct {
 	*Sprite
-	scroll *engosdl.Vector
+	Scroll *engosdl.Vector `json:"scroll"`
 }
 
 var _ engosdl.ISprite = (*ScrollSprite)(nil)
@@ -22,13 +28,13 @@ func NewScrollSprite(name string, filename string, renderer *sdl.Renderer) *Scro
 		// to any of then.
 		Sprite: &Sprite{
 			Component:            engosdl.NewComponent(name),
-			filenames:            []string{filename},
+			Filenames:            []string{filename},
 			renderer:             renderer,
-			destroyOnOutOfBounds: true,
+			DestroyOnOutOfBounds: true,
 			camera:               nil,
-			spriteTotal:          1,
+			SpriteTotal:          1,
 		},
-		scroll: engosdl.NewVector(0, -1),
+		Scroll: engosdl.NewVector(0, -1),
 	}
 }
 
@@ -40,9 +46,9 @@ func (c *ScrollSprite) OnRender() {
 	width := c.width * int32(c.GetEntity().GetTransform().GetScale().X)
 	height := c.height * int32(c.GetEntity().GetTransform().GetScale().Y)
 	W, H, _ := engosdl.GetRenderer().GetOutputSize()
-	if c.scroll.Y == -1 {
+	if c.Scroll.Y == -1 {
 		y = y % height
-	} else if c.scroll.X == -1 {
+	} else if c.Scroll.X == -1 {
 		x = x % width
 	}
 	displayFrom := &sdl.Rect{X: 0, Y: 0, W: width, H: height}
@@ -53,14 +59,14 @@ func (c *ScrollSprite) OnRender() {
 		0,
 		&sdl.Point{},
 		sdl.FLIP_NONE)
-	if c.scroll.Y == -1 && (y+height) < H {
+	if c.Scroll.Y == -1 && (y+height) < H {
 		c.renderer.CopyEx(c.textures[0],
 			&sdl.Rect{X: 0, Y: 0, W: width, H: height},
 			&sdl.Rect{X: x, Y: y + height, W: width, H: height},
 			0,
 			&sdl.Point{},
 			sdl.FLIP_NONE)
-	} else if c.scroll.X == -1 && (x+width) < W {
+	} else if c.Scroll.X == -1 && (x+width) < W {
 		c.renderer.CopyEx(c.textures[0],
 			&sdl.Rect{X: 0, Y: 0, W: width, H: height},
 			&sdl.Rect{X: x + width, Y: y, W: width, H: height},
@@ -79,5 +85,5 @@ func (c *ScrollSprite) OnStart() {
 
 // SetScroll sets sprite image scroll.
 func (c *ScrollSprite) SetScroll(scroll *engosdl.Vector) {
-	c.scroll = scroll
+	c.Scroll = scroll
 }

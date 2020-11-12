@@ -70,36 +70,36 @@ type IDelegateHandler interface {
 // Delegate is the default implementation for delegate interface.
 type Delegate struct {
 	*Object
-	obj    IObject
-	evName string
+	object    IObject
+	eventName string
 }
 
 // var _ IDelegate = (*Delegate)(nil)
 
 // GetObject returns delegate object.
 func (d *Delegate) GetObject() IObject {
-	return d.obj
+	return d.object
 }
 
 // GetEventName returns delegate event name.
 func (d *Delegate) GetEventName() string {
-	return d.evName
+	return d.eventName
 }
 
 // NewDelegate creates a new delegate instance.
 func NewDelegate(name string, obj IObject, evName string) *Delegate {
 	Logger.Trace().Str("delegate", name).Str("evName", evName).Msg("new delegate")
 	return &Delegate{
-		Object: NewObject(name),
-		obj:    obj,
-		evName: evName,
+		Object:    NewObject(name),
+		object:    obj,
+		eventName: evName,
 	}
 }
 
 // Register is the structure used to store any delegate registration
 type Register struct {
 	*Object
-	obj        IObject
+	object     IObject
 	entity     IEntity
 	component  IComponent
 	delegate   IDelegate
@@ -115,7 +115,7 @@ func NewRegister(name string, obj IObject, entity IEntity, component IComponent,
 	Logger.Trace().Str("register", name).Msg("create new register")
 	return &Register{
 		Object:    NewObject(name),
-		obj:       obj,
+		object:    obj,
 		entity:    entity,
 		component: component,
 		delegate:  delegate,
@@ -141,7 +141,7 @@ func (r *Register) GetEntity() IEntity {
 
 // GetObject returns object that has registered.
 func (r *Register) GetObject() IObject {
-	return r.obj
+	return r.object
 }
 
 // GetParams returns register parameters.

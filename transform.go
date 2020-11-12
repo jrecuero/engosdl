@@ -18,30 +18,30 @@ type ITransform interface {
 
 // Transform is the default implementation for ITransform interface.
 type Transform struct {
-	position *Vector
-	rotation float64
-	scale    *Vector
-	dim      *Vector
+	Position *Vector `json:"position"`
+	Rotation float64 `json:"rotation"`
+	Scale    *Vector `json:"scale"`
+	Dim      *Vector `json:"dimension"`
 }
 
 // NewTransform creates a new transform instance.
 func NewTransform() *Transform {
 	return &Transform{
-		position: NewVector(0, 0),
-		rotation: 0,
-		scale:    NewVector(1, 1),
-		dim:      NewVector(0, 0),
+		Position: NewVector(0, 0),
+		Rotation: 0,
+		Scale:    NewVector(1, 1),
+		Dim:      NewVector(0, 0),
 	}
 }
 
 //GetDim returns the transform original dimensions.
 func (t *Transform) GetDim() *Vector {
-	return t.dim
+	return t.Dim
 }
 
 // GetPosition returns the transform position.
 func (t *Transform) GetPosition() *Vector {
-	return t.position
+	return t.Position
 }
 
 // GetRect returns a rectangle with real position and dimensions.
@@ -62,34 +62,34 @@ func (t *Transform) GetRectExt() (float64, float64, float64, float64) {
 
 // GetRotation returns the transform rotation.
 func (t *Transform) GetRotation() float64 {
-	return t.rotation
+	return t.Rotation
 }
 
 // GetScale returns the transform scale.
 func (t *Transform) GetScale() *Vector {
-	return t.scale
+	return t.Scale
 }
 
 // SetDim sets the transform original dimensions.
 func (t *Transform) SetDim(v *Vector) ITransform {
-	t.dim = v
+	t.Dim = v
 	return t
 }
 
 // SetPosition sets the transform position.
 func (t *Transform) SetPosition(v *Vector) ITransform {
-	t.position = v
+	t.Position = v
 	return t
 }
 
 // SetRotation sets the transform rotation.
 func (t *Transform) SetRotation(r float64) ITransform {
-	t.rotation = r
+	t.Rotation = r
 	return t
 }
 
 // SetScale sets the transform scale.
 func (t *Transform) SetScale(v *Vector) ITransform {
-	t.scale = v
+	t.Scale = v
 	return t
 }
