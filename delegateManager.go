@@ -12,7 +12,7 @@ const (
 	// OutOfBoundsName represents on out of bounds delegate.
 	OutOfBoundsName = "on-out-of-bounds"
 
-	delegateManagerName   = "delegate-handler"
+	delegateManagerName   = "delegate-manager"
 	collisionDelegate     = CollisionName
 	collisionDelegateName = delegateManagerName + "/" + collisionDelegate
 	destroyDelegate       = DestroyName
@@ -58,6 +58,7 @@ type IDelegateManager interface {
 	CreateDelegate(IObject, string) IDelegate
 	DeleteDelegate(IDelegate) bool
 	DeregisterFromDelegate(string) bool
+	DoInit()
 	GetCollisionDelegate() IDelegate
 	GetDestroyDelegate() IDelegate
 	GetLoadDelegate() IDelegate
@@ -205,7 +206,7 @@ type DelegateManager struct {
 
 // NewDelegateManager creates a new delegate handler instance.
 func NewDelegateManager(name string) *DelegateManager {
-	Logger.Trace().Str("delegate-handler", name).Msg("new delegate handler")
+	Logger.Trace().Str("delegate-manager", name).Msg("new delegate handler")
 	return &DelegateManager{
 		Object:     NewObject(name),
 		delegates:  []IDelegate{},
@@ -232,7 +233,7 @@ func (h *DelegateManager) AuditRegisters() {
 
 // CreateDelegate creates a new delefate in the delegate handler
 func (h *DelegateManager) CreateDelegate(obj IObject, evName string) IDelegate {
-	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("CreateDelegate")
+	Logger.Trace().Str("delegate-manager", h.GetName()).Msg("CreateDelegate")
 	delegate := NewDelegate(obj.GetName()+"/"+evName, obj, evName)
 	h.delegates = append(h.delegates, delegate)
 	return delegate
@@ -241,7 +242,7 @@ func (h *DelegateManager) CreateDelegate(obj IObject, evName string) IDelegate {
 // DeleteDelegate deletes the given delegate from delegate handler and
 // all registers
 func (h *DelegateManager) DeleteDelegate(delegate IDelegate) bool {
-	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("DeleteDelegate")
+	Logger.Trace().Str("delegate-manager", h.GetName()).Msg("DeleteDelegate")
 	for i := len(h.delegates) - 1; i >= 0; i-- {
 		delegat := h.delegates[i]
 		if delegat.GetID() == delegate.GetID() {
@@ -263,12 +264,20 @@ func (h *DelegateManager) DeregisterFromDelegate(registerID string) bool {
 	for i := len(h.registers) - 1; i >= 0; i-- {
 		register := h.registers[i]
 		if register.GetRegisterID() == registerID {
-			Logger.Trace().Str("delegate-handler", h.GetName()).Str("delegate", register.GetDelegate().GetName()).Msg("deregister-to-delegate")
+			Logger.Trace().Str("delegate-manager", h.GetName()).Str("delegate", register.GetDelegate().GetName()).Msg("deregister-to-delegate")
 			h.registers = append(h.registers[:i], h.registers[i+1:]...)
 			return true
 		}
 	}
 	return false
+}
+
+// DoInit initializes all delegate manager resources.
+func (h DelegateManager) DoInit() {
+	Logger.Trace().Str("delegate-manager", h.GetName()).Msg("DoInit")
+	h.defaults[collisionDelegate] = h.CreateDelegate(h, collisionDelegate)
+	h.defaults[destroyDelegate] = h.CreateDelegate(h, destroyDelegate)
+	h.defaults[loadDelegate] = h.CreateDelegate(h, loadDelegate)
 }
 
 // GetCollisionDelegate returns default delegate for collisions.
@@ -288,10 +297,10 @@ func (h *DelegateManager) GetLoadDelegate() IDelegate {
 
 // OnStart initializes all delegate handler structure.
 func (h *DelegateManager) OnStart() {
-	Logger.Trace().Str("delegate-handler", h.GetName()).Msg("OnStart")
-	h.defaults[collisionDelegate] = h.CreateDelegate(h, collisionDelegate)
-	h.defaults[destroyDelegate] = h.CreateDelegate(h, destroyDelegate)
-	h.defaults[loadDelegate] = h.CreateDelegate(h, loadDelegate)
+	Logger.Trace().Str("delegate-manager", h.GetName()).Msg("OnStart")
+	// h.defaults[collisionDelegate] = h.CreateDelegate(h, collisionDelegate)
+	// h.defaults[destroyDelegate] = h.CreateDelegate(h, destroyDelegate)
+	// h.defaults[loadDelegate] = h.CreateDelegate(h, loadDelegate)
 }
 
 // OnUpdate is called after all other OnUpdate methods have been called for
@@ -307,7 +316,7 @@ func (h *DelegateManager) OnUpdate() {
 
 // RegisterToDelegate registers a method to a delegate.
 func (h *DelegateManager) RegisterToDelegate(obj IObject, delegate IDelegate, signature TDelegateSignature) (string, bool) {
-	Logger.Trace().Str("delegate-handler", h.GetName()).Str("delegate", delegate.GetName()).Msg("register-to-delegate")
+	Logger.Trace().Str("delegate-manager", h.GetName()).Str("delegate", delegate.GetName()).Msg("register-to-delegate")
 	register := NewRegister("", obj, nil, nil, delegate, signature)
 	register.SetRegisterID(register.GetID())
 	h.registers = append(h.registers, register)

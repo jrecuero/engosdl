@@ -9,6 +9,7 @@ type ISceneManager interface {
 	DeleteScene(string) bool
 	DoFrameEnd()
 	DoFrameStart()
+	DoInit()
 	GetActiveScene() IScene
 	GetScene(string) IScene
 	GetSceneByName(string) IScene
@@ -45,7 +46,7 @@ var _ ISceneManager = (*SceneManager)(nil)
 
 // NewSceneManager creates a new scene handler instance.
 func NewSceneManager(name string) *SceneManager {
-	Logger.Trace().Str("scene-handler", name).Msg("new scene handler")
+	Logger.Trace().Str("scene-manager", name).Msg("new scene handler")
 	return &SceneManager{
 		Object:       NewObject(name),
 		scenes:       []IScene{},
@@ -56,7 +57,7 @@ func NewSceneManager(name string) *SceneManager {
 
 // AddScene adds a new scene to the scene handler
 func (h *SceneManager) AddScene(scene IScene) bool {
-	Logger.Trace().Str("scene-handler", h.GetName()).Msg("AddScene")
+	Logger.Trace().Str("scene-manager", h.GetName()).Msg("AddScene")
 	if scene := h.GetScene(scene.GetID()); scene != nil {
 		return false
 	}
@@ -66,7 +67,7 @@ func (h *SceneManager) AddScene(scene IScene) bool {
 
 // DeleteScene deletes the scene given by the name.
 func (h *SceneManager) DeleteScene(name string) bool {
-	Logger.Trace().Str("scene-handler", h.GetName()).Msg("DeleteScene")
+	Logger.Trace().Str("scene-manager", h.GetName()).Msg("DeleteScene")
 	if scene, i := h.getScene(name); scene != nil {
 		h.scenes = append(h.scenes[:i], h.scenes[i+1:]...)
 		return true
@@ -86,6 +87,11 @@ func (h *SceneManager) DoFrameStart() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.DoFrameStart()
 	}
+}
+
+// DoInit initializes all scene manager resources.
+func (h *SceneManager) DoInit() {
+	Logger.Trace().Str("scene-manager", h.GetName()).Msg("DoInit")
 }
 
 // GetActiveScene returns the scene handler active scene at that time.
@@ -158,7 +164,7 @@ func (h *SceneManager) OnEnable() {
 
 // OnStart calls all scene OnStart methods.
 func (h *SceneManager) OnStart() {
-	Logger.Trace().Str("scene-handler", h.GetName()).Msg("OnStart")
+	Logger.Trace().Str("scene-manager", h.GetName()).Msg("OnStart")
 	// if activeScene := h.GetActiveScene(); activeScene != nil {
 	// 	activeScene.OnStart()
 	// }

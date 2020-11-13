@@ -103,22 +103,22 @@ func createScenePlay(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	})
 	sceneController.AddComponent(sceneControllerKeyboard)
 	sceneController.AddComponent(sceneControllerComponent)
-	winner := engosdl.NewEntity("winner")
-	winnerKeyboard := components.NewKeyboard("winner-keyboard")
-	winnerKeyboard.DefaultAddDelegateToRegister()
-	winnerText := components.NewText("winner-text", "fonts/lato.ttf", 24, sdl.Color{R: 0, G: 0, B: 255}, "You Won...type any key", engosdl.GetRenderer())
-	winnerText.DefaultAddDelegateToRegister()
-	winnerText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
-		key := params[0].(int)
-		if key == sdl.SCANCODE_RETURN {
-			engosdl.GetEngine().GetSceneManager().SetActiveFirstScene()
-		}
-		return true
-	})
-	winner.AddComponent(winnerKeyboard)
-	winner.AddComponent(winnerText)
-	winner.SetActive(false)
-	winner.SetTag("winner")
+	// winner := engosdl.NewEntity("winner")
+	// winnerKeyboard := components.NewKeyboard("winner-keyboard")
+	// winnerKeyboard.DefaultAddDelegateToRegister()
+	// winnerText := components.NewText("winner-text", "fonts/lato.ttf", 24, sdl.Color{R: 0, G: 0, B: 255}, "You Won...type any key", engosdl.GetRenderer())
+	// winnerText.DefaultAddDelegateToRegister()
+	// winnerText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
+	// 	key := params[0].(int)
+	// 	if key == sdl.SCANCODE_RETURN {
+	// 		engosdl.GetEngine().GetSceneManager().SetActiveFirstScene()
+	// 	}
+	// 	return true
+	// })
+	// winner.AddComponent(winnerKeyboard)
+	// winner.AddComponent(winnerText)
+	// winner.SetActive(false)
+	// winner.SetTag("winner")
 
 	// Add entities to scene
 	scene.AddEntity(bg)
@@ -129,7 +129,7 @@ func createScenePlay(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	}
 	scene.AddEntity(score)
 	scene.AddEntity(sceneController)
-	scene.AddEntity(winner)
+	// scene.AddEntity(winner)
 
 	return true
 }
@@ -211,10 +211,9 @@ func createScore(engine *engosdl.Engine) engosdl.IEntity {
 
 func main() {
 	fmt.Println("engosdl app")
-	engine := engosdl.NewEngine("engosdl app", 400, 600, NewGameManager("app-game-manager"))
-	engine.DoInit()
-	if engine != nil {
-		createAssets(engine)
+	if engine := engosdl.NewEngine("engosdl app", 400, 600, NewGameManager("app-game-manager")); engine != nil {
+		// engine.DoInit()
+		// createAssets(engine)
 		engine.RunEngine(nil)
 	}
 }

@@ -11,6 +11,7 @@ type IEvent interface {
 // IEventManager represents the interface for the  event handler.
 type IEventManager interface {
 	IObject
+	DoInit()
 	// AddEvent(IEvent) bool
 	// GetPool() []IEvent
 	// NextEventInPool() IEvent
@@ -32,7 +33,12 @@ func NewEventManager(name string) *EventManager {
 	}
 }
 
+// DoInit initializes all event manager resources.
+func (h *EventManager) DoInit() {
+	Logger.Trace().Str("event-manager", h.GetName()).Msg("DoInit")
+}
+
 // OnStart calls OnStart for all event handlers.
 func (h *EventManager) OnStart() {
-	Logger.Trace().Str("event-handler", h.GetName()).Msg("OnStart")
+	Logger.Trace().Str("event-manager", h.GetName()).Msg("OnStart")
 }

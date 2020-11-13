@@ -33,12 +33,12 @@ func NewEngine(name string, w, h int32, gameManager IGameManager) *Engine {
 			name:            name,
 			width:           w,
 			height:          h,
-			delegateManager: NewDelegateManager("engine-delegate-handler"),
-			eventManager:    NewEventManager("engine-event-handler"),
-			fontManager:     NewFontManager("engine-font-handler"),
-			resourceManager: NewResourceManager("engine-resource-handler"),
-			sceneManager:    NewSceneManager("engine-scene-handler"),
-			soundManager:    NewSoundManager("engine-sound-handler"),
+			delegateManager: NewDelegateManager("engine-delegate-manager"),
+			eventManager:    NewEventManager("engine-event-manager"),
+			fontManager:     NewFontManager("engine-font-manager"),
+			resourceManager: NewResourceManager("engine-resource-manager"),
+			sceneManager:    NewSceneManager("engine-scene-manager"),
+			soundManager:    NewSoundManager("engine-sound-manager"),
 			gameManager:     gameManager,
 		}
 	}
@@ -83,20 +83,22 @@ func (engine *Engine) DoFrameStart() {
 // DoInit initializes basic engine resources.
 func (engine *Engine) DoInit() {
 	Logger.Trace().Str("engine", engine.name).Msg("DoInit")
-	gameEngine.DoInitSdl()
-	gameEngine.DoInitResources()
+	engine.DoInitSdl()
+	engine.DoInitResources()
+	engine.GetGameManager().DoInit()
 }
 
 // DoInitResources initializes all internal resources, like scene handler and
 // event handler.
 func (engine *Engine) DoInitResources() {
 	Logger.Trace().Str("engine", engine.name).Msg("init resources")
-	engine.GetEventManager().OnStart()
-	engine.GetDelegateManager().OnStart()
-	engine.GetResourceManager().OnStart()
-	engine.GetFontManager().OnStart()
-	engine.GetSoundManager().OnStart()
-	engine.GetSceneManager().OnStart()
+	engine.GetEventManager().DoInit()
+	engine.GetDelegateManager().DoInit()
+	engine.GetResourceManager().DoInit()
+	engine.GetFontManager().DoInit()
+	engine.GetSoundManager().DoInit()
+	engine.GetSceneManager().DoInit()
+	engine.GetGameManager().DoInit()
 }
 
 // DoInitSdl initializes all engine sdl structures.
@@ -147,18 +149,12 @@ func (engine *Engine) DoRun() {
 			}
 		}
 
-		// Execute all update calls.
-		engine.GetSceneManager().OnUpdate()
-		// Call update for delegate handler.
-		engine.GetDelegateManager().OnUpdate()
-		// Execute any post updates behavior.
-		engine.GetSceneManager().OnAfterUpdate()
+		engine.DoUpdate()
 
 		engine.renderer.SetDrawColor(255, 255, 255, 255)
 		engine.renderer.Clear()
 
-		// Execute all render calls.
-		engine.GetSceneManager().OnRender()
+		engine.DoRender()
 
 		engine.renderer.Present()
 
@@ -173,11 +169,26 @@ func (engine *Engine) DoRun() {
 	}
 }
 
+// DoRender calls on OnRender methods to run.
+func (engine *Engine) DoRender() {
+	// Call game manager render.
+	engine.GetGameManager().OnRender()
+	// Execute all render calls.
+	engine.GetSceneManager().OnRender()
+}
+
 // DoStart starts the game engine. At this point all scenes and entities have
 // been already added to the engine.
 func (engine *Engine) DoStart(scene IScene) {
 	Logger.Trace().Str("engine", engine.name).Msg("DoStart")
 	engine.active = true
+	engine.GetEventManager().OnStart()
+	engine.GetDelegateManager().OnStart()
+	engine.GetResourceManager().OnStart()
+	engine.GetFontManager().OnStart()
+	engine.GetSoundManager().OnStart()
+	engine.GetSceneManager().OnStart()
+	engine.GetGameManager().OnStart()
 
 	// Set first scene as the active by default.
 	if scene != nil {
@@ -185,6 +196,20 @@ func (engine *Engine) DoStart(scene IScene) {
 	} else {
 		engine.GetSceneManager().SetActiveFirstScene()
 	}
+}
+
+// DoUpdate calls all OnUpdate and OnAfterUpdate methods to run.
+func (engine *Engine) DoUpdate() {
+	// Call game manager update.
+	engine.GetGameManager().OnUpdate()
+	// Execute all update calls.
+	engine.GetSceneManager().OnUpdate()
+	// Call update for delegate handler.
+	engine.GetDelegateManager().OnUpdate()
+	// Execute any post updates behavior.
+	engine.GetSceneManager().OnAfterUpdate()
+	// Call game manager after update.
+	engine.GetGameManager().OnAfterUpdate()
 }
 
 // GetDelegateManager returns the engine delegate handler.
@@ -239,6 +264,8 @@ func (engine *Engine) GetWidth() int32 {
 
 // RunEngine runs the game engine.
 func (engine *Engine) RunEngine(scene IScene) bool {
+	engine.DoInit()
+	engine.GetGameManager().CreateAssets()
 	engine.DoStart(scene)
 	engine.DoRun()
 	engine.DoCleanup()

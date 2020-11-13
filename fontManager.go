@@ -102,6 +102,7 @@ type IFontManager interface {
 	IObject
 	Clear()
 	CreateFont(string, string, int) IFont
+	DoInit()
 	DeleteFont(IFont) bool
 	GetFont(string) IFont
 	GetFontByFilename(string) IFont
@@ -120,7 +121,7 @@ var _ IFontManager = (*FontManager)(nil)
 
 // NewFontManager creates a new font handler instance.
 func NewFontManager(name string) *FontManager {
-	Logger.Trace().Str("font-handler", name).Msg("new font-handler")
+	Logger.Trace().Str("font-manager", name).Msg("new font-manager")
 	return &FontManager{
 		Object: NewObject(name),
 		fonts:  []IFont{},
@@ -130,7 +131,7 @@ func NewFontManager(name string) *FontManager {
 
 // Clear removes all fonts from the font handler.
 func (h *FontManager) Clear() {
-	Logger.Trace().Str("font-handler", h.GetName()).Msg("Clear")
+	Logger.Trace().Str("font-manager", h.GetName()).Msg("Clear")
 	for _, r := range h.fonts {
 		r.Clear()
 	}
@@ -140,7 +141,7 @@ func (h *FontManager) Clear() {
 // CreateFont creates a new font. If the same font has already
 // been created with the same filename, existing font is returned.
 func (h *FontManager) CreateFont(name string, filename string, fontSize int) IFont {
-	Logger.Trace().Str("font-handler", h.GetName()).Str("name", name).Str("filename", filename).Msg("CreateFont")
+	Logger.Trace().Str("font-manager", h.GetName()).Str("name", name).Str("filename", filename).Msg("CreateFont")
 	for _, font := range h.fonts {
 		if font.GetFilename() == filename {
 			font.New()
@@ -155,7 +156,7 @@ func (h *FontManager) CreateFont(name string, filename string, fontSize int) IFo
 // DeleteFont deletes font from the handler. Memory fonts are
 // released from the given font.
 func (h *FontManager) DeleteFont(font IFont) bool {
-	Logger.Trace().Str("font-handler", h.GetName()).Str("name", font.GetName()).Str("filename", font.GetFilename()).Msg("DeleteFont")
+	Logger.Trace().Str("font-manager", h.GetName()).Str("name", font.GetName()).Str("filename", font.GetFilename()).Msg("DeleteFont")
 	for i := len(h.fonts) - 1; i >= 0; i-- {
 		r := h.fonts[i]
 		if r.GetID() == font.GetID() {
@@ -166,6 +167,11 @@ func (h *FontManager) DeleteFont(font IFont) bool {
 		}
 	}
 	return false
+}
+
+// DoInit initializes all font manager resources.
+func (h *FontManager) DoInit() {
+	Logger.Trace().Str("font-manager", h.GetName()).Msg("DoInit")
 }
 
 // GetFont returns a font with the given font ID.
@@ -205,5 +211,5 @@ func (h *FontManager) GetFonts() []IFont {
 
 // OnStart initializes all font handler structure.
 func (h *FontManager) OnStart() {
-	Logger.Trace().Str("font-handler", h.GetName()).Msg("OnStart")
+	Logger.Trace().Str("font-manager", h.GetName()).Msg("OnStart")
 }

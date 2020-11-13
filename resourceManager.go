@@ -91,6 +91,7 @@ type IResourceManager interface {
 	Clear()
 	CreateResource(string, string) IResource
 	DeleteResource(IResource) bool
+	DoInit()
 	GetResource(string) IResource
 	GetResourceByFilename(string) IResource
 	GetResourceByName(string) IResource
@@ -108,7 +109,7 @@ var _ IResourceManager = (*ResourceManager)(nil)
 
 // NewResourceManager creates a new resource handler instance.
 func NewResourceManager(name string) *ResourceManager {
-	Logger.Trace().Str("resource-handler", name).Msg("new resource-handler")
+	Logger.Trace().Str("resource-manager", name).Msg("new resource-manager")
 	return &ResourceManager{
 		Object:    NewObject(name),
 		resources: []IResource{},
@@ -118,7 +119,7 @@ func NewResourceManager(name string) *ResourceManager {
 
 // Clear removes all resources from the resource handler.
 func (h *ResourceManager) Clear() {
-	Logger.Trace().Str("resource-handler", h.GetName()).Msg("Clear")
+	Logger.Trace().Str("resource-manager", h.GetName()).Msg("Clear")
 	for _, r := range h.resources {
 		r.Clear()
 	}
@@ -128,7 +129,7 @@ func (h *ResourceManager) Clear() {
 // CreateResource creates a new resource. If the same resource has already
 // been created with the same filename, existing resource is returned.
 func (h *ResourceManager) CreateResource(name string, filename string) IResource {
-	Logger.Trace().Str("resource-handler", h.GetName()).Str("name", name).Str("filename", filename).Msg("CreateResource")
+	Logger.Trace().Str("resource-manager", h.GetName()).Str("name", name).Str("filename", filename).Msg("CreateResource")
 	for _, resource := range h.resources {
 		if resource.GetFilename() == filename {
 			resource.New()
@@ -143,7 +144,7 @@ func (h *ResourceManager) CreateResource(name string, filename string) IResource
 // DeleteResource deletes resource from the handler. Memory resources are
 // released from the given resource.
 func (h *ResourceManager) DeleteResource(resource IResource) bool {
-	Logger.Trace().Str("resource-handler", h.GetName()).Str("name", resource.GetName()).Str("filename", resource.GetFilename()).Msg("DeleteResource")
+	Logger.Trace().Str("resource-manager", h.GetName()).Str("name", resource.GetName()).Str("filename", resource.GetFilename()).Msg("DeleteResource")
 	for i := len(h.resources) - 1; i >= 0; i-- {
 		r := h.resources[i]
 		if r.GetID() == resource.GetID() {
@@ -154,6 +155,11 @@ func (h *ResourceManager) DeleteResource(resource IResource) bool {
 		}
 	}
 	return false
+}
+
+// DoInit initializes all resource manager resources.
+func (h *ResourceManager) DoInit() {
+	Logger.Trace().Str("resource-manager", h.GetName()).Msg("DoInit")
 }
 
 // GetResource returns a resource with the given resource ID.
@@ -193,5 +199,5 @@ func (h *ResourceManager) GetResources() []IResource {
 
 // OnStart initializes all resource handler structure.
 func (h *ResourceManager) OnStart() {
-	Logger.Trace().Str("resource-handler", h.GetName()).Msg("OnStart")
+	Logger.Trace().Str("resource-manager", h.GetName()).Msg("OnStart")
 }
