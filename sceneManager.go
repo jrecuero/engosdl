@@ -14,6 +14,7 @@ type ISceneManager interface {
 	GetScene(string) IScene
 	GetSceneByName(string) IScene
 	GetScenes() []IScene
+	GetStandbyScene() IScene
 	OnAfterUpdate()
 	OnRender()
 	OnEnable()
@@ -138,6 +139,11 @@ func (h *SceneManager) GetSceneByName(name string) IScene {
 // GetScenes returns all scenes in the scene handler.
 func (h *SceneManager) GetScenes() []IScene {
 	return h.scenes
+}
+
+// GetStandbyScene returns the standby scene in the scene manager.
+func (h *SceneManager) GetStandbyScene() IScene {
+	return h.standByScene.scene
 }
 
 // OnAfterUpdate calls all scene OnAfterUpdate, which should run after DoUpdate

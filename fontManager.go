@@ -76,7 +76,8 @@ func (r *Font) GetFont() *ttf.Font {
 // GetTextureFromFont returns a texture from the font surface.
 func (r *Font) GetTextureFromFont(message string, color sdl.Color) *sdl.Texture {
 	Logger.Trace().Str("font", r.GetName()).Str("filename", r.GetFilename()).Msg("get texture from font")
-	surface, err := r.font.RenderUTF8Solid(message, color)
+	// surface, err := r.font.RenderUTF8Solid(message, color)
+	surface, err := r.font.RenderUTF8BlendedWrapped(message, color, len(message)*r.fontSize)
 	if err != nil {
 		Logger.Error().Err(err).Msg("RenderUTF8Solid error")
 		panic(err)

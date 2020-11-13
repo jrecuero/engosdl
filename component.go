@@ -26,6 +26,7 @@ type IComponent interface {
 	GetActive() bool
 	GetDelegate() IDelegate
 	GetEntity() IEntity
+	GetRemoveOnDestroy() bool
 	OnAwake()
 	OnEnable()
 	OnRender()
@@ -34,6 +35,7 @@ type IComponent interface {
 	SetActive(bool)
 	SetDelegate(IDelegate)
 	SetEntity(IEntity)
+	SetRemoveOnDestroy(bool)
 }
 
 // ICollisionBox represets the interface for any collider collision box.
@@ -75,10 +77,11 @@ type IText interface {
 // Component represents the default IComponent implementation.
 type Component struct {
 	*Object
-	entity    IEntity
-	active    bool
-	delegate  IDelegate
-	registers []IRegister
+	entity          IEntity
+	active          bool
+	delegate        IDelegate
+	registers       []IRegister
+	removeOnDestroy bool
 }
 
 var _ IComponent = (*Component)(nil)
@@ -87,11 +90,12 @@ var _ IComponent = (*Component)(nil)
 func NewComponent(name string) *Component {
 	Logger.Trace().Str("component", name).Msg("new component")
 	return &Component{
-		Object:    NewObject(name),
-		entity:    nil,
-		active:    true,
-		delegate:  nil,
-		registers: []IRegister{},
+		Object:          NewObject(name),
+		entity:          nil,
+		active:          true,
+		delegate:        nil,
+		registers:       []IRegister{},
+		removeOnDestroy: true,
 	}
 }
 
@@ -216,6 +220,13 @@ func (c *Component) GetEntity() IEntity {
 	return c.entity
 }
 
+// GetRemoveOnDestroy returns component remove on destroy. If this attribute
+// is true, the component will be removed from the entity when scene is
+// fully unloaded.
+func (c *Component) GetRemoveOnDestroy() bool {
+	return c.removeOnDestroy
+}
+
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *Component) OnAwake() {
@@ -282,4 +293,11 @@ func (c *Component) SetDelegate(delegate IDelegate) {
 // SetEntity sets component new entity instance.
 func (c *Component) SetEntity(entity IEntity) {
 	c.entity = entity
+}
+
+// SetRemoveOnDestroy sets component remove on destroy. If this attribute
+// is true, the component will be removed from the entity when scene is
+// fully unloaded.
+func (c *Component) SetRemoveOnDestroy(remove bool) {
+	c.removeOnDestroy = remove
 }

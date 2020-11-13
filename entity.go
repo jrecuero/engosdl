@@ -37,6 +37,8 @@ type IEntity interface {
 	OnEnable()
 	OnStart()
 	OnUpdate()
+	RemoveComponent(IComponent) bool
+	RemoveComponents() bool
 	SetActive(bool) IEntity
 	SetDieOnCollision(bool) IEntity
 	SetLayer(int) IEntity
@@ -132,9 +134,14 @@ func (entity *Entity) DoDestroy() {
 	for _, component := range entity.loadedComponents {
 		component.DoDestroy()
 	}
-	entity.components = []IComponent{}
-	entity.loadedComponents = []IComponent{}
 	entity.unloadedComponents = []IComponent{}
+	for _, component := range entity.GetComponents() {
+		if !component.GetRemoveOnDestroy() {
+			entity.unloadedComponents = append(entity.unloadedComponents, component)
+		}
+	}
+	entity.components = entity.unloadedComponents
+	entity.loadedComponents = []IComponent{}
 }
 
 // DoDump dumps entity in JSON format.
@@ -335,6 +342,33 @@ func (entity *Entity) OnUpdate() {
 			component.OnUpdate()
 		}
 	}
+}
+
+// RemoveComponent removes the given component.
+func (entity *Entity) RemoveComponent(component IComponent) bool {
+	Logger.Trace().Str("entity", entity.GetName()).
+		Str("component", component.GetName()).
+		Str("type", reflect.TypeOf(component).String()).
+		Msg("remove component")
+	for i, comp := range entity.GetComponents() {
+		if reflect.TypeOf(comp) == reflect.TypeOf(component) {
+			comp.DoUnLoad()
+			entity.components = append(entity.components[:i], entity.components[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
+// RemoveComponents removes all components.
+func (entity *Entity) RemoveComponents() bool {
+	Logger.Trace().Str("entity", entity.GetName()).
+		Msg("remove components")
+	for _, comp := range entity.GetComponents() {
+		comp.DoUnLoad()
+	}
+	entity.components = []IComponent{}
+	return true
 }
 
 // SetActive sets if the entity is active (enable) or not (disable).
