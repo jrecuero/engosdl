@@ -1,6 +1,29 @@
 package engosdl
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
+
+// SceneEventData is the event structure used by the scene manager.
+type SceneEventData struct {
+	*Object
+	scene IScene
+	index int
+}
+
+// NewSceneEvent creates a new scene event instance.
+func NewSceneEvent(scene IScene, index int) *Event {
+	Logger.Trace().Str("scene-event", scene.GetName()).Str("index", strconv.Itoa(index)).Msg("new scene-event")
+	return &Event{
+		Object: NewObject("scene-event"),
+		data: &SceneEventData{
+			Object: NewObject(scene.GetName()),
+			scene:  scene,
+			index:  index,
+		},
+	}
+}
 
 // ISceneManager represents the interface for the scene handler.
 type ISceneManager interface {
@@ -41,6 +64,7 @@ type SceneManager struct {
 	scenes       []IScene
 	activeScene  *ActiveScene
 	standByScene *ActiveScene
+	eventPoolID  string
 }
 
 var _ ISceneManager = (*SceneManager)(nil)
@@ -80,6 +104,15 @@ func (h *SceneManager) DeleteScene(name string) bool {
 func (h *SceneManager) DoFrameEnd() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.DoFrameEnd()
+	}
+	// Read the event pool for any scene change.
+	if pool := GetEventManager().GetPool(h.eventPoolID); pool != nil {
+		if event, _ := pool.Pop(); event != nil {
+			data := event.GetData().(*SceneEventData)
+			scene := data.scene
+			index := data.index
+			h.setActiveScene(scene, index)
+		}
 	}
 }
 
@@ -171,9 +204,12 @@ func (h *SceneManager) OnEnable() {
 // OnStart calls all scene OnStart methods.
 func (h *SceneManager) OnStart() {
 	Logger.Trace().Str("scene-manager", h.GetName()).Msg("OnStart")
-	// if activeScene := h.GetActiveScene(); activeScene != nil {
-	// 	activeScene.OnStart()
-	// }
+	var err error
+	// Create event pool in event manager.
+	if h.eventPoolID, err = GetEventManager().CreatePool("scene-manager-pool"); err != nil {
+		Logger.Error().Err(err)
+		panic(err)
+	}
 }
 
 // OnUpdate calls all scene OnUpdate methods.
@@ -259,9 +295,12 @@ func (h *SceneManager) setActiveScene(scene IScene, index int) {
 
 // SetActiveScene sets the given scene as the active scene.
 func (h *SceneManager) SetActiveScene(scene IScene) bool {
-	for i, scn := range h.GetScenes() {
+	for index, scn := range h.GetScenes() {
 		if scn == scene {
-			h.setActiveScene(scene, i)
+			// h.setActiveScene(scene, index)
+			if pool := GetEventManager().GetPool(h.eventPoolID); pool != nil {
+				pool.Add(NewSceneEvent(scene, index))
+			}
 			return true
 		}
 	}
