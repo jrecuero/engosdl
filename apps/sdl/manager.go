@@ -53,8 +53,6 @@ func (h *GameManager) CreateAssets() {
 // createEntityPlayer creates the player entity
 func (h *GameManager) createEntityPlayer() engosdl.IEntity {
 	h.player.GetTransform().SetPosition(engosdl.NewVector(float64(h.engine.GetWidth())/2, float64(h.engine.GetHeight()-125)))
-
-	// playerSprite := components.NewSprite("player-sprite", "images/player.bmp", engine.GetRenderer())
 	playerSprite := components.NewSprite("player-sprite", []string{"images/player.bmp"}, 1, h.engine.GetRenderer())
 	playerSprite.SetDestroyOnOutOfBounds(false)
 	playerSprite.DefaultAddDelegateToRegister()
@@ -68,6 +66,17 @@ func (h *GameManager) createEntityPlayer() engosdl.IEntity {
 	playerOutOfBounds.DefaultAddDelegateToRegister()
 	playerMoveIt := components.NewMoveIt("player-move-it", engosdl.NewVector(5, 0))
 	playerMoveIt.DefaultAddDelegateToRegister()
+	if obj := h.player.GetComponent(&components.EntityStats{}); obj != nil {
+		if stats, ok := obj.(*components.EntityStats); ok {
+			stats.AddDelegateToRegister(engosdl.GetDelegateManager().GetDestroyDelegate(), nil, nil, func(params ...interface{}) bool {
+				entity := params[0].(engosdl.IEntity)
+				if entity.GetTag() == "enemy" {
+					stats.Experience += 10
+				}
+				return true
+			})
+		}
+	}
 
 	h.player.AddComponent(playerSprite)
 	h.player.AddComponent(playerKeyboard)
@@ -167,7 +176,7 @@ func (h *GameManager) createSceneStats(engine *engosdl.Engine, scene engosdl.ISc
 	message.GetTransform().SetPosition(engosdl.NewVector(50, 100))
 	messageString := "player stats"
 	if playerStats, ok := h.player.GetComponent(&components.EntityStats{}).(*components.EntityStats); ok {
-		messageString = fmt.Sprintf("player stats\nlife: %d", playerStats.Life)
+		messageString = fmt.Sprintf("player stats\nlife: %d\nexp: %d", playerStats.Life, playerStats.Experience)
 	}
 	messageText := components.NewText("message-text", "fonts/lato.ttf", 16, sdl.Color{R: 0, G: 255, B: 0}, messageString, engine.GetRenderer())
 	messageText.DefaultAddDelegateToRegister()
@@ -215,5 +224,6 @@ func (h *GameManager) DoInit() {
 	h.player = engosdl.NewEntity("player")
 	playerStats := components.NewEntityStats("player stats", 100)
 	playerStats.SetRemoveOnDestroy(false)
+
 	h.player.AddComponent(playerStats)
 }

@@ -15,7 +15,8 @@ func init() {
 // EntityStats represents a component that contains generic entity stats.
 type EntityStats struct {
 	*engosdl.Component
-	Life int `json:"life"`
+	Life       int `json:"life"`
+	Experience int `json:"experience"`
 }
 
 // NewEntityStats creates a new entity stats instance.
