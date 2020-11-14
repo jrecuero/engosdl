@@ -47,21 +47,23 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	enemySprite.SetDestroyOnOutOfBounds(false)
 	// enemySprite.DefaultAddDelegateToRegister()
 	enemySprite.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, enemySprite.DefaultOnCollision)
-	// enemySprite.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, func(params ...interface{}) bool {
-	// 	speed := enemyMove.GetSpeed()
-	// 	enemyMove.SetSpeed(engosdl.NewVector(speed.X*-1, speed.Y*-1))
-	// 	return true
-	// })
+	enemySprite.AddDelegateToRegister(nil, enemy, &components.Timer{}, func(params ...interface{}) bool {
+		x, y := enemySprite.GetEntity().GetTransform().GetPosition().Get()
+		enemySprite.GetEntity().GetTransform().SetPosition(engosdl.NewVector(x, y+10))
+		return true
+	})
 	enemyStats := components.NewEntityStats("enemy-stats", 50)
 	enemyStats.DefaultAddDelegateToRegister()
 	enemyCollider := components.NewCollider2D("enemy-collider-2D")
 	enemyCollider.DefaultAddDelegateToRegister()
+	enemyTimer := components.NewTimer("enemy-timer", 100)
 
 	enemy.AddComponent(enemyMove)
 	enemy.AddComponent(enemyOutOfBounds)
 	enemy.AddComponent(enemySprite)
 	enemy.AddComponent(enemyCollider)
 	enemy.AddComponent(enemyStats)
+	enemy.AddComponent(enemyTimer)
 
 	if controller, ok := enemyController.GetComponent(&EnemyController{}).(*EnemyController); ok {
 		controller.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, controller.onOutOfBounds)

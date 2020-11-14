@@ -1,6 +1,8 @@
 package components
 
 import (
+	"fmt"
+
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -39,7 +41,8 @@ func (c *Keyboard) DefaultAddDelegateToRegister() {
 func (c *Keyboard) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", c.GetName()).Msg("OnAwake")
 	// Create new delegate "on-keyboard"
-	c.SetDelegate(engosdl.GetDelegateManager().CreateDelegate(c, "on-keyboard"))
+	name := fmt.Sprintf("on-keyboard/%s", c.GetName())
+	c.SetDelegate(engosdl.GetDelegateManager().CreateDelegate(c, name))
 	c.Component.OnAwake()
 }
 
