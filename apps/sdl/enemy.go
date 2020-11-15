@@ -25,7 +25,7 @@ func createEnemies(engine *engosdl.Engine, maxEnemies int, enemyController engos
 	for i := 0; i < maxEnemies; i++ {
 		enemy := createEnemy(engine, i, engosdl.NewVector(x, 10), enemyController)
 		enemies = append(enemies, enemy)
-		x += 150
+		x += 75
 	}
 	return enemies
 }
@@ -35,7 +35,7 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	enemy := engosdl.NewEntity("enemy-" + strconv.Itoa(index))
 	enemy.SetTag("enemy")
 	enemy.GetTransform().SetPosition(position)
-	// enemy.GetTransform().SetScale(engosdl.NewVector(0.5, 0.5))
+	enemy.GetTransform().SetScale(engosdl.NewVector(0.5, 0.5))
 
 	enemyOutOfBounds := components.NewOutOfBounds("enemy-out-of-bounds", true)
 	enemyOutOfBounds.DefaultAddDelegateToRegister()
@@ -57,6 +57,8 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	enemyCollider := components.NewCollider2D("enemy-collider-2D")
 	enemyCollider.DefaultAddDelegateToRegister()
 	enemyTimer := components.NewTimer("enemy-timer", 100)
+	enemyShotBullet := components.NewShootBullet("enemy-bullet", engosdl.NewVector(0, 5))
+	enemyShotBullet.AddDelegateToRegister(nil, nil, &components.Timer{}, enemyShotBullet.ShootBulletSignature)
 
 	enemy.AddComponent(enemyMove)
 	enemy.AddComponent(enemyOutOfBounds)
@@ -64,6 +66,7 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	enemy.AddComponent(enemyCollider)
 	enemy.AddComponent(enemyStats)
 	enemy.AddComponent(enemyTimer)
+	enemy.AddComponent(enemyShotBullet)
 
 	if controller, ok := enemyController.GetComponent(&EnemyController{}).(*EnemyController); ok {
 		controller.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, controller.onOutOfBounds)

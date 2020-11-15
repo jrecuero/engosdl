@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strconv"
-
 	"github.com/jrecuero/engosdl"
 	"github.com/jrecuero/engosdl/assets/components"
 	"github.com/veandco/go-sdl2/sdl"
@@ -23,27 +21,27 @@ func createEntityBackground(engine *engosdl.Engine, filename string) engosdl.IEn
 	return bg
 }
 
-// createEntityScore creates all text entities.
-func createEntityScore(engine *engosdl.Engine) engosdl.IEntity {
-	scoreValue := 0
-	score := engosdl.NewEntity("score")
-	score.GetTransform().SetPosition(engosdl.NewVector(10, 560))
+// // createEntityScore creates all text entities.
+// func createEntityScore(engine *engosdl.Engine) engosdl.IEntity {
+// 	scoreValue := 0
+// 	score := engosdl.NewEntity("score")
+// 	score.GetTransform().SetPosition(engosdl.NewVector(10, 560))
 
-	scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000", engine.GetRenderer())
-	scoreText.DefaultAddDelegateToRegister()
-	destroyDelegate := engosdl.GetDelegateManager().GetDestroyDelegate()
-	scoreText.AddDelegateToRegister(destroyDelegate, nil, nil, func(params ...interface{}) bool {
-		entity := params[0].(engosdl.IEntity)
-		if entity.GetTag() == "enemy" {
-			scoreValue += 10
-			scoreText.SetMessage("Score: " + strconv.Itoa(scoreValue))
-		}
-		return true
-	})
-	score.AddComponent(scoreText)
+// 	scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000", engine.GetRenderer())
+// 	scoreText.DefaultAddDelegateToRegister()
+// 	destroyDelegate := engosdl.GetDelegateManager().GetDestroyDelegate()
+// 	scoreText.AddDelegateToRegister(destroyDelegate, nil, nil, func(params ...interface{}) bool {
+// 		entity := params[0].(engosdl.IEntity)
+// 		if entity.GetTag() == "enemy" {
+// 			scoreValue += 10
+// 			scoreText.SetMessage("Score: " + strconv.Itoa(scoreValue))
+// 		}
+// 		return true
+// 	})
+// 	score.AddComponent(scoreText)
 
-	return score
-}
+// 	return score
+// }
 
 // createWinner creates text at the end of battle scene.
 func createWinner(engine *engosdl.Engine) engosdl.IEntity {

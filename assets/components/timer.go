@@ -59,7 +59,6 @@ func (t *Timer) OnUpdate() {
 	if t.tickCounter == t.Tick {
 		t.tickCounter = 0
 		engosdl.GetDelegateManager().TriggerDelegate(t.GetDelegate(), false)
-		fmt.Printf("timer %s has expired.\n", t.GetName())
 	} else {
 		t.tickCounter++
 	}

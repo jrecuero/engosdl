@@ -93,6 +93,33 @@ func (scene *Scene) AuditEntities() {
 	}
 }
 
+// checkCollisions checks collisions between all entities in the scene.
+func (scene *Scene) checkCollisions() {
+	for i := 0; i < len(scene.collisionCollection); i++ {
+		colliderI := scene.collisionCollection[i]
+		collisionBoxI := colliderI.GetCollisionBox()
+		centerI := collisionBoxI.GetCenter()
+		radiusI := collisionBoxI.GetRadius()
+		// rectI := collisionBoxI.GetRect()
+		entityI := colliderI.GetEntity()
+		for j := i + 1; j < len(scene.collisionCollection); j++ {
+			colliderJ := scene.collisionCollection[j]
+			collisionBoxJ := colliderJ.GetCollisionBox()
+			centerJ := collisionBoxJ.GetCenter()
+			radiusJ := collisionBoxJ.GetRadius()
+			// rectJ := collisionBoxJ.GetRect()
+			entityJ := colliderJ.GetEntity()
+			distance := math.Sqrt(math.Pow(centerI.X-centerJ.X, 2) + math.Pow(centerI.Y-centerJ.Y, 2))
+			if distance < (radiusI + radiusJ) {
+				// if rectI.HasIntersection(rectJ) {
+				fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
+				delegate := GetDelegateManager().GetCollisionDelegate()
+				GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
+			}
+		}
+	}
+}
+
 // DeleteEntity deletes a entity from the scene.
 func (scene *Scene) DeleteEntity(entity IEntity) bool {
 	Logger.Trace().Str("scene", scene.GetName()).Str("Entity", entity.GetName()).Msg("delete entity")
@@ -257,7 +284,7 @@ func (scene *Scene) getIndexInCollisionCollectionByEntity(entity IEntity) (int, 
 
 // getIndexInLoadedEntity return the index for the given entity in
 // loadedEntity array.
-func (scene Scene) getIndexInLoadedEntity(entity IEntity) (int, bool) {
+func (scene *Scene) getIndexInLoadedEntity(entity IEntity) (int, bool) {
 	for i, obj := range scene.loadedEntities {
 		if obj.GetID() == entity.GetID() {
 			return i, true
@@ -268,7 +295,7 @@ func (scene Scene) getIndexInLoadedEntity(entity IEntity) (int, bool) {
 
 // getIndexInUnloadedEntity return the index for the given entity in
 // unloadedEntity array.
-func (scene Scene) getIndexInUnloadedEntity(entity IEntity) (int, bool) {
+func (scene *Scene) getIndexInUnloadedEntity(entity IEntity) (int, bool) {
 	for i, obj := range scene.unloadedEntities {
 		if obj.GetName() == entity.GetName() {
 			return i, true
@@ -367,29 +394,8 @@ func (scene *Scene) OnStart() {
 // but loadEntities struct. It calls to test collision in all entities active
 // in the scene.
 func (scene *Scene) OnUpdate() {
-	for i := 0; i < len(scene.collisionCollection); i++ {
-		colliderI := scene.collisionCollection[i]
-		collisionBoxI := colliderI.GetCollisionBox()
-		centerI := collisionBoxI.GetCenter()
-		radiusI := collisionBoxI.GetRadius()
-		// rectI := collisionBoxI.GetRect()
-		entityI := colliderI.GetEntity()
-		for j := i + 1; j < len(scene.collisionCollection); j++ {
-			colliderJ := scene.collisionCollection[j]
-			collisionBoxJ := colliderJ.GetCollisionBox()
-			centerJ := collisionBoxJ.GetCenter()
-			radiusJ := collisionBoxJ.GetRadius()
-			// rectJ := collisionBoxJ.GetRect()
-			entityJ := colliderJ.GetEntity()
-			distance := math.Sqrt(math.Pow(centerI.X-centerJ.X, 2) + math.Pow(centerI.Y-centerJ.Y, 2))
-			if distance < (radiusI + radiusJ) {
-				// if rectI.HasIntersection(rectJ) {
-				fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
-				delegate := GetDelegateManager().GetCollisionDelegate()
-				GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
-			}
-		}
-	}
+	// First check collisions in the scene.
+	scene.checkCollisions()
 	for _, entity := range scene.loadedEntities {
 		if entity.GetActive() {
 			entity.OnUpdate()

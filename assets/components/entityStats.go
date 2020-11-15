@@ -51,16 +51,32 @@ func (c *EntityStats) OnAwake() {
 func (c *EntityStats) onCollision(params ...interface{}) bool {
 	collisionEntityOne := params[0].(*engosdl.Entity)
 	collisionEntityTwo := params[1].(*engosdl.Entity)
-	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
-		c.Life -= 10
-		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.Life)
-		fmt.Printf("%s [live %d] onCollision %s with %s\n",
-			c.GetEntity().GetName(),
-			c.Life,
-			collisionEntityOne.GetName(),
-			collisionEntityTwo.GetName())
-		if c.Life == 0 {
-			engosdl.GetEngine().DestroyEntity(c.GetEntity())
+	var me, other *engosdl.Entity
+	if c.GetEntity().GetID() == collisionEntityOne.GetID() {
+		me = collisionEntityOne
+		other = collisionEntityTwo
+	} else if c.GetEntity().GetID() == collisionEntityTwo.GetID() {
+		me = collisionEntityTwo
+		other = collisionEntityOne
+	}
+	if me != nil && other != nil {
+		tag := c.GetEntity().GetTag()
+		var otherTag string
+		if parent := other.GetParent(); parent != nil {
+			otherTag = parent.GetTag()
+		}
+		if tag != otherTag {
+			c.Life -= 10
+			engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.Life)
+			fmt.Printf("%s [live %d] onCollision %s with %s\n",
+				c.GetEntity().GetName(),
+				c.Life,
+				collisionEntityOne.GetName(),
+				collisionEntityTwo.GetName())
+			if c.Life == 0 {
+				engosdl.GetEngine().DestroyEntity(c.GetEntity())
+			}
+			engosdl.GetEngine().DestroyEntity(other)
 		}
 	}
 	return true

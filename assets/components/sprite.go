@@ -55,7 +55,7 @@ func NewSprite(name string, filenames []string, numberOfSprites int, renderer *s
 // register for the component.
 func (c *Sprite) DefaultAddDelegateToRegister() {
 	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.onCollision)
-	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.onOutOfBounds)
+	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.DefaultOnOutOfBounds)
 }
 
 // DoDestroy calls all methods to clean up sprite.
@@ -163,8 +163,8 @@ func (c *Sprite) onCollision(params ...interface{}) bool {
 	return true
 }
 
-// onOutOfBounds checks if the entity has gone out of bounds.
-func (c *Sprite) onOutOfBounds(params ...interface{}) bool {
+// DefaultOnOutOfBounds checks if the entity has gone out of bounds.
+func (c *Sprite) DefaultOnOutOfBounds(params ...interface{}) bool {
 	if c.DestroyOnOutOfBounds {
 		entity := params[0].(engosdl.IEntity)
 		if entity.GetID() == c.GetEntity().GetID() {

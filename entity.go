@@ -80,6 +80,7 @@ func NewEntity(name string) *Entity {
 		components:         []IComponent{},
 		loadedComponents:   []IComponent{},
 		unloadedComponents: []IComponent{},
+		DieOnCollision:     false,
 	}
 }
 
@@ -379,7 +380,7 @@ func (entity *Entity) SetActive(active bool) IEntity {
 
 // SetDieOnCollision sets if the entity should be destroyed in any collision.
 func (entity *Entity) SetDieOnCollision(die bool) IEntity {
-	entity.DieOnCollision = true
+	entity.DieOnCollision = die
 	return entity
 }
 
