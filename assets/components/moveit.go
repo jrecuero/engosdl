@@ -1,13 +1,18 @@
 package components
 
 import (
+	"reflect"
+
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// ComponentNameMoveIt is the name to refer move it component.
+var ComponentNameMoveIt string = reflect.TypeOf(&MoveIt{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&MoveIt{})
+		componentManager.RegisterConstructor(ComponentNameMoveIt, CreateMoveIt)
 	}
 }
 
@@ -28,6 +33,11 @@ func NewMoveIt(name string, speed *engosdl.Vector) *MoveIt {
 		position:  engosdl.NewVector(0, 0),
 	}
 	return result
+}
+
+// CreateMoveIt implements move it constructor used by the component manager.
+func CreateMoveIt(params ...interface{}) engosdl.IComponent {
+	return NewMoveIt(params[0].(string), params[1].(*engosdl.Vector))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to

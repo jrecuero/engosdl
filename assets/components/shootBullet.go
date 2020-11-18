@@ -1,14 +1,18 @@
 package components
 
 import (
+	"reflect"
 	"strconv"
 
 	"github.com/jrecuero/engosdl"
 )
 
+// ComponentNameShootBullet is the name to refer shoot bullet component.
+var ComponentNameShootBullet string = reflect.TypeOf(&ShootBullet{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&ShootBullet{})
+		componentManager.RegisterConstructor(ComponentNameShootBullet, CreateShootBullet)
 	}
 }
 
@@ -29,6 +33,12 @@ func NewShootBullet(name string, moveTo *engosdl.Vector) *ShootBullet {
 		MoveTo:    moveTo,
 	}
 	return result
+}
+
+// CreateShootBullet implements shoot bullet constructor used bu component
+// manager.
+func CreateShootBullet(params ...interface{}) engosdl.IComponent {
+	return NewShootBullet(params[0].(string), params[1].(*engosdl.Vector))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to

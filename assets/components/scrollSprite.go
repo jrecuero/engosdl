@@ -1,13 +1,18 @@
 package components
 
 import (
+	"reflect"
+
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// ComponentNameScrollSprite is the name to refer scroll sprite component.
+var ComponentNameScrollSprite string = reflect.TypeOf(&ScrollSprite{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&ScrollSprite{})
+		componentManager.RegisterConstructor(ComponentNameScrollSprite, CreateScrollSprite)
 	}
 }
 
@@ -36,6 +41,12 @@ func NewScrollSprite(name string, filename string, renderer *sdl.Renderer) *Scro
 		},
 		Scroll: engosdl.NewVector(0, -1),
 	}
+}
+
+// CreateScrollSprite implements scroll sprite constructor used by component
+// manager.
+func CreateScrollSprite(params ...interface{}) engosdl.IComponent {
+	return NewScrollSprite(params[0].(string), params[1].(string), params[2].(*sdl.Renderer))
 }
 
 // OnRender is called for every render tick.

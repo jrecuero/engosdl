@@ -145,13 +145,41 @@ func (entity *Entity) DoDestroy() {
 	entity.loadedComponents = []IComponent{}
 }
 
+type componentToMarshal struct {
+	ComponentName string     `json:"component-type"`
+	Component     IComponent `json:"component-data"`
+}
+
+type entityToMarshal struct {
+	Entity     IEntity               `json:"entity-data"`
+	Components []*componentToMarshal `json:"components"`
+}
+
 // DoDump dumps entity in JSON format.
 func (entity *Entity) DoDump() {
+	toDump := &entityToMarshal{
+		Entity:     entity,
+		Components: []*componentToMarshal{},
+	}
 	if result, err := json.Marshal(entity); err == nil {
-		fmt.Printf("%s\n", result)
+		// fmt.Printf("%s\n", result)
 		for i, component := range entity.GetComponents() {
 			fmt.Printf("%d %s\n", i, reflect.TypeOf(component))
-			component.DoDump(component)
+			// component.DoDump(component)
+			// toDump := struct {
+			// 	ComponentName string     `json:"component-type"`
+			// 	Component     IComponent `json:"component-data"`
+			// }{
+			// 	ComponentName: reflect.TypeOf(component).String(),
+			// 	Component:     component,
+			// }
+			toDump.Components = append(toDump.Components, &componentToMarshal{
+				ComponentName: reflect.TypeOf(component).String(),
+				Component:     component,
+			})
+			if result, err = json.Marshal(toDump); err == nil {
+				fmt.Printf("%s\n", result)
+			}
 		}
 	}
 }

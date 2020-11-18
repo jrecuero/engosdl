@@ -2,13 +2,18 @@ package components
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/jrecuero/engosdl"
 )
 
+// ComponentNameEntityStats is the name to refer entity stats component.
+var ComponentNameEntityStats string = reflect.TypeOf(&EntityStats{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&EntityStats{})
+		// componentManager.RegisterComponent(&EntityStats{Component: engosdl.NewComponent(ComponentNameEntityStats)})
+		componentManager.RegisterConstructor(ComponentNameEntityStats, CreateEntityStats)
 	}
 }
 
@@ -29,6 +34,12 @@ func NewEntityStats(name string, life int) *EntityStats {
 		Life:      life,
 	}
 	return result
+}
+
+// CreateEntityStats implements entity stats constructor used by component
+// manager
+func CreateEntityStats(params ...interface{}) engosdl.IComponent {
+	return NewEntityStats(params[0].(string), params[1].(int))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to

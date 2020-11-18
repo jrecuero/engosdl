@@ -1,10 +1,17 @@
 package components
 
-import "github.com/jrecuero/engosdl"
+import (
+	"reflect"
+
+	"github.com/jrecuero/engosdl"
+)
+
+// ComponentNameMoveTo is the name to refer move to component.
+var ComponentNameMoveTo string = reflect.TypeOf(&MoveTo{}).String()
 
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&MoveTo{})
+		componentManager.RegisterConstructor(ComponentNameMoveTo, CreateMoveTo)
 	}
 }
 
@@ -23,6 +30,11 @@ func NewMoveTo(name string, speed *engosdl.Vector) *MoveTo {
 		Speed:     speed,
 	}
 	return result
+}
+
+// CreateMoveTo implements move to constructor used by component manager.
+func CreateMoveTo(params ...interface{}) engosdl.IComponent {
+	return NewMoveTo(params[0].(string), params[1].(*engosdl.Vector))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to

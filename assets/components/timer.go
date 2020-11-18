@@ -2,9 +2,19 @@ package components
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/jrecuero/engosdl"
 )
+
+// ComponentNameTimer is the name to refer timer component.
+var ComponentNameTimer string = reflect.TypeOf(&Timer{}).String()
+
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterConstructor(ComponentNameTimer, CreateTimer)
+	}
+}
 
 // ITimer represents the timer component. Timer should be base in engine
 // frames.
@@ -31,6 +41,11 @@ func NewTimer(name string, tick int) *Timer {
 		Tick:        tick,
 		tickCounter: 0,
 	}
+}
+
+// CreateTimer implements timer constructor used by component manager.
+func CreateTimer(params ...interface{}) engosdl.IComponent {
+	return NewTimer(params[0].(string), params[1].(int))
 }
 
 // GetTick returns the timer tick. Tick is the number of engine frames before

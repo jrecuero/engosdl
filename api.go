@@ -28,10 +28,7 @@ func init() {
 	Logger = zerolog.New(file).With().Timestamp().Logger()
 	Logger.Info().Msg("start engosdl")
 	Logger.Info().Msg("create component manager")
-	componentManager = &ComponentManager{
-		Object:     NewObject("component-manager"),
-		components: []IComponent{},
-	}
+	componentManager = NewComponentManager("component-manager")
 }
 
 const (

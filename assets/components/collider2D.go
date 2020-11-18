@@ -2,14 +2,18 @@ package components
 
 import (
 	"math"
+	"reflect"
 
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// ComponentNameCollider2D is the name to refer collider-2 component.
+var ComponentNameCollider2D string = reflect.TypeOf(&Collider2D{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&Collider2D{})
+		componentManager.RegisterConstructor(ComponentNameCollider2D, CreateCollider2D)
 	}
 }
 
@@ -46,6 +50,12 @@ func NewCollider2D(name string) *Collider2D {
 		Component:    engosdl.NewComponent(name),
 		collisionBox: &collisionBox{},
 	}
+}
+
+// CreateCollider2D implements collider-2D constructor used by component
+// manager
+func CreateCollider2D(params ...interface{}) engosdl.IComponent {
+	return NewCollider2D(params[0].(string))
 }
 
 // GetCollisionBox returns the collision box for the parent entity.

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"strconv"
 
 	"github.com/jrecuero/engosdl"
@@ -18,8 +19,10 @@ func createEnemyController(totalEnemies int) engosdl.IEntity {
 
 // createEnemies creates all enemies instances.
 func createEnemies(engine *engosdl.Engine, maxEnemies int, enemyController engosdl.IEntity) []engosdl.IEntity {
-	engosdl.GetComponentManager().RegisterComponent(&EnemyController{})
-	engosdl.GetComponentManager().RegisterComponent(&enemySpriteT{})
+	ComponentNameEnemyController := reflect.TypeOf(&EnemyController{}).String()
+	ComponentNameEnemySprite := reflect.TypeOf(&enemySpriteT{}).String()
+	engosdl.GetComponentManager().RegisterConstructor(ComponentNameEnemyController, CreateEnemyController)
+	engosdl.GetComponentManager().RegisterConstructor(ComponentNameEnemySprite, CreateEnemySprite)
 	enemies := []engosdl.IEntity{}
 	var x float64 = 10
 	for i := 0; i < maxEnemies; i++ {

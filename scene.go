@@ -83,6 +83,9 @@ func (scene *Scene) AddEntity(entity IEntity) bool {
 	scene.entities = append(scene.entities, entity)
 	scene.unloadedEntities = append(scene.unloadedEntities, entity)
 	entity.SetScene(scene)
+
+	// TODO: Dump the entity to audit required information.
+	entity.DoDump()
 	return true
 }
 

@@ -1,15 +1,19 @@
 package components
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// ComponentNameKeyShooter is the name to refer key shooter component.
+var ComponentNameKeyShooter string = reflect.TypeOf(&KeyShooter{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&KeyShooter{})
+		componentManager.RegisterConstructor(ComponentNameKeyShooter, CreateKeyShooter)
 	}
 }
 
@@ -32,6 +36,12 @@ func NewKeyShooter(name string, key int) *KeyShooter {
 		Cooldown:  500 * time.Millisecond,
 	}
 	return keyShooter
+}
+
+// CreateKeyShooter implements key shooter constructor used by component
+// manager.
+func CreateKeyShooter(params ...interface{}) engosdl.IComponent {
+	return NewKeyShooter(params[0].(string), params[0].(int))
 }
 
 // OnAwake should create all component resources that don't have any dependency

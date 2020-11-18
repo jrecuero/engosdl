@@ -93,8 +93,6 @@ func (h *GameManager) createEntityPlayer() engosdl.IEntity {
 	h.player.AddComponent(playerMoveIt)
 	h.player.AddComponent(playerCollider)
 
-	h.player.DoDump()
-
 	return h.player
 }
 
@@ -158,86 +156,6 @@ func (h *GameManager) createScenePlay(bgFilename string, maxEnemies int) func(en
 		return true
 	}
 }
-
-// // createScenePlayOne creates the play scene.
-// func (h *GameManager) createScenePlayOne(engine *engosdl.Engine, scene engosdl.IScene) bool {
-// 	h.winnerCreated = false
-// 	maxEnemies := 3
-
-// 	// Entities
-// 	bg := createEntityBackground(engine, "images/space.bmp")
-// 	h.createEntityPlayer()
-// 	enemyController := createEnemyController(maxEnemies)
-// 	enemies := createEnemies(engine, maxEnemies, enemyController)
-// 	score := createEntityScore(engine)
-// 	sceneController := engosdl.NewEntity("scene-controller")
-// 	sceneControllerKeyboard := components.NewKeyboard("scene-controller-keyboard")
-// 	sceneControllerKeyboard.DefaultAddDelegateToRegister()
-// 	sceneControllerComponent := engosdl.NewComponent("scene-controller-controller")
-// 	sceneControllerComponent.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
-// 		key := params[0].(int)
-// 		if key == sdl.SCANCODE_N {
-// 			// if key == sdl.SCANCODE_RETURN {
-// 			engosdl.GetEngine().GetSceneManager().SwapFromSceneTo(engine.GetSceneManager().GetSceneByName("stats-scene"))
-// 		}
-// 		return true
-// 	})
-// 	sceneController.AddComponent(sceneControllerKeyboard)
-// 	sceneController.AddComponent(sceneControllerComponent)
-
-// 	// Add entities to scene
-// 	scene.AddEntity(bg)
-// 	scene.AddEntity(h.player)
-// 	scene.AddEntity(enemyController)
-// 	for _, enemy := range enemies {
-// 		scene.AddEntity(enemy)
-// 	}
-// 	scene.AddEntity(score)
-// 	scene.AddEntity(sceneController)
-// 	// scene.AddEntity(winner)
-
-// 	return true
-// }
-
-// // createScenePlayTwo creates the play scene.
-// func (h *GameManager) createScenePlayTwo(engine *engosdl.Engine, scene engosdl.IScene) bool {
-// 	h.winnerCreated = false
-// 	maxEnemies := 3
-
-// 	// Entities
-// 	bg := createEntityBackground(engine, "images/space2.bmp")
-// 	h.createEntityPlayer()
-// 	enemyController := createEnemyController(maxEnemies)
-// 	enemies := createEnemies(engine, maxEnemies, enemyController)
-// 	score := createEntityScore(engine)
-// 	sceneController := engosdl.NewEntity("scene-controller")
-// 	sceneControllerKeyboard := components.NewKeyboard("scene-controller-keyboard")
-// 	sceneControllerKeyboard.DefaultAddDelegateToRegister()
-// 	sceneControllerComponent := engosdl.NewComponent("scene-controller-controller")
-// 	sceneControllerComponent.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
-// 		key := params[0].(int)
-// 		if key == sdl.SCANCODE_N {
-// 			// if key == sdl.SCANCODE_RETURN {
-// 			engosdl.GetEngine().GetSceneManager().SwapFromSceneTo(engine.GetSceneManager().GetSceneByName("stats-scene"))
-// 		}
-// 		return true
-// 	})
-// 	sceneController.AddComponent(sceneControllerKeyboard)
-// 	sceneController.AddComponent(sceneControllerComponent)
-
-// 	// Add entities to scene
-// 	scene.AddEntity(bg)
-// 	scene.AddEntity(h.player)
-// 	scene.AddEntity(enemyController)
-// 	for _, enemy := range enemies {
-// 		scene.AddEntity(enemy)
-// 	}
-// 	scene.AddEntity(score)
-// 	scene.AddEntity(sceneController)
-// 	// scene.AddEntity(winner)
-
-// 	return true
-// }
 
 // createSceneStats creates stats scene
 func (h *GameManager) createSceneStats(engine *engosdl.Engine, scene engosdl.IScene) bool {

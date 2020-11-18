@@ -19,6 +19,12 @@ func NewEnemyController(name string, totalEnemies int) *EnemyController {
 	}
 }
 
+// CreateEnemyController is used by component manager to create a new
+// enemy controller instance.
+func CreateEnemyController(params ...interface{}) engosdl.IComponent {
+	return NewEnemyController(params[0].(string), params[1].(int))
+}
+
 // DefaultAddDelegateToRegister will proceed to add default delegate to
 // register for the component.
 func (c *EnemyController) DefaultAddDelegateToRegister() {
@@ -86,6 +92,12 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 	}
 	// result.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, result.onCollision)
 	return result
+}
+
+// CreateEnemySprite is used by component manager to create a new enemy sprite
+// instance.
+func CreateEnemySprite(params ...interface{}) engosdl.IComponent {
+	return newEnemySprite(params[0].(string), params[1].([]string), params[2].(int))
 }
 
 // DefaultOnCollision checks when there is a collision with other entity.

@@ -2,13 +2,17 @@ package components
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/jrecuero/engosdl"
 )
 
+// ComponentNameOutOfBounds is the name to refer out of bounds component.
+var ComponentNameOutOfBounds string = reflect.TypeOf(&OutOfBounds{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&OutOfBounds{})
+		componentManager.RegisterConstructor(ComponentNameOutOfBounds, CreateOutOfBounds)
 	}
 }
 
@@ -26,6 +30,12 @@ func NewOutOfBounds(name string, leftCorner bool) *OutOfBounds {
 		Component:  engosdl.NewComponent(name),
 		LeftCorner: leftCorner,
 	}
+}
+
+// CreateOutOfBounds implements out of bounds constructor used by component
+// manager.
+func CreateOutOfBounds(params ...interface{}) engosdl.IComponent {
+	return NewOutOfBounds(params[0].(string), params[1].(bool))
 }
 
 // OnAwake should create all component resources that don't have any dependency

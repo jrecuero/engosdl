@@ -2,14 +2,18 @@ package components
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// ComponentNameSprite is the name to refer entity sprite component
+var ComponentNameSprite string = reflect.TypeOf(&Sprite{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&Sprite{})
+		componentManager.RegisterConstructor(ComponentNameSprite, CreateSprite)
 	}
 }
 
@@ -49,6 +53,11 @@ func NewSprite(name string, filenames []string, numberOfSprites int, renderer *s
 		resources:            []engosdl.IResource{},
 	}
 	return result
+}
+
+// CreateSprite implements sprite constructor used by component manager.
+func CreateSprite(params ...interface{}) engosdl.IComponent {
+	return NewSprite(params[0].(string), params[1].([]string), params[2].(int), params[3].(*sdl.Renderer))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to

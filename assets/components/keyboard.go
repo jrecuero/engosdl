@@ -2,14 +2,18 @@ package components
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// ComponentNameKeyboard is the name to refer keyboard component
+var ComponentNameKeyboard string = reflect.TypeOf(&Keyboard{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&Keyboard{})
+		componentManager.RegisterConstructor(ComponentNameKeyboard, CreateKeyboard)
 	}
 }
 
@@ -29,6 +33,11 @@ func NewKeyboard(name string) *Keyboard {
 		keys:      make(map[int]bool),
 	}
 	return result
+}
+
+// CreateKeyboard implements keyboard constructor used by component manager.
+func CreateKeyboard(params ...interface{}) engosdl.IComponent {
+	return NewKeyboard(params[0].(string))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to

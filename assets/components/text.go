@@ -1,15 +1,19 @@
 package components
 
 import (
+	"reflect"
 	"strconv"
 
 	"github.com/jrecuero/engosdl"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+// ComponentNameText is the name to refer text component.
+var ComponentNameText string = reflect.TypeOf(&Text{}).String()
+
 func init() {
 	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
-		componentManager.RegisterComponent(&Text{})
+		componentManager.RegisterConstructor(ComponentNameText, CreateText)
 	}
 }
 
@@ -40,6 +44,11 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 		Message:   message,
 		renderer:  renderer,
 	}
+}
+
+// CreateText implements text constructor used by component manager.
+func CreateText(params ...interface{}) engosdl.IComponent {
+	return NewText(params[0].(string), params[1].(string), params[2].(int), params[3].(sdl.Color), params[4].(string), params[5].(*sdl.Renderer))
 }
 
 // loadTextureFromTTF creates a texture from a ttf file.

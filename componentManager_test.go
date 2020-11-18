@@ -37,3 +37,41 @@ func TestComponent_ConvertToJSON(t *testing.T) {
 		panic(err)
 	}
 }
+
+func TestComponent_RegisterComponent(t *testing.T) {
+	newComponent := struct {
+		componentName string
+		name          string
+		life          int
+	}{
+		componentName: components.ComponentNameEntityStats,
+		name:          "test-stats",
+		life:          50,
+	}
+	// componentName := "entity-stats"
+	// name := "test-stats"
+	// life := 50
+	entity := engosdl.NewEntity("entity")
+	// for _, component := range engosdl.GetComponentManager().GetComponents() {
+	// 	if component.GetName() == newComponent.componentName {
+	// 		// instance := reflect.Zero(reflect.TypeOf(component))
+	// 		// obj := instance.Interface()
+	// 		if constructor := engosdl.GetComponentManager().Constructors[newComponent.componentName]; constructor != nil {
+	// 			stats := constructor(newComponent.name, newComponent.life)
+	// 			entity.AddComponent(stats)
+	// 			entity.DoDump()
+	// 			fmt.Println(entity)
+	// 		}
+	// 	}
+	// }
+	for k, constructor := range engosdl.GetComponentManager().Constructors {
+		if k == newComponent.componentName {
+			// if constructor := engosdl.GetComponentManager().Constructors[newComponent.componentName]; constructor != nil {
+			stats := constructor(newComponent.name, newComponent.life)
+			entity.AddComponent(stats)
+			entity.DoDump()
+			fmt.Println(entity)
+			// }
+		}
+	}
+}
