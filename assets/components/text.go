@@ -34,7 +34,7 @@ type Text struct {
 var _ engosdl.IText = (*Text)(nil)
 
 // NewText create a new text instance.
-func NewText(name string, fontFile string, fontSize int, color sdl.Color, message string, renderer *sdl.Renderer) *Text {
+func NewText(name string, fontFile string, fontSize int, color sdl.Color, message string) *Text {
 	engosdl.Logger.Trace().Str("component", "text").Str("text", name).Msg("new text")
 	return &Text{
 		Component: engosdl.NewComponent(name),
@@ -42,13 +42,16 @@ func NewText(name string, fontFile string, fontSize int, color sdl.Color, messag
 		FontSize:  fontSize,
 		Color:     color,
 		Message:   message,
-		renderer:  renderer,
+		renderer:  engosdl.GetRenderer(),
 	}
 }
 
 // CreateText implements text constructor used by component manager.
 func CreateText(params ...interface{}) engosdl.IComponent {
-	return NewText(params[0].(string), params[1].(string), params[2].(int), params[3].(sdl.Color), params[4].(string), params[5].(*sdl.Renderer))
+	if len(params) == 5 {
+		return NewText(params[0].(string), params[1].(string), params[2].(int), params[3].(sdl.Color), params[4].(string))
+	}
+	return NewText("", "", 0, sdl.Color{}, "")
 }
 
 // loadTextureFromTTF creates a texture from a ttf file.
@@ -111,4 +114,18 @@ func (c *Text) SetMessage(message string) engosdl.IText {
 	c.Message = message
 	c.loadTextureFromTTF()
 	return c
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *Text) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	c.FontFile = data["font-filename"].(string)
+	c.FontSize = int(data["font-size"].(float64))
+	color := data["color"].(map[string]interface{})
+	c.Color = sdl.Color{R: uint8(color["R"].(float64)),
+		G: uint8(color["G"].(float64)),
+		B: uint8(color["B"].(float64)),
+		A: uint8(color["A"].(float64))}
+	c.Message = data["message"].(string)
 }

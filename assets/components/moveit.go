@@ -37,7 +37,10 @@ func NewMoveIt(name string, speed *engosdl.Vector) *MoveIt {
 
 // CreateMoveIt implements move it constructor used by the component manager.
 func CreateMoveIt(params ...interface{}) engosdl.IComponent {
-	return NewMoveIt(params[0].(string), params[1].(*engosdl.Vector))
+	if len(params) == 2 {
+		return NewMoveIt(params[0].(string), params[1].(*engosdl.Vector))
+	}
+	return NewMoveIt("", engosdl.NewVector(0, 0))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to
@@ -83,4 +86,12 @@ func (c *MoveIt) OnStart() {
 
 // OnUpdate is called for every update tick.
 func (c *MoveIt) OnUpdate() {
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *MoveIt) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	speed := data["speed"].(map[string]interface{})
+	c.Speed = engosdl.NewVector(speed["X"].(float64), speed["Y"].(float64))
 }

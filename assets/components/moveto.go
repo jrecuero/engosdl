@@ -34,7 +34,10 @@ func NewMoveTo(name string, speed *engosdl.Vector) *MoveTo {
 
 // CreateMoveTo implements move to constructor used by component manager.
 func CreateMoveTo(params ...interface{}) engosdl.IComponent {
-	return NewMoveTo(params[0].(string), params[1].(*engosdl.Vector))
+	if len(params) == 2 {
+		return NewMoveTo(params[0].(string), params[1].(*engosdl.Vector))
+	}
+	return NewMoveTo("", engosdl.NewVector(0, 0))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to
@@ -72,4 +75,12 @@ func (c *MoveTo) OnUpdate() {
 // SetSpeed sets movement speed.
 func (c *MoveTo) SetSpeed(speed *engosdl.Vector) {
 	c.Speed = speed
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *MoveTo) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	speed := data["speed"].(map[string]interface{})
+	c.Speed = engosdl.NewVector(speed["X"].(float64), speed["Y"].(float64))
 }

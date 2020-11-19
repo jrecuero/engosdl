@@ -45,7 +45,10 @@ func NewTimer(name string, tick int) *Timer {
 
 // CreateTimer implements timer constructor used by component manager.
 func CreateTimer(params ...interface{}) engosdl.IComponent {
-	return NewTimer(params[0].(string), params[1].(int))
+	if len(params) == 2 {
+		return NewTimer(params[0].(string), params[1].(int))
+	}
+	return NewTimer("", 0)
 }
 
 // GetTick returns the timer tick. Tick is the number of engine frames before
@@ -77,4 +80,11 @@ func (t *Timer) OnUpdate() {
 	} else {
 		t.tickCounter++
 	}
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (t *Timer) Unmarshal(data map[string]interface{}) {
+	t.Component.Unmarshal(data)
+	t.Tick = int(data["key"].(float64))
 }

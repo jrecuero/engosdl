@@ -291,6 +291,7 @@ func (h *SceneManager) setActiveScene(scene IScene, index int) {
 	GetDelegateManager().AuditDelegates()
 	GetDelegateManager().AuditRegisters()
 	h.activeScene.scene.AuditEntities()
+	h.activeScene.scene.DoDump()
 }
 
 // SetActiveScene sets the given scene as the active scene.

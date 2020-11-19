@@ -1,7 +1,9 @@
 package engosdl
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math"
 )
 
@@ -25,6 +27,7 @@ type IScene interface {
 	AuditEntities()
 	DeleteEntity(IEntity) bool
 	DoDestroy()
+	DoDump()
 	DoFrameEnd()
 	DoFrameStart()
 	DoLoad()
@@ -85,7 +88,7 @@ func (scene *Scene) AddEntity(entity IEntity) bool {
 	entity.SetScene(scene)
 
 	// TODO: Dump the entity to audit required information.
-	entity.DoDump()
+	// entity.DoDump()
 	return true
 }
 
@@ -157,6 +160,24 @@ func (scene *Scene) DoDestroy() {
 	scene.unloadedEntities = []IEntity{}
 	scene.collisionCollection = []ICollider{}
 	scene.layers = make([][]IEntity, maxLayers)
+}
+
+// DoDump dumps all scene entities in JSON format.
+func (scene *Scene) DoDump() {
+	toDump := []*EntityToMarshal{}
+	for _, entity := range scene.GetEntities() {
+		toDump = append(toDump, entity.DoDump())
+	}
+	result, err := json.MarshalIndent(toDump, "", "    ")
+	if err != nil {
+		Logger.Error().Err(err)
+		panic(err)
+	}
+	// fmt.Printf("%s\n", result)
+	if err := ioutil.WriteFile("entities.json", result, 0644); err != nil {
+		Logger.Error().Err(err)
+		panic(err)
+	}
 }
 
 // DoFrameEnd calls all methods to run at the end of a tick frame.

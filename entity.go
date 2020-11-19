@@ -1,10 +1,37 @@
 package engosdl
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 )
+
+// ComponentToMarshal identifies component information being marshaled to be
+// saved in JSON format.
+type ComponentToMarshal struct {
+	ComponentName string     `json:"component-type"`
+	Component     IComponent `json:"component-data"`
+}
+
+// EntityToMarshal identifies entity information being marshaled to be saved
+// in JSON format.
+type EntityToMarshal struct {
+	Entity     IEntity               `json:"entity-data"`
+	Components []*ComponentToMarshal `json:"components"`
+}
+
+// ComponentToUnmarshal identifies component information from a JSON file
+// required to build a new component instance.
+type ComponentToUnmarshal struct {
+	ComponentName string                 `json:"component-type"`
+	Component     map[string]interface{} `json:"component-data"`
+}
+
+// EntityToUnmarshal identifies entity information from a JSON file required
+// to build a new entity instance.
+type EntityToUnmarshal struct {
+	Entity     interface{}             `json:"entity-data"`
+	Components []*ComponentToUnmarshal `json:"components"`
+}
 
 // IEntity represents the interface for any entity. Any object in the
 // game has to implement this interface.
@@ -15,7 +42,7 @@ type IEntity interface {
 	DeleteChild(string) bool
 	DeleteChildByName(string) bool
 	DoDestroy()
-	DoDump()
+	DoDump() *EntityToMarshal
 	DoFrameEnd()
 	DoFrameStart()
 	DoLoad()
@@ -45,6 +72,7 @@ type IEntity interface {
 	SetParent(IEntity) IEntity
 	SetScene(IScene) IEntity
 	SetTag(string) IEntity
+	Unmarshal(*EntityToUnmarshal)
 }
 
 // Entity is the default implementation for IEntity.
@@ -145,43 +173,33 @@ func (entity *Entity) DoDestroy() {
 	entity.loadedComponents = []IComponent{}
 }
 
-type componentToMarshal struct {
-	ComponentName string     `json:"component-type"`
-	Component     IComponent `json:"component-data"`
-}
-
-type entityToMarshal struct {
-	Entity     IEntity               `json:"entity-data"`
-	Components []*componentToMarshal `json:"components"`
-}
-
 // DoDump dumps entity in JSON format.
-func (entity *Entity) DoDump() {
-	toDump := &entityToMarshal{
+func (entity *Entity) DoDump() *EntityToMarshal {
+	toDump := &EntityToMarshal{
 		Entity:     entity,
-		Components: []*componentToMarshal{},
+		Components: []*ComponentToMarshal{},
 	}
-	if result, err := json.Marshal(entity); err == nil {
-		// fmt.Printf("%s\n", result)
-		for i, component := range entity.GetComponents() {
-			fmt.Printf("%d %s\n", i, reflect.TypeOf(component))
-			// component.DoDump(component)
-			// toDump := struct {
-			// 	ComponentName string     `json:"component-type"`
-			// 	Component     IComponent `json:"component-data"`
-			// }{
-			// 	ComponentName: reflect.TypeOf(component).String(),
-			// 	Component:     component,
-			// }
-			toDump.Components = append(toDump.Components, &componentToMarshal{
-				ComponentName: reflect.TypeOf(component).String(),
-				Component:     component,
-			})
-			if result, err = json.Marshal(toDump); err == nil {
-				fmt.Printf("%s\n", result)
-			}
-		}
+	// if result, err := json.Marshal(entity); err == nil {
+	// fmt.Printf("%s\n", result)
+	for _, component := range entity.GetComponents() {
+		// fmt.Printf("%d %s\n", i, reflect.TypeOf(component))
+		toDump.Components = append(toDump.Components, &ComponentToMarshal{
+			ComponentName: reflect.TypeOf(component).String(),
+			Component:     component,
+		})
 	}
+	// }
+	// result, err := json.MarshalIndent(toDump, "", "    ")
+	// if err != nil {
+	// 	Logger.Error().Err(err)
+	// 	panic(err)
+	// }
+	// fmt.Printf("%s\n", result)
+	// if err := ioutil.WriteFile("entities.json", result, 0644); err != nil {
+	// 	Logger.Error().Err(err)
+	// 	panic(err)
+	// }
+	return toDump
 }
 
 // DoFrameEnd calls all methods to run at the end of a tick frame.
@@ -434,4 +452,27 @@ func (entity *Entity) SetScene(scene IScene) IEntity {
 func (entity *Entity) SetTag(tag string) IEntity {
 	entity.Tag = tag
 	return entity
+}
+
+// Unmarshal takes a EntityToMarshal instance and  creates a new entity
+// instance.
+func (entity *Entity) Unmarshal(instance *EntityToUnmarshal) {
+	obj := instance.Entity.(map[string]interface{})
+	entity.SetName(obj["name"].(string))
+	entity.SetTag(obj["tag"].(string))
+	entity.SetLayer(int(obj["layer"].(float64)))
+	position := obj["transform"].(map[string]interface{})["position"].(map[string]interface{})
+	scale := obj["transform"].(map[string]interface{})["scale"].(map[string]interface{})
+	dimension := obj["transform"].(map[string]interface{})["dimension"].(map[string]interface{})
+	rotation := obj["transform"].(map[string]interface{})["rotation"]
+	entity.GetTransform().SetPosition(NewVector(position["X"].(float64), position["Y"].(float64)))
+	entity.GetTransform().SetScale(NewVector(scale["X"].(float64), scale["Y"].(float64)))
+	entity.GetTransform().SetDim(NewVector(dimension["X"].(float64), dimension["Y"].(float64)))
+	entity.GetTransform().SetRotation(rotation.(float64))
+	for _, comp := range instance.Components {
+		constructor := GetComponentManager().Constructors[comp.ComponentName]
+		component := constructor()
+		component.Unmarshal(comp.Component)
+		entity.AddComponent(component)
+	}
 }

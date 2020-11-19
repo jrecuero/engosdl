@@ -20,17 +20,17 @@ func init() {
 type ShootBullet struct {
 	*engosdl.Component
 	// delegate engosdl.IDelegate
-	MoveTo  *engosdl.Vector
+	Speed   *engosdl.Vector
 	counter int
 }
 
 // NewShootBullet creates a instance of shoot bullet.
 // It registers to "on-shoot" delegate.
-func NewShootBullet(name string, moveTo *engosdl.Vector) *ShootBullet {
+func NewShootBullet(name string, speed *engosdl.Vector) *ShootBullet {
 	engosdl.Logger.Trace().Str("component", "shoot-bullet").Str("shoot-bullet", name).Msg("new shoot-bullet")
 	result := &ShootBullet{
 		Component: engosdl.NewComponent(name),
-		MoveTo:    moveTo,
+		Speed:     speed,
 	}
 	return result
 }
@@ -38,7 +38,10 @@ func NewShootBullet(name string, moveTo *engosdl.Vector) *ShootBullet {
 // CreateShootBullet implements shoot bullet constructor used bu component
 // manager.
 func CreateShootBullet(params ...interface{}) engosdl.IComponent {
-	return NewShootBullet(params[0].(string), params[1].(*engosdl.Vector))
+	if len(params) == 2 {
+		return NewShootBullet(params[0].(string), params[1].(*engosdl.Vector))
+	}
+	return NewShootBullet("", engosdl.NewVector(0, 0))
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to
@@ -61,9 +64,9 @@ func (c *ShootBullet) ShootBulletSignature(...interface{}) bool {
 	bullet := engosdl.NewEntity("bullet" + strconv.Itoa(c.counter))
 	bullet.SetTag("bullet")
 	bullet.SetParent(c.GetEntity())
-	bulletSprite := NewSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, 1, engosdl.GetRenderer())
+	bulletSprite := NewSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, 1)
 	bulletSprite.DefaultAddDelegateToRegister()
-	bulletMoveTo := NewMoveTo("bullet-move-to", c.MoveTo)
+	bulletMoveTo := NewMoveTo("bullet-move-to", c.Speed)
 	bulletMoveTo.DefaultAddDelegateToRegister()
 	bulletOutOfBounds := NewOutOfBounds("bullet-out-of-bounds", false)
 	bulletOutOfBounds.DefaultAddDelegateToRegister()
@@ -80,4 +83,12 @@ func (c *ShootBullet) ShootBulletSignature(...interface{}) bool {
 	bullet.SetDieOnCollision(false)
 	c.GetEntity().GetScene().AddEntity(bullet)
 	return true
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *ShootBullet) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	speed := data["speed"].(map[string]interface{})
+	c.Speed = engosdl.NewVector(speed["X"].(float64), speed["Y"].(float64))
 }

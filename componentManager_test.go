@@ -3,6 +3,7 @@ package engosdl_test
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"testing"
 
 	"github.com/jrecuero/engosdl"
@@ -73,5 +74,23 @@ func TestComponent_RegisterComponent(t *testing.T) {
 			fmt.Println(entity)
 			// }
 		}
+	}
+}
+
+func TestComponent_ReadJSON(t *testing.T) {
+	file, err := ioutil.ReadFile("assets/test/entities.json")
+	if err != nil {
+		panic(err)
+	}
+	// entities := []*entityToMarshal{}
+	entities := []*engosdl.EntityToUnmarshal{}
+	err = json.Unmarshal([]byte(file), &entities)
+	if err != nil {
+		panic(err)
+	}
+	for _, instance := range entities {
+		entity := engosdl.NewEntity("")
+		entity.Unmarshal(instance)
+		fmt.Println(entity)
 	}
 }

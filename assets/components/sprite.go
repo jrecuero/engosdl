@@ -38,12 +38,12 @@ var _ engosdl.ISprite = (*Sprite)(nil)
 
 // NewSprite creates a new sprite instance.
 // It resgiters to "on-collision" and "on-out-of-bounds" delegates.
-func NewSprite(name string, filenames []string, numberOfSprites int, renderer *sdl.Renderer) *Sprite {
+func NewSprite(name string, filenames []string, numberOfSprites int) *Sprite {
 	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("multi-sprite", name).Msg("new multi-sprite")
 	result := &Sprite{
 		Component:            engosdl.NewComponent(name),
 		Filenames:            filenames,
-		renderer:             renderer,
+		renderer:             engosdl.GetRenderer(),
 		textures:             []*sdl.Texture{},
 		DestroyOnOutOfBounds: true,
 		camera:               nil,
@@ -57,7 +57,10 @@ func NewSprite(name string, filenames []string, numberOfSprites int, renderer *s
 
 // CreateSprite implements sprite constructor used by component manager.
 func CreateSprite(params ...interface{}) engosdl.IComponent {
-	return NewSprite(params[0].(string), params[1].([]string), params[2].(int), params[3].(*sdl.Renderer))
+	if len(params) == 2 {
+		return NewSprite(params[0].(string), params[1].([]string), params[2].(int))
+	}
+	return NewSprite("", []string{}, 1)
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to
@@ -230,4 +233,17 @@ func (c *Sprite) SetCamera(camera *sdl.Rect) {
 // it is out of bounds or no.
 func (c *Sprite) SetDestroyOnOutOfBounds(destroy bool) {
 	c.DestroyOnOutOfBounds = destroy
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *Sprite) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	// c.SetName(data["name"].(string))
+	c.Filenames = []string{}
+	for _, filename := range data["filenames"].([]interface{}) {
+		c.Filenames = append(c.Filenames, filename.(string))
+	}
+	c.SpriteTotal = int(data["sprite-total"].(float64))
+	c.DestroyOnOutOfBounds = data["destroy-on-out-of-bounds"].(bool)
 }

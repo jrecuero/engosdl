@@ -10,7 +10,7 @@ import (
 func createSceneTitle(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	title := engosdl.NewEntity("title")
 	title.GetTransform().SetPosition(engosdl.NewVector(175, 250))
-	titleText := components.NewText("title-text", "fonts/lato.ttf", 32, sdl.Color{R: 0, G: 0, B: 255}, "PLAY", engine.GetRenderer())
+	titleText := components.NewText("title-text", "fonts/lato.ttf", 32, sdl.Color{R: 0, G: 0, B: 255}, "PLAY")
 	titleText.DefaultAddDelegateToRegister()
 	titleText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
 		key := params[0].(int)

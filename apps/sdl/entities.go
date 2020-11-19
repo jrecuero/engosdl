@@ -10,7 +10,7 @@ import (
 func createEntityBackground(engine *engosdl.Engine, filename string) engosdl.IEntity {
 	bg := engosdl.NewEntity("background")
 	bg.SetLayer(engosdl.LayerBackground)
-	bgSprite := components.NewScrollSprite("bg-sprite", filename, engine.GetRenderer())
+	bgSprite := components.NewScrollSprite("bg-sprite", filename)
 	bgSprite.DefaultAddDelegateToRegister()
 	bgSprite.SetScroll(engosdl.NewVector(0, -1))
 	// bgSprite.SetCamera(&sdl.Rect{X: 0, Y: 0, W: 400, H: 800})
@@ -26,7 +26,7 @@ func createWinner(engine *engosdl.Engine) engosdl.IEntity {
 	winner := engosdl.NewEntity("winner")
 	winnerKeyboard := components.NewKeyboard("winner-keyboard")
 	winnerKeyboard.DefaultAddDelegateToRegister()
-	winnerText := components.NewText("winner-text", "fonts/lato.ttf", 24, sdl.Color{R: 0, G: 0, B: 255}, "You Won..\ntype any key", engosdl.GetRenderer())
+	winnerText := components.NewText("winner-text", "fonts/lato.ttf", 24, sdl.Color{R: 0, G: 0, B: 255}, "You Won..\ntype any key")
 	winnerText.DefaultAddDelegateToRegister()
 	winnerText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
 		key := params[0].(int)

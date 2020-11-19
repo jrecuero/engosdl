@@ -36,6 +36,7 @@ type IComponent interface {
 	SetDelegate(IDelegate)
 	SetEntity(IEntity)
 	SetRemoveOnDestroy(bool)
+	Unmarshal(map[string]interface{})
 }
 
 // ICollisionBox represets the interface for any collider collision box.
@@ -300,4 +301,10 @@ func (c *Component) SetEntity(entity IEntity) {
 // fully unloaded.
 func (c *Component) SetRemoveOnDestroy(remove bool) {
 	c.removeOnDestroy = remove
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *Component) Unmarshal(data map[string]interface{}) {
+	c.SetName(data["name"].(string))
 }

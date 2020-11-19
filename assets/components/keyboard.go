@@ -37,7 +37,10 @@ func NewKeyboard(name string) *Keyboard {
 
 // CreateKeyboard implements keyboard constructor used by component manager.
 func CreateKeyboard(params ...interface{}) engosdl.IComponent {
-	return NewKeyboard(params[0].(string))
+	if len(params) == 1 {
+		return NewKeyboard(params[0].(string))
+	}
+	return NewKeyboard("")
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to

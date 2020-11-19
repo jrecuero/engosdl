@@ -39,7 +39,10 @@ func NewEntityStats(name string, life int) *EntityStats {
 // CreateEntityStats implements entity stats constructor used by component
 // manager
 func CreateEntityStats(params ...interface{}) engosdl.IComponent {
-	return NewEntityStats(params[0].(string), params[1].(int))
+	if len(params) == 2 {
+		return NewEntityStats(params[0].(string), params[1].(int))
+	}
+	return NewEntityStats("", 0)
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to
@@ -97,4 +100,12 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 func (c *EntityStats) OnStart() {
 	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnStart")
 	c.Component.OnStart()
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *EntityStats) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	c.Life = int(data["life"].(float64))
+	c.Experience = int(data["experience"].(float64))
 }

@@ -58,7 +58,7 @@ func (h *GameManager) CreateAssets() {
 // createEntityPlayer creates the player entity
 func (h *GameManager) createEntityPlayer() engosdl.IEntity {
 	h.player.GetTransform().SetPosition(engosdl.NewVector(float64(h.engine.GetWidth())/2, float64(h.engine.GetHeight()-125)))
-	playerSprite := components.NewSprite("player-sprite", []string{"images/player.bmp"}, 1, h.engine.GetRenderer())
+	playerSprite := components.NewSprite("player-sprite", []string{"images/player.bmp"}, 1)
 	playerSprite.SetDestroyOnOutOfBounds(false)
 	playerSprite.DefaultAddDelegateToRegister()
 	playerKeyboard := components.NewKeyboard("player-keyboard")
@@ -165,7 +165,7 @@ func (h *GameManager) createSceneStats(engine *engosdl.Engine, scene engosdl.ISc
 	if playerStats, ok := h.player.GetComponent(&components.EntityStats{}).(*components.EntityStats); ok {
 		messageString = fmt.Sprintf("player stats\nlife: %d\nexp: %d", playerStats.Life, playerStats.Experience)
 	}
-	messageText := components.NewText("message-text", "fonts/lato.ttf", 16, sdl.Color{R: 0, G: 255, B: 0}, messageString, engine.GetRenderer())
+	messageText := components.NewText("message-text", "fonts/lato.ttf", 16, sdl.Color{R: 0, G: 255, B: 0}, messageString)
 	messageText.DefaultAddDelegateToRegister()
 	messageText.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
 		key := params[0].(int)
@@ -215,7 +215,7 @@ func (h *GameManager) DoInit() {
 	h.player.AddComponent(playerStats)
 
 	h.score = engosdl.NewEntity("score")
-	scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000", engosdl.GetRenderer())
+	scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000")
 	scoreText.SetRemoveOnDestroy(false)
 	h.score.AddComponent(scoreText)
 }

@@ -5,6 +5,13 @@ import (
 	"github.com/jrecuero/engosdl/assets/components"
 )
 
+func init() {
+	if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+		componentManager.RegisterConstructor("*main.EnemyController", CreateEnemyController)
+		componentManager.RegisterConstructor("*main.EnemySprite", CreateEnemySprite)
+	}
+}
+
 // EnemyController represents a component that control enemy entities.
 type EnemyController struct {
 	*engosdl.Component
@@ -22,7 +29,10 @@ func NewEnemyController(name string, totalEnemies int) *EnemyController {
 // CreateEnemyController is used by component manager to create a new
 // enemy controller instance.
 func CreateEnemyController(params ...interface{}) engosdl.IComponent {
-	return NewEnemyController(params[0].(string), params[1].(int))
+	if len(params) == 2 {
+		return NewEnemyController(params[0].(string), params[1].(int))
+	}
+	return NewEnemyController("", 0)
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to
@@ -87,7 +97,7 @@ type enemySpriteT struct {
 
 func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemySpriteT {
 	result := &enemySpriteT{
-		Sprite: components.NewSprite(name, filenames, numberOfSprites, engosdl.GetRenderer()),
+		Sprite: components.NewSprite(name, filenames, numberOfSprites),
 		hit:    false,
 	}
 	// result.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, result.onCollision)
@@ -97,7 +107,10 @@ func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemy
 // CreateEnemySprite is used by component manager to create a new enemy sprite
 // instance.
 func CreateEnemySprite(params ...interface{}) engosdl.IComponent {
-	return newEnemySprite(params[0].(string), params[1].([]string), params[2].(int))
+	if len(params) == 3 {
+		return newEnemySprite(params[0].(string), params[1].([]string), params[2].(int))
+	}
+	return newEnemySprite("", []string{}, 0)
 }
 
 // DefaultOnCollision checks when there is a collision with other entity.

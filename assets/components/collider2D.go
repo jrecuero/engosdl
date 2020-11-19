@@ -55,7 +55,10 @@ func NewCollider2D(name string) *Collider2D {
 // CreateCollider2D implements collider-2D constructor used by component
 // manager
 func CreateCollider2D(params ...interface{}) engosdl.IComponent {
-	return NewCollider2D(params[0].(string))
+	if len(params) == 1 {
+		return NewCollider2D(params[0].(string))
+	}
+	return NewCollider2D("")
 }
 
 // GetCollisionBox returns the collision box for the parent entity.

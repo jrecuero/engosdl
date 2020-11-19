@@ -35,7 +35,10 @@ func NewOutOfBounds(name string, leftCorner bool) *OutOfBounds {
 // CreateOutOfBounds implements out of bounds constructor used by component
 // manager.
 func CreateOutOfBounds(params ...interface{}) engosdl.IComponent {
-	return NewOutOfBounds(params[0].(string), params[1].(bool))
+	if len(params) == 2 {
+		return NewOutOfBounds(params[0].(string), params[1].(bool))
+	}
+	return NewOutOfBounds("", true)
 }
 
 // OnAwake should create all component resources that don't have any dependency
@@ -75,4 +78,11 @@ func (c *OutOfBounds) OnUpdate() {
 		fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), y)
 		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.GetEntity())
 	}
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *OutOfBounds) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	c.LeftCorner = data["left-corner"].(bool)
 }

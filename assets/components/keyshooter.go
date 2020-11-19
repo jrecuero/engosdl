@@ -22,7 +22,7 @@ func init() {
 type KeyShooter struct {
 	*engosdl.Component
 	Key       int           `json:"key"`
-	Cooldown  time.Duration `json:"cooldown"`
+	Cooldown  time.Duration `json:"cool-down"`
 	lastshoot time.Time
 }
 
@@ -41,7 +41,10 @@ func NewKeyShooter(name string, key int) *KeyShooter {
 // CreateKeyShooter implements key shooter constructor used by component
 // manager.
 func CreateKeyShooter(params ...interface{}) engosdl.IComponent {
-	return NewKeyShooter(params[0].(string), params[0].(int))
+	if len(params) == 2 {
+		return NewKeyShooter(params[0].(string), params[0].(int))
+	}
+	return NewKeyShooter("", 0)
 }
 
 // OnAwake should create all component resources that don't have any dependency
@@ -69,4 +72,11 @@ func (c *KeyShooter) OnUpdate() {
 			c.lastshoot = time.Now()
 		}
 	}
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *KeyShooter) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	c.Key = int(data["key"].(float64))
 }

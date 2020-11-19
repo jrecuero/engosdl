@@ -25,7 +25,7 @@ type ScrollSprite struct {
 var _ engosdl.ISprite = (*ScrollSprite)(nil)
 
 // NewScrollSprite creates a new sprite instance.
-func NewScrollSprite(name string, filename string, renderer *sdl.Renderer) *ScrollSprite {
+func NewScrollSprite(name string, filename string) *ScrollSprite {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
 	return &ScrollSprite{
 		// NewSprite is not called because it registers to onOutOfBounds and
@@ -34,7 +34,7 @@ func NewScrollSprite(name string, filename string, renderer *sdl.Renderer) *Scro
 		Sprite: &Sprite{
 			Component:            engosdl.NewComponent(name),
 			Filenames:            []string{filename},
-			renderer:             renderer,
+			renderer:             engosdl.GetRenderer(),
 			DestroyOnOutOfBounds: true,
 			camera:               nil,
 			SpriteTotal:          1,
@@ -46,7 +46,10 @@ func NewScrollSprite(name string, filename string, renderer *sdl.Renderer) *Scro
 // CreateScrollSprite implements scroll sprite constructor used by component
 // manager.
 func CreateScrollSprite(params ...interface{}) engosdl.IComponent {
-	return NewScrollSprite(params[0].(string), params[1].(string), params[2].(*sdl.Renderer))
+	if len(params) == 2 {
+		return NewScrollSprite(params[0].(string), params[1].(string))
+	}
+	return NewScrollSprite("", "")
 }
 
 // OnRender is called for every render tick.
@@ -97,4 +100,19 @@ func (c *ScrollSprite) OnStart() {
 // SetScroll sets sprite image scroll.
 func (c *ScrollSprite) SetScroll(scroll *engosdl.Vector) {
 	c.Scroll = scroll
+}
+
+// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
+// instance.
+func (c *ScrollSprite) Unmarshal(data map[string]interface{}) {
+	c.Component.Unmarshal(data)
+	// c.SetName(data["name"].(string))
+	c.Filenames = []string{}
+	for _, filename := range data["filenames"].([]interface{}) {
+		c.Filenames = append(c.Filenames, filename.(string))
+	}
+	c.SpriteTotal = int(data["sprite-total"].(float64))
+	scroll := data["scroll"].(map[string]interface{})
+	c.SetScroll(engosdl.NewVector(scroll["X"].(float64), scroll["Y"].(float64)))
+	c.DestroyOnOutOfBounds = data["destroy-on-out-of-bounds"].(bool)
 }
