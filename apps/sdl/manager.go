@@ -130,7 +130,8 @@ func (h *GameManager) createScenePlay(bgFilename string, maxEnemies int) func(en
 		sceneController := engosdl.NewEntity("scene-controller")
 		sceneControllerKeyboard := components.NewKeyboard("scene-controller-keyboard")
 		sceneControllerKeyboard.DefaultAddDelegateToRegister()
-		sceneControllerComponent := engosdl.NewComponent("scene-controller-controller")
+		// sceneControllerComponent := engosdl.NewComponent("scene-controller-controller")
+		sceneControllerComponent := components.NewSceneController("scene-controller-component")
 		sceneControllerComponent.AddDelegateToRegister(nil, nil, &components.Keyboard{}, func(params ...interface{}) bool {
 			key := params[0].(int)
 			if key == sdl.SCANCODE_N {
