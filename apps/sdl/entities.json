@@ -1,167 +1,14 @@
 [
     {
         "entity-data": {
-            "id": "42",
-            "name": "background",
-            "layer": 0,
-            "tag": "",
-            "transform": {
-                "position": {
-                    "X": 0,
-                    "Y": 0
-                },
-                "rotation": 0,
-                "scale": {
-                    "X": 1,
-                    "Y": 1
-                },
-                "dimension": {
-                    "X": 400,
-                    "Y": 800
-                }
-            },
-            "die-on-collision": false
-        },
-        "components": [
-            {
-                "component-type": "*components.ScrollSprite",
-                "component-data": {
-                    "id": "43",
-                    "name": "bg-sprite",
-                    "filenames": [
-                        "images/space.bmp"
-                    ],
-                    "destroy-on-out-of-bounds": true,
-                    "sprite-total": 1,
-                    "scroll": {
-                        "X": 0,
-                        "Y": -1
-                    }
-                }
-            },
-            {
-                "component-type": "*components.MoveTo",
-                "component-data": {
-                    "id": "46",
-                    "name": "bg-move",
-                    "speed": {
-                        "X": 0,
-                        "Y": -5
-                    }
-                }
-            }
-        ]
-    },
-    {
-        "entity-data": {
-            "id": "16",
-            "name": "player",
-            "layer": 2,
-            "tag": "player",
-            "transform": {
-                "position": {
-                    "X": 200,
-                    "Y": 475
-                },
-                "rotation": 0,
-                "scale": {
-                    "X": 1,
-                    "Y": 1
-                },
-                "dimension": {
-                    "X": 105,
-                    "Y": 105
-                }
-            },
-            "die-on-collision": false
-        },
-        "components": [
-            {
-                "component-type": "*components.EntityStats",
-                "component-data": {
-                    "id": "17",
-                    "name": "player stats",
-                    "life": 100,
-                    "experience": 0
-                }
-            },
-            {
-                "component-type": "*components.Sprite",
-                "component-data": {
-                    "id": "48",
-                    "name": "player-sprite",
-                    "filenames": [
-                        "images/player.bmp"
-                    ],
-                    "destroy-on-out-of-bounds": false,
-                    "sprite-total": 1
-                }
-            },
-            {
-                "component-type": "*components.Keyboard",
-                "component-data": {
-                    "id": "51",
-                    "name": "player-keyboard"
-                }
-            },
-            {
-                "component-type": "*components.KeyShooter",
-                "component-data": {
-                    "id": "52",
-                    "name": "player-key-shooter",
-                    "key": 44,
-                    "cool-down": 500000000
-                }
-            },
-            {
-                "component-type": "*components.ShootBullet",
-                "component-data": {
-                    "id": "53",
-                    "name": "player-shoot-bullet",
-                    "Speed": {
-                        "X": 0,
-                        "Y": -5
-                    }
-                }
-            },
-            {
-                "component-type": "*components.OutOfBounds",
-                "component-data": {
-                    "id": "55",
-                    "name": "player-out-of-bounds",
-                    "left-corner": true
-                }
-            },
-            {
-                "component-type": "*components.MoveIt",
-                "component-data": {
-                    "id": "56",
-                    "name": "player-move-it",
-                    "speed": {
-                        "X": 5,
-                        "Y": 0
-                    }
-                }
-            },
-            {
-                "component-type": "*components.Collider2D",
-                "component-data": {
-                    "id": "59",
-                    "name": "player-collider"
-                }
-            }
-        ]
-    },
-    {
-        "entity-data": {
-            "id": "62",
-            "name": "enemy-controller",
+            "id": "26",
+            "name": "title",
             "layer": 2,
             "tag": "",
             "transform": {
                 "position": {
-                    "X": 0,
-                    "Y": 0
+                    "X": 175,
+                    "Y": 250
                 },
                 "rotation": 0,
                 "scale": {
@@ -169,316 +16,7 @@
                     "Y": 1
                 },
                 "dimension": {
-                    "X": 0,
-                    "Y": 0
-                }
-            },
-            "die-on-collision": false
-        },
-        "components": [
-            {
-                "component-type": "*main.EnemyController",
-                "component-data": {
-                    "id": "63",
-                    "name": "enemy-controller"
-                }
-            }
-        ]
-    },
-    {
-        "entity-data": {
-            "id": "64",
-            "name": "enemy-0",
-            "layer": 2,
-            "tag": "enemy",
-            "transform": {
-                "position": {
-                    "X": 10,
-                    "Y": 10
-                },
-                "rotation": 0,
-                "scale": {
-                    "X": 0.5,
-                    "Y": 0.5
-                },
-                "dimension": {
-                    "X": 175,
-                    "Y": 175
-                }
-            },
-            "die-on-collision": false
-        },
-        "components": [
-            {
-                "component-type": "*components.MoveTo",
-                "component-data": {
-                    "id": "66",
-                    "name": "enemy-move",
-                    "speed": {
-                        "X": 5,
-                        "Y": 0
-                    }
-                }
-            },
-            {
-                "component-type": "*components.OutOfBounds",
-                "component-data": {
-                    "id": "65",
-                    "name": "enemy-out-of-bounds",
-                    "left-corner": true
-                }
-            },
-            {
-                "component-type": "*main.enemySpriteT",
-                "component-data": {
-                    "id": "67",
-                    "name": "enemy-sprite",
-                    "filenames": [
-                        "images/enemies.bmp"
-                    ],
-                    "destroy-on-out-of-bounds": false,
-                    "sprite-total": 3
-                }
-            },
-            {
-                "component-type": "*components.Collider2D",
-                "component-data": {
-                    "id": "72",
-                    "name": "enemy-collider-2D"
-                }
-            },
-            {
-                "component-type": "*components.EntityStats",
-                "component-data": {
-                    "id": "70",
-                    "name": "enemy-stats",
-                    "life": 50,
-                    "experience": 0
-                }
-            },
-            {
-                "component-type": "*components.Timer",
-                "component-data": {
-                    "id": "73",
-                    "name": "enemy-timer",
-                    "Tick": 100
-                }
-            },
-            {
-                "component-type": "*components.ShootBullet",
-                "component-data": {
-                    "id": "74",
-                    "name": "enemy-bullet",
-                    "Speed": {
-                        "X": 0,
-                        "Y": 5
-                    }
-                }
-            }
-        ]
-    },
-    {
-        "entity-data": {
-            "id": "78",
-            "name": "enemy-1",
-            "layer": 2,
-            "tag": "enemy",
-            "transform": {
-                "position": {
-                    "X": 85,
-                    "Y": 10
-                },
-                "rotation": 0,
-                "scale": {
-                    "X": 0.5,
-                    "Y": 0.5
-                },
-                "dimension": {
-                    "X": 175,
-                    "Y": 175
-                }
-            },
-            "die-on-collision": false
-        },
-        "components": [
-            {
-                "component-type": "*components.MoveTo",
-                "component-data": {
-                    "id": "80",
-                    "name": "enemy-move",
-                    "speed": {
-                        "X": 5,
-                        "Y": 0
-                    }
-                }
-            },
-            {
-                "component-type": "*components.OutOfBounds",
-                "component-data": {
-                    "id": "79",
-                    "name": "enemy-out-of-bounds",
-                    "left-corner": true
-                }
-            },
-            {
-                "component-type": "*main.enemySpriteT",
-                "component-data": {
-                    "id": "81",
-                    "name": "enemy-sprite",
-                    "filenames": [
-                        "images/enemies.bmp"
-                    ],
-                    "destroy-on-out-of-bounds": false,
-                    "sprite-total": 3
-                }
-            },
-            {
-                "component-type": "*components.Collider2D",
-                "component-data": {
-                    "id": "86",
-                    "name": "enemy-collider-2D"
-                }
-            },
-            {
-                "component-type": "*components.EntityStats",
-                "component-data": {
-                    "id": "84",
-                    "name": "enemy-stats",
-                    "life": 50,
-                    "experience": 0
-                }
-            },
-            {
-                "component-type": "*components.Timer",
-                "component-data": {
-                    "id": "87",
-                    "name": "enemy-timer",
-                    "Tick": 100
-                }
-            },
-            {
-                "component-type": "*components.ShootBullet",
-                "component-data": {
-                    "id": "88",
-                    "name": "enemy-bullet",
-                    "Speed": {
-                        "X": 0,
-                        "Y": 5
-                    }
-                }
-            }
-        ]
-    },
-    {
-        "entity-data": {
-            "id": "92",
-            "name": "enemy-2",
-            "layer": 2,
-            "tag": "enemy",
-            "transform": {
-                "position": {
-                    "X": 160,
-                    "Y": 10
-                },
-                "rotation": 0,
-                "scale": {
-                    "X": 0.5,
-                    "Y": 0.5
-                },
-                "dimension": {
-                    "X": 175,
-                    "Y": 175
-                }
-            },
-            "die-on-collision": false
-        },
-        "components": [
-            {
-                "component-type": "*components.MoveTo",
-                "component-data": {
-                    "id": "94",
-                    "name": "enemy-move",
-                    "speed": {
-                        "X": 5,
-                        "Y": 0
-                    }
-                }
-            },
-            {
-                "component-type": "*components.OutOfBounds",
-                "component-data": {
-                    "id": "93",
-                    "name": "enemy-out-of-bounds",
-                    "left-corner": true
-                }
-            },
-            {
-                "component-type": "*main.enemySpriteT",
-                "component-data": {
-                    "id": "95",
-                    "name": "enemy-sprite",
-                    "filenames": [
-                        "images/enemies.bmp"
-                    ],
-                    "destroy-on-out-of-bounds": false,
-                    "sprite-total": 3
-                }
-            },
-            {
-                "component-type": "*components.Collider2D",
-                "component-data": {
-                    "id": "100",
-                    "name": "enemy-collider-2D"
-                }
-            },
-            {
-                "component-type": "*components.EntityStats",
-                "component-data": {
-                    "id": "98",
-                    "name": "enemy-stats",
-                    "life": 50,
-                    "experience": 0
-                }
-            },
-            {
-                "component-type": "*components.Timer",
-                "component-data": {
-                    "id": "101",
-                    "name": "enemy-timer",
-                    "Tick": 100
-                }
-            },
-            {
-                "component-type": "*components.ShootBullet",
-                "component-data": {
-                    "id": "102",
-                    "name": "enemy-bullet",
-                    "Speed": {
-                        "X": 0,
-                        "Y": 5
-                    }
-                }
-            }
-        ]
-    },
-    {
-        "entity-data": {
-            "id": "18",
-            "name": "score",
-            "layer": 2,
-            "tag": "",
-            "transform": {
-                "position": {
-                    "X": 10,
-                    "Y": 560
-                },
-                "rotation": 0,
-                "scale": {
-                    "X": 1,
-                    "Y": 1
-                },
-                "dimension": {
-                    "X": 173,
+                    "X": 82,
                     "Y": 39
                 }
             },
@@ -488,57 +26,51 @@
             {
                 "component-type": "*components.Text",
                 "component-data": {
-                    "id": "19",
-                    "name": "score-text",
+                    "id": "27",
+                    "name": "title-text",
                     "font-filename": "fonts/lato.ttf",
-                    "font-size": 24,
+                    "font-size": 32,
                     "color": {
-                        "R": 255,
+                        "R": 0,
                         "G": 0,
-                        "B": 0,
+                        "B": 255,
                         "A": 0
                     },
-                    "message": "Score: 0000"
-                }
-            }
-        ]
-    },
-    {
-        "entity-data": {
-            "id": "107",
-            "name": "scene-controller",
-            "layer": 2,
-            "tag": "",
-            "transform": {
-                "position": {
-                    "X": 0,
-                    "Y": 0
-                },
-                "rotation": 0,
-                "scale": {
-                    "X": 1,
-                    "Y": 1
-                },
-                "dimension": {
-                    "X": 0,
-                    "Y": 0
+                    "message": "PLAY"
                 }
             },
-            "die-on-collision": false
-        },
-        "components": [
             {
                 "component-type": "*components.Keyboard",
                 "component-data": {
-                    "id": "108",
-                    "name": "scene-controller-keyboard"
+                    "id": "29",
+                    "name": "title-keyboard"
                 }
             },
             {
-                "component-type": "*components.SceneController",
+                "component-type": "*components.OutOfBounds",
                 "component-data": {
-                    "id": "109",
-                    "name": "scene-controller-component"
+                    "id": "30",
+                    "name": "title-out-of-bounds",
+                    "left-corner": true
+                }
+            },
+            {
+                "component-type": "*components.MoveIt",
+                "component-data": {
+                    "id": "31",
+                    "name": "title-move-it",
+                    "speed": {
+                        "X": 5,
+                        "Y": 0
+                    }
+                }
+            },
+            {
+                "component-type": "*components.Mouse",
+                "component-data": {
+                    "id": "34",
+                    "name": "title-mouse",
+                    "on-click": false
                 }
             }
         ]

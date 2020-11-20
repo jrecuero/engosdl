@@ -25,11 +25,13 @@ func createSceneTitle(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	titleOutOfBounds.DefaultAddDelegateToRegister()
 	titleMoveIt := components.NewMoveIt("title-move-it", engosdl.NewVector(5, 0))
 	titleMoveIt.DefaultAddDelegateToRegister()
+	titleMouse := components.NewMouse("title-mouse", false)
 
 	title.AddComponent(titleText)
 	title.AddComponent(titleKeyboard)
 	title.AddComponent(titleOutOfBounds)
 	title.AddComponent(titleMoveIt)
+	title.AddComponent(titleMouse)
 
 	scene.AddEntity(title)
 	return true
