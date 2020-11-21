@@ -57,6 +57,7 @@ type IEntity interface {
 	GetDieOnCollision() bool
 	GetLayer() int
 	GetParent() IEntity
+	GetRenderable() bool
 	GetScene() IScene
 	GetTag() string
 	GetTransform() ITransform
@@ -70,6 +71,7 @@ type IEntity interface {
 	SetDieOnCollision(bool) IEntity
 	SetLayer(int) IEntity
 	SetParent(IEntity) IEntity
+	SetRenderable(bool)
 	SetScene(IScene) IEntity
 	SetTag(string) IEntity
 	Unmarshal(*EntityToUnmarshal)
@@ -79,6 +81,7 @@ type IEntity interface {
 type Entity struct {
 	*Object
 	active             bool
+	Renderable         bool   `json:"renderable"`
 	Layer              int    `json:"layer"`
 	Tag                string `json:"tag"`
 	parent             IEntity
@@ -99,6 +102,7 @@ func NewEntity(name string) *Entity {
 	return &Entity{
 		Object:             NewObject(name),
 		active:             true,
+		Renderable:         true,
 		Layer:              LayerMiddle,
 		Tag:                "",
 		parent:             nil,
@@ -325,6 +329,12 @@ func (entity *Entity) GetParent() IEntity {
 	return entity.parent
 }
 
+// GetRenderable return entity renderable attribute. Entity is not being
+// rendered if this is false.
+func (entity *Entity) GetRenderable() bool {
+	return entity.Renderable
+}
+
 // GetScene returns the scene where the entity has been placed.
 func (entity *Entity) GetScene() IScene {
 	return entity.scene
@@ -358,9 +368,11 @@ func (entity *Entity) loadUnloadedComponents() {
 
 // OnRender calls all component OnRender methods.
 func (entity *Entity) OnRender() {
-	for _, component := range entity.loadedComponents {
-		if component.GetActive() {
-			component.OnRender()
+	if entity.GetRenderable() {
+		for _, component := range entity.loadedComponents {
+			if component.GetActive() {
+				component.OnRender()
+			}
 		}
 	}
 }
@@ -442,6 +454,12 @@ func (entity *Entity) SetParent(parent IEntity) IEntity {
 	return entity
 }
 
+// SetRenderable sets entity renderable attribute. Entity is not being
+// rendered if this attribute is false.
+func (entity *Entity) SetRenderable(renderable bool) {
+	entity.Renderable = renderable
+}
+
 // SetScene sets the scene where the entity will be placed.
 func (entity *Entity) SetScene(scene IScene) IEntity {
 	entity.scene = scene
@@ -461,6 +479,7 @@ func (entity *Entity) Unmarshal(instance *EntityToUnmarshal) {
 	entity.SetName(obj["name"].(string))
 	entity.SetTag(obj["tag"].(string))
 	entity.SetLayer(int(obj["layer"].(float64)))
+	entity.SetRenderable(obj["renderable"].(bool))
 	position := obj["transform"].(map[string]interface{})["position"].(map[string]interface{})
 	scale := obj["transform"].(map[string]interface{})["scale"].(map[string]interface{})
 	dimension := obj["transform"].(map[string]interface{})["dimension"].(map[string]interface{})

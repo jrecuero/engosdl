@@ -74,18 +74,11 @@ func (c *EnemyController) onDestroy(params ...interface{}) bool {
 
 // onLoad is called when any entity is loaded in the scene.
 func (c *EnemyController) onLoad(params ...interface{}) bool {
-	// entity := params[0].(engosdl.IEntity)
-	// fmt.Printf("Entity %s has been loaded\n", entity.GetName())
 	return true
 }
 
 // OnStart is called first time the component is enabled.
 func (c *EnemyController) OnStart() {
-	// enemies := createEnemies(engosdl.GetEngine(), 2, c.GetEntity())
-	// for _, enemy := range enemies {
-	// 	c.AddDelegateToRegister(nil, enemy, &components.OutOfBounds{}, c.onOutOfBounds)
-	// 	c.GetEntity().GetScene().AddEntity(enemy)
-	// }
 	c.Component.OnStart()
 }
 
