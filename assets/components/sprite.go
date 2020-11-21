@@ -235,8 +235,8 @@ func (c *Sprite) SetDestroyOnOutOfBounds(destroy bool) {
 	c.DestroyOnOutOfBounds = destroy
 }
 
-// Unmarshal takes a ComponentToMarshal instance and  creates a new entity
-// instance.
+// Unmarshal takes information from a ComponentToUnmarshal instance and
+//  creates a new component instance.
 func (c *Sprite) Unmarshal(data map[string]interface{}) {
 	c.Component.Unmarshal(data)
 	// c.SetName(data["name"].(string))

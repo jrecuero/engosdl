@@ -1,0 +1,84 @@
+package components
+
+var ComponentName<COMPONENT> string = reflect.TypeOf(&<COMPONENT>{}).String()
+
+func init() {
+    if componentManager := engosdl.GetComponentManager(); componentManager != nil {
+        componentManager.RegisterComponent(ComponentName<COMPONENT>, Create<COMPONENT>)
+    }
+}
+
+// <COMPONENT> represents a component.
+type <COMPONENT> struct {
+    *engosdl.Component
+}
+
+// var _ engosdl.I<COMPONENT> = (*<COMPONENT>)(nil)
+
+// New<COMPONENT>(name string) *<COMPONENT> {
+    engosdl.Logger.Trace().Str("component", "<COMPONENT>).Str("<COMPONENT>", name).Msg("new <COMPONENT>")
+    return &<COMPONENT>{
+        Component: engosdl.NewComponent(name),
+    }
+}
+
+// Create<COMPONENT> implements <COMPONENT> constructor used by component
+// manager.
+func Create<COMPONENT>(params ...interface{}) engosdl.IComponent {
+    if len(params) == 1 {
+        return New<COMPONENT>(params[0].(string))
+    }
+    return New<COMPONENT>("")
+}
+
+// DefaultAddDelegateToRegister will proceed to add default delegates to
+// register to the component.
+func (c *<COMPONENT>) DefaultAddDelegateToRegister() {
+    // c.AddDelegateToRegister(<DELEGATE>, nil, <OTHER-COMPONENT>, <SIGNATURE>)
+}
+
+// DoDestroy should destroy all component resources. This is called when
+// component is removed from the scene and resources are not anymore
+// required.
+func (c *<COMPONENT>) DoDestroy() {
+    engosdl.Logger.Trace().Str("component", "<COMPONENT>).Str("<COMPONENT>", c.GetName()).Msg("DoDestroy")
+    c.Component.DoDestroy()
+}
+
+// DoUnload is called when component is unloaded from scene.
+func (c *<COMPONENT>) DoUnLoad() {
+    engosdl.Logger.Trace().Str("component", "<COMPONENT>).Str("<COMPONENT>", c.GetName()).Msg("DoUnLoad")
+    c.Component.DoUnLoad()
+}
+
+// OnAwake is called when component is first loaded into the scene and all
+// component resources have to be created. No resources dependent with other
+// components or entities can be created at this point.
+func (c *<COMPONENT>) OnAwake() {
+    engosdl.Logger.Trace().Str("component", "<COMPONENT>).Str("<COMPONENT>", c.GetName()).Msg("OnAwake")
+    c.Component.OnAwake()
+}
+
+// OnRender is called every engine frame when component has to be rendered.
+func (c *<COMPONENT>) OnRender() {
+}
+
+// OnStart is called at the end of the component being loaded by the scene.
+// Any component resource dependent from other entities or components has
+// to be created at this point.
+func (c *<COMPONENT>) OnStart() {
+    engosdl.Logger.Trace().Str("component", "<COMPONENT>).Str("<COMPONENT>", c.GetName()).Msg("OnStart")
+    c.Component.OnStart()
+}
+
+// OnUpdate is called every engine frame in order to update any component
+// resource.
+func (c *<COMPONENT>) OnUpdate() {
+    c.Component.OnUpdate()
+}
+
+// Unmarshal takes information from a ComponentToUnmarshal instance and
+// creates a new component instance.
+func (c *<COMPONENT>) Unmarshal(data map[string]interface{}) {
+    c.Component.Unmarshal(data)
+}
