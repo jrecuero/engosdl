@@ -42,6 +42,7 @@ type Mouse struct {
 }
 
 // NewMouse creates a new mouse instance.
+// It creates delegate "on-mouse".
 func NewMouse(name string, onClick bool) *Mouse {
 	engosdl.Logger.Trace().Str("component", "mouse").Str("mouse", name).Msg("new mouse")
 	result := &Mouse{
@@ -49,6 +50,11 @@ func NewMouse(name string, onClick bool) *Mouse {
 		buttons:   make(map[uint32]bool),
 		OnClick:   onClick,
 	}
+	result.buttons[ButtonLeft] = false
+	result.buttons[ButtonMiddle] = false
+	result.buttons[ButtonRight] = false
+	result.buttons[ButtonX1] = false
+	result.buttons[ButtonX2] = false
 	return result
 }
 
@@ -62,70 +68,91 @@ func CreateMouse(params ...interface{}) engosdl.IComponent {
 
 // OnAwake should create al component resources that don't have any dependency
 // with any other component or entity.
+// It creates delegate "on-mouse".
 func (c *Mouse) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "mouse").Str("mouse", c.GetName()).Msg("OnAwake")
+	name := fmt.Sprintf("on-mouse/%s", c.GetName())
+	c.SetDelegate(engosdl.GetDelegateManager().CreateDelegate(c, name))
 	c.Component.OnAwake()
 }
 
 // OnUpdate is called for every update frame.
 func (c Mouse) OnUpdate() {
 	x, y, state := sdl.GetMouseState()
-	switch state {
-	case ButtonLeft:
-		c.buttons[ButtonLeft] = true
-		if !c.OnClick {
-			fmt.Printf("left mouse click at (%d, %d) : %d\n", x, y, state)
-		}
-		break
-	case ButtonMiddle:
-		c.buttons[ButtonMiddle] = true
-		if !c.OnClick {
-			fmt.Printf("middle mouse click at (%d, %d) : %d\n", x, y, state)
-		}
-		break
-	case ButtonRight:
-		c.buttons[ButtonRight] = true
-		if !c.OnClick {
-			fmt.Printf("right mouse click at (%d, %d) : %d\n", x, y, state)
-		}
-		break
-	case ButtonX1:
-		c.buttons[ButtonX1] = true
-		if !c.OnClick {
-			fmt.Printf("x1 mouse click at (%d, %d) : %d\n", x, y, state)
-		}
-		break
-	case ButtonX2:
-		c.buttons[ButtonX2] = true
-		if !c.OnClick {
-			fmt.Printf("x1 mouse click at (%d, %d) : %d\n", x, y, state)
-		}
-		break
-	default:
-		if c.OnClick {
-			if c.buttons[ButtonLeft] {
-				c.buttons[ButtonLeft] = false
-				fmt.Printf("left mouse click at (%d, %d) : %d\n", x, y, state)
-			}
-			if c.buttons[ButtonMiddle] {
-				c.buttons[ButtonMiddle] = false
-				fmt.Printf("middle mouse click at (%d, %d) : %d\n", x, y, state)
-			}
-			if c.buttons[ButtonRight] {
-				c.buttons[ButtonRight] = false
-				fmt.Printf("right mouse click at (%d, %d) : %d\n", x, y, state)
-			}
-			if c.buttons[ButtonX1] {
-				c.buttons[ButtonX1] = false
-				fmt.Printf("x1 mouse click at (%d, %d) : %d\n", x, y, state)
-			}
-			if c.buttons[ButtonX2] {
-				c.buttons[ButtonX2] = false
-				fmt.Printf("x2 mouse click at (%d, %d) : %d\n", x, y, state)
+	for k := range c.buttons {
+		if state == k {
+			c.buttons[k] = true
+			if !c.OnClick {
+				// fmt.Printf("%d mouse push at (%d, %d) : %d\n", k, x, y, state)
+				engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, x, y, k)
 			}
 		}
-		break
 	}
+	if state == 0 && c.OnClick {
+		for k, v := range c.buttons {
+			if v {
+				c.buttons[k] = false
+				// fmt.Printf("%d mouse click at (%d, %d) : %d\n", k, x, y, state)
+				engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, x, y, k)
+			}
+		}
+	}
+	// switch state {
+	// case ButtonLeft:
+	// 	c.buttons[ButtonLeft] = true
+	// 	if !c.OnClick {
+	// 		fmt.Printf("left mouse click at (%d, %d) : %d\n", x, y, state)
+	// 	}
+	// 	break
+	// case ButtonMiddle:
+	// 	c.buttons[ButtonMiddle] = true
+	// 	if !c.OnClick {
+	// 		fmt.Printf("middle mouse click at (%d, %d) : %d\n", x, y, state)
+	// 	}
+	// 	break
+	// case ButtonRight:
+	// 	c.buttons[ButtonRight] = true
+	// 	if !c.OnClick {
+	// 		fmt.Printf("right mouse click at (%d, %d) : %d\n", x, y, state)
+	// 	}
+	// 	break
+	// case ButtonX1:
+	// 	c.buttons[ButtonX1] = true
+	// 	if !c.OnClick {
+	// 		fmt.Printf("x1 mouse click at (%d, %d) : %d\n", x, y, state)
+	// 	}
+	// 	break
+	// case ButtonX2:
+	// 	c.buttons[ButtonX2] = true
+	// 	if !c.OnClick {
+	// 		fmt.Printf("x1 mouse click at (%d, %d) : %d\n", x, y, state)
+	// 	}
+	// 	break
+	// default:
+	// 	if c.OnClick {
+	// 		if c.buttons[ButtonLeft] {
+	// 			c.buttons[ButtonLeft] = false
+	// 			fmt.Printf("left mouse click at (%d, %d) : %d\n", x, y, state)
+	// 		}
+	// 		if c.buttons[ButtonMiddle] {
+	// 			c.buttons[ButtonMiddle] = false
+	// 			fmt.Printf("middle mouse click at (%d, %d) : %d\n", x, y, state)
+	// 		}
+	// 		if c.buttons[ButtonRight] {
+	// 			c.buttons[ButtonRight] = false
+	// 			fmt.Printf("right mouse click at (%d, %d) : %d\n", x, y, state)
+	// 		}
+	// 		if c.buttons[ButtonX1] {
+	// 			c.buttons[ButtonX1] = false
+	// 			fmt.Printf("x1 mouse click at (%d, %d) : %d\n", x, y, state)
+	// 		}
+	// 		if c.buttons[ButtonX2] {
+	// 			c.buttons[ButtonX2] = false
+	// 			fmt.Printf("x2 mouse click at (%d, %d) : %d\n", x, y, state)
+	// 		}
+	// 	}
+	// 	break
+	// }
 }
 
 // OnStart is called first time component is enabled.

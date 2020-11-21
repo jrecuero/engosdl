@@ -50,6 +50,7 @@ func (c *Keyboard) DefaultAddDelegateToRegister() {
 
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
+// It creates delegate "on-keyboard".
 func (c *Keyboard) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", c.GetName()).Msg("OnAwake")
 	// Create new delegate "on-keyboard"
