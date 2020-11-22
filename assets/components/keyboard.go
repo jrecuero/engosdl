@@ -36,6 +36,8 @@ func NewKeyboard(name string) *Keyboard {
 }
 
 // CreateKeyboard implements keyboard constructor used by component manager.
+// It creates delegate "on-keyboard".
+// It registers to "on-out-of-bounds" delegate.
 func CreateKeyboard(params ...interface{}) engosdl.IComponent {
 	if len(params) == 1 {
 		return NewKeyboard(params[0].(string))
@@ -61,7 +63,7 @@ func (c *Keyboard) OnAwake() {
 
 // OnStart is called first time the component is enabled.
 func (c *Keyboard) OnStart() {
-	engosdl.Logger.Trace().Str("component", "move-to").Str("move-to", c.GetName()).Msg("OnStart")
+	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", c.GetName()).Msg("OnStart")
 	c.Component.OnStart()
 }
 

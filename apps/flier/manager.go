@@ -1,6 +1,9 @@
 package main
 
-import "github.com/jrecuero/engosdl"
+import (
+	"github.com/jrecuero/engosdl"
+	"github.com/jrecuero/engosdl/assets/components"
+)
 
 // GameManager is the flier application game manager.
 type GameManager struct {
@@ -22,6 +25,41 @@ func NewGameManager(name string) *GameManager {
 // CreateAssets creates all flier assets and resources. it is called before
 // game engine starts in order to create all required assets and resources.
 func (h *GameManager) CreateAssets() {
+	playScene := engosdl.NewScene("flier-play-scene-1", "play")
+	playScene.SetSceneCode(h.createScenePlay())
+	engosdl.GetEngine().AddScene(playScene)
+}
+
+func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engosdl.IScene) bool {
+	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
+		h.player.GetTransform().SetPosition(engosdl.NewVector(100, 100))
+		playerSprite := components.NewSprite("player-sprite", []string{"images/plane.png"}, 1, engosdl.FormatPNG)
+		playerSprite.DefaultAddDelegateToRegister()
+		playerKeyboard := components.NewKeyboard("player-keyboard")
+		playerKeyboard.DefaultAddDelegateToRegister()
+		playerMoveIt := components.NewMoveIt("player-move-it", engosdl.NewVector(5, 5))
+		playerMoveIt.DefaultAddDelegateToRegister()
+		h.player.AddComponent(playerSprite)
+		h.player.AddComponent(playerKeyboard)
+		h.player.AddComponent(playerMoveIt)
+
+		obstacle := engosdl.NewEntity("obstacle")
+		obstacle.GetTransform().SetPosition(engosdl.NewVector(400, 200))
+		obstacle.GetTransform().SetScale(engosdl.NewVector(1, 4))
+		obstacleSprite := components.NewSprite("obstacle-sprite", []string{"images/cube.bmp"}, 1, engosdl.FormatBMP)
+		obstacleSprite.AddDelegateToRegister(nil, nil, &components.OutOfBounds{}, obstacleSprite.DefaultOnOutOfBounds)
+		obstacleOutOfBounds := components.NewOutOfBounds("obstacle-out-of-bounds", false)
+		obstacleOutOfBounds.DefaultAddDelegateToRegister()
+		obstacleMoveTo := components.NewMoveTo("obstacle-move-to", engosdl.NewVector(-2, 0))
+		obstacleMoveTo.DefaultAddDelegateToRegister()
+		obstacle.AddComponent(obstacleSprite)
+		obstacle.AddComponent(obstacleOutOfBounds)
+		obstacle.AddComponent(obstacleMoveTo)
+
+		scene.AddEntity(h.player)
+		scene.AddEntity(obstacle)
+		return true
+	}
 }
 
 // DoFrameEnd is called at the end of every engine frame.

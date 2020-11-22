@@ -90,7 +90,7 @@ type enemySpriteT struct {
 
 func newEnemySprite(name string, filenames []string, numberOfSprites int) *enemySpriteT {
 	result := &enemySpriteT{
-		Sprite: components.NewSprite(name, filenames, numberOfSprites),
+		Sprite: components.NewSprite(name, filenames, numberOfSprites, engosdl.FormatBMP),
 		hit:    false,
 	}
 	// result.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, result.onCollision)

@@ -32,14 +32,16 @@ type Sprite struct {
 	SpriteTotal          int `json:"sprite-total"`
 	spriteIndex          int
 	resources            []engosdl.IResource
+	Format               int `json:"format"`
 }
 
 var _ engosdl.ISprite = (*Sprite)(nil)
 
 // NewSprite creates a new sprite instance.
-// It resgiters to "on-collision" and "on-out-of-bounds" delegates.
-func NewSprite(name string, filenames []string, numberOfSprites int) *Sprite {
-	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("multi-sprite", name).Msg("new multi-sprite")
+// It register to "collision" delegate.
+// It register to "out-of-bounds" delegate.
+func NewSprite(name string, filenames []string, numberOfSprites int, format int) *Sprite {
+	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
 	result := &Sprite{
 		Component:            engosdl.NewComponent(name),
 		Filenames:            filenames,
@@ -51,20 +53,25 @@ func NewSprite(name string, filenames []string, numberOfSprites int) *Sprite {
 		SpriteTotal:          numberOfSprites,
 		spriteIndex:          0,
 		resources:            []engosdl.IResource{},
+		Format:               format,
 	}
 	return result
 }
 
 // CreateSprite implements sprite constructor used by component manager.
+// It register to "collision" delegate.
+// It register to "out-of-bounds" delegate.
 func CreateSprite(params ...interface{}) engosdl.IComponent {
-	if len(params) == 2 {
-		return NewSprite(params[0].(string), params[1].([]string), params[2].(int))
+	if len(params) == 4 {
+		return NewSprite(params[0].(string), params[1].([]string), params[2].(int), params[3].(int))
 	}
-	return NewSprite("", []string{}, 1)
+	return NewSprite("", []string{}, 1, engosdl.FormatBMP)
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegate to
 // register for the component.
+// It register to "collision" delegate.
+// It register to "out-of-bounds" delegate.
 func (c *Sprite) DefaultAddDelegateToRegister() {
 	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.onCollision)
 	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.DefaultOnOutOfBounds)
@@ -113,18 +120,18 @@ func (c *Sprite) GetSpriteIndex() int {
 
 // LoadSprite loads the sprite from the filename.
 func (c *Sprite) LoadSprite() {
-	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("sprite", c.GetName()).Msg("LoadSprite")
-	c.loadTexturesFromBMP()
+	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("LoadSprite")
+	c.loadTextures()
 	// TODO: assuming SpriteSheet is horizontal.
 	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.SpriteTotal)), float64(c.height)))
 }
 
-// loadTexturesFromBMP creates textures for every BMP image file.
-func (c *Sprite) loadTexturesFromBMP() {
+// loadTextures creates textures for every image file.
+func (c *Sprite) loadTextures() {
 	for _, filename := range c.Filenames {
 		if len(c.resources) == 0 && len(c.textures) == 0 {
 			var err error
-			resource := engosdl.GetResourceManager().CreateResource(c.GetName(), filename)
+			resource := engosdl.GetResourceManager().CreateResource(c.GetName(), filename, c.Format)
 			texture := resource.GetTextureFromSurface()
 			_, _, c.width, c.height, err = texture.Query()
 			if err != nil {
@@ -152,8 +159,8 @@ func (c *Sprite) NextSprite() int {
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *Sprite) OnAwake() {
-	engosdl.Logger.Trace().Str("component", "multi-sprite").Str("sprite", c.GetName()).Msg("OnAwake")
-	c.loadTexturesFromBMP()
+	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("OnAwake")
+	c.loadTextures()
 	// TODO: assuming SpriteSheet is horizontal.
 	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.SpriteTotal)), float64(c.height)))
 	c.Component.OnAwake()
@@ -246,4 +253,5 @@ func (c *Sprite) Unmarshal(data map[string]interface{}) {
 	}
 	c.SpriteTotal = int(data["sprite-total"].(float64))
 	c.DestroyOnOutOfBounds = data["destroy-on-out-of-bounds"].(bool)
+	c.Format = int(data["format"].(float64))
 }

@@ -25,7 +25,7 @@ type ScrollSprite struct {
 var _ engosdl.ISprite = (*ScrollSprite)(nil)
 
 // NewScrollSprite creates a new sprite instance.
-func NewScrollSprite(name string, filename string) *ScrollSprite {
+func NewScrollSprite(name string, filename string, format int) *ScrollSprite {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
 	return &ScrollSprite{
 		// NewSprite is not called because it registers to onOutOfBounds and
@@ -38,6 +38,7 @@ func NewScrollSprite(name string, filename string) *ScrollSprite {
 			DestroyOnOutOfBounds: true,
 			camera:               nil,
 			SpriteTotal:          1,
+			Format:               format,
 		},
 		Scroll: engosdl.NewVector(0, -1),
 	}
@@ -46,10 +47,10 @@ func NewScrollSprite(name string, filename string) *ScrollSprite {
 // CreateScrollSprite implements scroll sprite constructor used by component
 // manager.
 func CreateScrollSprite(params ...interface{}) engosdl.IComponent {
-	if len(params) == 2 {
-		return NewScrollSprite(params[0].(string), params[1].(string))
+	if len(params) == 3 {
+		return NewScrollSprite(params[0].(string), params[1].(string), params[2].(int))
 	}
-	return NewScrollSprite("", "")
+	return NewScrollSprite("", "", engosdl.FormatBMP)
 }
 
 // OnRender is called for every render tick.
@@ -115,4 +116,5 @@ func (c *ScrollSprite) Unmarshal(data map[string]interface{}) {
 	scroll := data["scroll"].(map[string]interface{})
 	c.SetScroll(engosdl.NewVector(scroll["X"].(float64), scroll["Y"].(float64)))
 	c.DestroyOnOutOfBounds = data["destroy-on-out-of-bounds"].(bool)
+	c.Format = int(data["format"].(float64))
 }

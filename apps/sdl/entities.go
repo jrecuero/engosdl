@@ -10,7 +10,7 @@ import (
 func createEntityBackground(engine *engosdl.Engine, filename string) engosdl.IEntity {
 	bg := engosdl.NewEntity("background")
 	bg.SetLayer(engosdl.LayerBackground)
-	bgSprite := components.NewScrollSprite("bg-sprite", filename)
+	bgSprite := components.NewScrollSprite("bg-sprite", filename, engosdl.FormatBMP)
 	bgSprite.DefaultAddDelegateToRegister()
 	bgSprite.SetScroll(engosdl.NewVector(0, -1))
 	// bgSprite.SetCamera(&sdl.Rect{X: 0, Y: 0, W: 400, H: 800})

@@ -64,7 +64,7 @@ func (c *ShootBullet) ShootBulletSignature(...interface{}) bool {
 	bullet := engosdl.NewEntity("bullet" + strconv.Itoa(c.counter))
 	bullet.SetTag("bullet")
 	bullet.SetParent(c.GetEntity())
-	bulletSprite := NewSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, 1)
+	bulletSprite := NewSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, 1, engosdl.FormatBMP)
 	bulletSprite.DefaultAddDelegateToRegister()
 	bulletMoveTo := NewMoveTo("bullet-move-to", c.Speed)
 	bulletMoveTo.DefaultAddDelegateToRegister()

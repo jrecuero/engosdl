@@ -1,6 +1,20 @@
 package engosdl
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"fmt"
+
+	"github.com/veandco/go-sdl2/img"
+	"github.com/veandco/go-sdl2/sdl"
+)
+
+const (
+	// FormatBMP identifies sprites in BMP format.
+	FormatBMP int = 1
+	// FormatPNG identifies sprites in PNG format.
+	FormatPNG int = 2
+	// FormatJPG identifies sprites in JPG format.
+	FormatJPG int = 3
+)
 
 // IResource represents any graphical resource to be handled by the resource
 // handler.
@@ -9,6 +23,7 @@ type IResource interface {
 	Clear()
 	Delete() int
 	GetFilename() string
+	GetFormat() int
 	GetSurface() *sdl.Surface
 	GetTextureFromSurface() *sdl.Texture
 	New()
@@ -20,20 +35,36 @@ type Resource struct {
 	filename string
 	surface  *sdl.Surface
 	counter  int
+	format   int
 }
 
 var _ IResource = (*Resource)(nil)
 
 // NewResource creates a new resource instance.
-func NewResource(name string, filename string) *Resource {
+func NewResource(name string, filename string, format int) *Resource {
 	var err error
 	Logger.Trace().Str("resource", name).Str("filename", filename).Msg("new resource")
 	result := &Resource{
 		Object:   NewObject(name),
 		filename: filename,
 		counter:  0,
+		format:   format,
 	}
-	result.surface, err = sdl.LoadBMP(filename)
+	switch format {
+	case FormatBMP:
+		result.surface, err = sdl.LoadBMP(filename)
+		break
+	case FormatPNG:
+		result.surface, err = img.Load(filename)
+		break
+	case FormatJPG:
+		result.surface, err = img.Load(filename)
+		break
+	default:
+		err := fmt.Errorf("unknown format %d", format)
+		Logger.Error().Err(err)
+		panic(err)
+	}
 	if err != nil {
 		Logger.Error().Err(err).Msg("LoadBMP error")
 		panic(err)
@@ -58,9 +89,14 @@ func (r *Resource) Delete() int {
 	return r.counter
 }
 
-// GetFilename returns resource filename
+// GetFilename returns resource filename.
 func (r *Resource) GetFilename() string {
 	return r.filename
+}
+
+// GetFormat returns resource format.
+func (r *Resource) GetFormat() int {
+	return r.format
 }
 
 // GetSurface returns resource surface.
@@ -89,7 +125,7 @@ func (r *Resource) New() {
 type IResourceManager interface {
 	IObject
 	Clear()
-	CreateResource(string, string) IResource
+	CreateResource(string, string, int) IResource
 	DeleteResource(IResource) bool
 	DoInit()
 	GetResource(string) IResource
@@ -128,7 +164,7 @@ func (h *ResourceManager) Clear() {
 
 // CreateResource creates a new resource. If the same resource has already
 // been created with the same filename, existing resource is returned.
-func (h *ResourceManager) CreateResource(name string, filename string) IResource {
+func (h *ResourceManager) CreateResource(name string, filename string, format int) IResource {
 	Logger.Trace().Str("resource-manager", h.GetName()).Str("name", name).Str("filename", filename).Msg("CreateResource")
 	for _, resource := range h.resources {
 		if resource.GetFilename() == filename {
@@ -136,7 +172,7 @@ func (h *ResourceManager) CreateResource(name string, filename string) IResource
 			return resource
 		}
 	}
-	resource := NewResource(name, filename)
+	resource := NewResource(name, filename, format)
 	h.resources = append(h.resources, resource)
 	return resource
 }

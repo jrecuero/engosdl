@@ -1,6 +1,7 @@
 package engosdl
 
 import (
+	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -106,6 +107,7 @@ func (engine *Engine) DoInitSdl() {
 	var err error
 
 	ttf.Init()
+	img.Init(img.INIT_PNG)
 
 	Logger.Trace().Str("engine", engine.name).Msg("init sdl module")
 	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
