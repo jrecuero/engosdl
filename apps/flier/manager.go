@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/jrecuero/engosdl"
 	"github.com/jrecuero/engosdl/assets/components"
+	"github.com/jrecuero/engosdl/assets/entities"
 )
 
 // GameManager is the flier application game manager.
@@ -43,18 +44,26 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		h.player.AddComponent(playerKeyboard)
 		h.player.AddComponent(playerMoveIt)
 
-		obstacle := engosdl.NewEntity("obstacle")
+		// obstacle := engosdl.NewEntity("obstacle")
+		// obstacle.GetTransform().SetPosition(engosdl.NewVector(400, 200))
+		// obstacle.GetTransform().SetScale(engosdl.NewVector(1, 4))
+		// obstacleSprite := components.NewSprite("obstacle-sprite", []string{"images/cube.bmp"}, 1, engosdl.FormatBMP)
+		// obstacleSprite.AddDelegateToRegister(nil, nil, &components.OutOfBounds{}, obstacleSprite.DefaultOnOutOfBounds)
+		// obstacleOutOfBounds := components.NewOutOfBounds("obstacle-out-of-bounds", false)
+		// obstacleOutOfBounds.DefaultAddDelegateToRegister()
+		// obstacleMoveTo := components.NewMoveTo("obstacle-move-to", engosdl.NewVector(-2, 0))
+		// obstacleMoveTo.DefaultAddDelegateToRegister()
+		// obstacle.AddComponent(obstacleSprite)
+		// obstacle.AddComponent(obstacleOutOfBounds)
+		// obstacle.AddComponent(obstacleMoveTo)
+		obstacle := entities.NewBody2D("obstable",
+			[]string{"images/cube.bmp"},
+			1,
+			engosdl.FormatBMP,
+			false,
+			engosdl.NewVector(-2, 0))
 		obstacle.GetTransform().SetPosition(engosdl.NewVector(400, 200))
 		obstacle.GetTransform().SetScale(engosdl.NewVector(1, 4))
-		obstacleSprite := components.NewSprite("obstacle-sprite", []string{"images/cube.bmp"}, 1, engosdl.FormatBMP)
-		obstacleSprite.AddDelegateToRegister(nil, nil, &components.OutOfBounds{}, obstacleSprite.DefaultOnOutOfBounds)
-		obstacleOutOfBounds := components.NewOutOfBounds("obstacle-out-of-bounds", false)
-		obstacleOutOfBounds.DefaultAddDelegateToRegister()
-		obstacleMoveTo := components.NewMoveTo("obstacle-move-to", engosdl.NewVector(-2, 0))
-		obstacleMoveTo.DefaultAddDelegateToRegister()
-		obstacle.AddComponent(obstacleSprite)
-		obstacle.AddComponent(obstacleOutOfBounds)
-		obstacle.AddComponent(obstacleMoveTo)
 
 		scene.AddEntity(h.player)
 		scene.AddEntity(obstacle)
