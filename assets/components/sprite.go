@@ -73,8 +73,35 @@ func CreateSprite(params ...interface{}) engosdl.IComponent {
 // It register to "collision" delegate.
 // It register to "out-of-bounds" delegate.
 func (c *Sprite) DefaultAddDelegateToRegister() {
-	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.onCollision)
+	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.DefaultOnCollision)
 	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.DefaultOnOutOfBounds)
+}
+
+// DefaultOnCollision checks when there is a collision with other entity.
+func (c *Sprite) DefaultOnCollision(params ...interface{}) bool {
+	collisionEntityOne := params[0].(*engosdl.Entity)
+	collisionEntityTwo := params[1].(*engosdl.Entity)
+	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
+		fmt.Printf("%s sprite onCollision %s with %s\n", c.GetEntity().GetName(), collisionEntityOne.GetName(), collisionEntityTwo.GetName())
+		if collisionEntityOne.GetDieOnCollision() {
+			engosdl.GetEngine().DestroyEntity(collisionEntityOne)
+		}
+		if collisionEntityTwo.GetDieOnCollision() {
+			engosdl.GetEngine().DestroyEntity(collisionEntityTwo)
+		}
+	}
+	return true
+}
+
+// DefaultOnOutOfBounds checks if the entity has gone out of bounds.
+func (c *Sprite) DefaultOnOutOfBounds(params ...interface{}) bool {
+	if c.DestroyOnOutOfBounds {
+		entity := params[0].(engosdl.IEntity)
+		if entity.GetID() == c.GetEntity().GetID() {
+			engosdl.GetEngine().DestroyEntity(c.GetEntity())
+		}
+	}
+	return true
 }
 
 // DoDestroy calls all methods to clean up sprite.
@@ -164,33 +191,6 @@ func (c *Sprite) OnAwake() {
 	// TODO: assuming SpriteSheet is horizontal.
 	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.width/int32(c.SpriteTotal)), float64(c.height)))
 	c.Component.OnAwake()
-}
-
-// onCollision checks when there is a collision with other entity.
-func (c *Sprite) onCollision(params ...interface{}) bool {
-	collisionEntityOne := params[0].(*engosdl.Entity)
-	collisionEntityTwo := params[1].(*engosdl.Entity)
-	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
-		fmt.Printf("%s sprite onCollision %s with %s\n", c.GetEntity().GetName(), collisionEntityOne.GetName(), collisionEntityTwo.GetName())
-		if collisionEntityOne.GetDieOnCollision() {
-			engosdl.GetEngine().DestroyEntity(collisionEntityOne)
-		}
-		if collisionEntityTwo.GetDieOnCollision() {
-			engosdl.GetEngine().DestroyEntity(collisionEntityTwo)
-		}
-	}
-	return true
-}
-
-// DefaultOnOutOfBounds checks if the entity has gone out of bounds.
-func (c *Sprite) DefaultOnOutOfBounds(params ...interface{}) bool {
-	if c.DestroyOnOutOfBounds {
-		entity := params[0].(engosdl.IEntity)
-		if entity.GetID() == c.GetEntity().GetID() {
-			engosdl.GetEngine().DestroyEntity(c.GetEntity())
-		}
-	}
-	return true
 }
 
 // OnRender is called for every render tick.

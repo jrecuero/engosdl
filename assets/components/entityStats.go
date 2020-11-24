@@ -48,21 +48,11 @@ func CreateEntityStats(params ...interface{}) engosdl.IComponent {
 // DefaultAddDelegateToRegister will proceed to add default delegate to
 // register for the component.
 func (c *EntityStats) DefaultAddDelegateToRegister() {
-	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.onCollision)
+	c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.DefaultOnCollision)
 }
 
-// OnAwake should create all component resources that don't have any dependency
-// with any other component or entity.
-func (c *EntityStats) OnAwake() {
-	// Create new delegate "entity-stats"
-	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnAwake")
-	c.SetDelegate(engosdl.GetDelegateManager().CreateDelegate(c, "on-entity-stats"))
-	c.Component.OnAwake()
-
-}
-
-// onCollision checks when there is a collision with other entity.
-func (c *EntityStats) onCollision(params ...interface{}) bool {
+// DefaultOnCollision checks when there is a collision with other entity.
+func (c *EntityStats) DefaultOnCollision(params ...interface{}) bool {
 	collisionEntityOne := params[0].(*engosdl.Entity)
 	collisionEntityTwo := params[1].(*engosdl.Entity)
 	var me, other *engosdl.Entity
@@ -94,6 +84,16 @@ func (c *EntityStats) onCollision(params ...interface{}) bool {
 		}
 	}
 	return true
+}
+
+// OnAwake should create all component resources that don't have any dependency
+// with any other component or entity.
+func (c *EntityStats) OnAwake() {
+	// Create new delegate "entity-stats"
+	engosdl.Logger.Trace().Str("component", "entity-stats").Str("entity-stats", c.GetName()).Msg("OnAwake")
+	c.SetDelegate(engosdl.GetDelegateManager().CreateDelegate(c, "on-entity-stats"))
+	c.Component.OnAwake()
+
 }
 
 // OnStart is called first time the component is enabled.

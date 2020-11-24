@@ -66,6 +66,7 @@ type IDelegateManager interface {
 	OnUpdate()
 	RegisterToDelegate(IObject, IDelegate, TDelegateSignature) (string, bool)
 	TriggerDelegate(IDelegate, bool, ...interface{})
+	TriggerDelegateFor(IDelegate, []IEntity, bool, ...interface{})
 }
 
 // Delegate is the default implementation for delegate interface.
@@ -325,6 +326,33 @@ func (h *DelegateManager) RegisterToDelegate(obj IObject, delegate IDelegate, si
 
 // TriggerDelegate calls all signatures registered to a given delegate.
 func (h *DelegateManager) TriggerDelegate(delegate IDelegate, now bool, params ...interface{}) {
+	// for _, register := range h.registers {
+	// 	if register.GetDelegate() != nil && register.GetDelegate().GetID() == delegate.GetID() {
+	// 		// Check if the entity for the component in the register belongs
+	// 		// to the active scene.
+	// 		if source, ok := register.GetObject().(IComponent); ok {
+	// 			entity := source.GetEntity()
+	// 			if entity.GetScene().GetID() != GetSceneManager().GetActiveScene().GetID() {
+	// 				continue
+	// 			}
+	// 		}
+	// 		if now {
+	// 			register.GetSignature()(params...)
+	// 		} else {
+	// 			storeRegister := NewRegister(register.GetName(), register.GetObject(), register.GetEntity(), register.GetComponent(), register.GetDelegate(), register.GetSignature())
+	// 			storeRegister.SetRegisterID(register.GetRegisterID())
+	// 			storeRegister.SetParams(params)
+	// 			h.toBeCalled = append(h.toBeCalled, storeRegister)
+	// 		}
+	// 	}
+	// }
+	// return
+	h.TriggerDelegateFor(delegate, []IEntity{}, now, params...)
+}
+
+// TriggerDelegateFor calls signatures registered to the given delegate if
+// register entity is in the list of entities given.
+func (h *DelegateManager) TriggerDelegateFor(delegate IDelegate, entities []IEntity, now bool, params ...interface{}) {
 	for _, register := range h.registers {
 		if register.GetDelegate() != nil && register.GetDelegate().GetID() == delegate.GetID() {
 			// Check if the entity for the component in the register belongs
@@ -334,7 +362,18 @@ func (h *DelegateManager) TriggerDelegate(delegate IDelegate, now bool, params .
 				if entity.GetScene().GetID() != GetSceneManager().GetActiveScene().GetID() {
 					continue
 				}
+				matched := (len(entities) == 0)
+				for _, ent := range entities {
+					if ent.GetID() == entity.GetID() {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					continue
+				}
 			}
+
 			if now {
 				register.GetSignature()(params...)
 			} else {
@@ -345,5 +384,4 @@ func (h *DelegateManager) TriggerDelegate(delegate IDelegate, now bool, params .
 			}
 		}
 	}
-	return
 }

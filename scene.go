@@ -120,7 +120,8 @@ func (scene *Scene) checkCollisions() {
 				// if rectI.HasIntersection(rectJ) {
 				fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
 				delegate := GetDelegateManager().GetCollisionDelegate()
-				GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
+				// GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
+				GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ)
 			}
 		}
 	}

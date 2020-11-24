@@ -43,8 +43,10 @@ func (entity *Body2D) DoLoad() {
 	outOfBounds.DefaultAddDelegateToRegister()
 	moveTo := components.NewMoveTo(fmt.Sprintf("body-2d-%s/move-to", entity.GetName()), entity.MoveTo)
 	moveTo.DefaultAddDelegateToRegister()
+	collider2D := components.NewCollider2D(fmt.Sprintf("body-2d-%s/collider-2d", entity.GetName()))
 	entity.AddComponent(sprite)
 	entity.AddComponent(outOfBounds)
 	entity.AddComponent(moveTo)
+	entity.AddComponent(collider2D)
 	entity.Entity.DoLoad()
 }

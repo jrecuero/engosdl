@@ -32,6 +32,7 @@ type IComponent interface {
 	OnRender()
 	OnStart()
 	OnUpdate()
+	RemoveDelegateToRegister(IDelegate, IEntity, IComponent) error
 	SetActive(bool)
 	SetDelegate(IDelegate)
 	SetEntity(IEntity)
@@ -279,6 +280,36 @@ func (c *Component) OnStart() {
 // OnUpdate is called for every update tick.
 func (c *Component) OnUpdate() {
 	// Logger.Trace().Str("component", c.GetName()).Msg("OnUpdate")
+}
+
+// RemoveDelegateToRegister removes a register for the given delegate in
+// delegate handler. Register is being removed from the component too.
+func (c *Component) RemoveDelegateToRegister(delegate IDelegate, entity IEntity, component IComponent) error {
+	Logger.Trace().Str("component", c.GetName()).Msg("RemoveDelegateToRegister")
+	index := -1
+	for i, register := range c.registers {
+		if delegate != nil && delegate == register.GetDelegate() {
+			index = i
+			break
+		}
+		if entity == nil {
+			entity = c.GetEntity()
+		}
+		if _component := entity.GetComponent(component); _component != nil {
+			if _delegate := _component.GetDelegate(); _delegate != nil {
+				if _delegate == register.GetDelegate() {
+					index = i
+					break
+				}
+			}
+		}
+	}
+	if index != -1 {
+		GetDelegateManager().DeregisterFromDelegate(c.registers[index].GetRegisterID())
+		c.registers = append(c.registers[:index], c.registers[index+1:]...)
+		return nil
+	}
+	return fmt.Errorf("register not found for given input")
 }
 
 // SetActive sets component active attribute

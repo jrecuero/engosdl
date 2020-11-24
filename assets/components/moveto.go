@@ -43,20 +43,20 @@ func CreateMoveTo(params ...interface{}) engosdl.IComponent {
 // DefaultAddDelegateToRegister will proceed to add default delegate to
 // register for the component.
 func (c *MoveTo) DefaultAddDelegateToRegister() {
-	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.onOutOfBounds)
+	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.DefaultOnOutOfBounds)
+}
+
+// DefaultOnOutOfBounds checks if the entity has gone out of bounds.
+func (c *MoveTo) DefaultOnOutOfBounds(params ...interface{}) bool {
+	position := c.GetEntity().GetTransform().GetPosition()
+	position.X -= c.Speed.X
+	position.Y -= c.Speed.Y
+	return true
 }
 
 // GetSpeed returns component speed.
 func (c *MoveTo) GetSpeed() *engosdl.Vector {
 	return c.Speed
-}
-
-// onOutOfBounds checks if the entity has gone out of bounds.
-func (c *MoveTo) onOutOfBounds(params ...interface{}) bool {
-	position := c.GetEntity().GetTransform().GetPosition()
-	position.X -= c.Speed.X
-	position.Y -= c.Speed.Y
-	return true
 }
 
 // OnStart is called first time the component is enabled.
