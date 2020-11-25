@@ -7,15 +7,6 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-const (
-	// FormatBMP identifies sprites in BMP format.
-	FormatBMP int = 1
-	// FormatPNG identifies sprites in PNG format.
-	FormatPNG int = 2
-	// FormatJPG identifies sprites in JPG format.
-	FormatJPG int = 3
-)
-
 // IResource represents any graphical resource to be handled by the resource
 // handler.
 type IResource interface {

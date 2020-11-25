@@ -58,33 +58,54 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		h.player.AddComponent(playerMoveIt)
 		h.player.AddComponent(playerCollider2D)
 
-		// obstacle := engosdl.NewEntity("obstacle")
-		// obstacle.SetTag("wall")
-		// obstacle.GetTransform().SetPosition(engosdl.NewVector(400, 200))
-		// obstacle.GetTransform().SetScale(engosdl.NewVector(1, 4))
-		// obstacleSprite := components.NewSprite("obstacle-sprite", []string{"images/cube.bmp"}, 1, engosdl.FormatBMP)
-		// obstacleSprite.AddDelegateToRegister(nil, nil, &components.OutOfBounds{}, obstacleSprite.DefaultOnOutOfBounds)
-		// obstacleOutOfBounds := components.NewOutOfBounds("obstacle-out-of-bounds", false)
-		// obstacleOutOfBounds.DefaultAddDelegateToRegister()
-		// obstacleMoveTo := components.NewMoveTo("obstacle-move-to", engosdl.NewVector(-2, 0))
-		// obstacleMoveTo.DefaultAddDelegateToRegister()
-		// obstacleCollider2D := components.NewCollider2D("obstacle-collider-2D")
-		// obstacle.AddComponent(obstacleSprite)
-		// obstacle.AddComponent(obstacleOutOfBounds)
-		// obstacle.AddComponent(obstacleMoveTo)
-		// obstacle.AddComponent(obstacleCollider2D)
-		obstacle := entities.NewBody2D("obstable",
+		obstacle1 := engosdl.NewEntity("obstacle")
+		obstacle1.SetTag("wall")
+		obstacle1.GetTransform().SetPosition(engosdl.NewVector(600, 150))
+		// obstacle1.GetTransform().SetScale(engosdl.NewVector(1, 4))
+		obstacleSprite := components.NewSprite("obstacle/`-sprite", []string{"images/cube.bmp"}, 1, engosdl.FormatBMP)
+		obstacleSprite.AddDelegateToRegister(nil, nil, &components.OutOfBounds{}, obstacleSprite.DefaultOnOutOfBounds)
+		obstacleOutOfBounds := components.NewOutOfBounds("obstacle/1-out-of-bounds", false)
+		obstacleOutOfBounds.DefaultAddDelegateToRegister()
+		obstacleMoveTo := components.NewMove("obstacle/1-move-to", func() components.NextMoveT {
+			counter := 0
+			speed := 5.0
+			return func(c engosdl.IComponent) *engosdl.Vector {
+				position := engosdl.NewVector(0, 0)
+				mark := counter % 200
+				if mark%2 == 0 {
+				} else if mark < 50 {
+					position.X = -1 * speed
+				} else if mark < 100 {
+					position.Y = -1 * speed
+				} else if mark < 150 {
+					position.X = speed
+				} else {
+					position.Y = speed
+				}
+				counter++
+				return position
+			}
+		}())
+		obstacleMoveTo.DefaultAddDelegateToRegister()
+		obstacleCollider2D := components.NewCollider2D("obstacle/1-collider-2D")
+		obstacle1.AddComponent(obstacleSprite)
+		obstacle1.AddComponent(obstacleOutOfBounds)
+		obstacle1.AddComponent(obstacleMoveTo)
+		obstacle1.AddComponent(obstacleCollider2D)
+
+		obstacle2 := entities.NewBody2D("obstable/2",
 			[]string{"images/cube.bmp"},
 			1,
 			engosdl.FormatBMP,
 			false,
 			engosdl.NewVector(-2, 0))
-		obstacle.SetTag("wall")
-		obstacle.GetTransform().SetPosition(engosdl.NewVector(400, 200))
+		obstacle2.SetTag("wall")
+		obstacle2.GetTransform().SetPosition(engosdl.NewVector(400, 200))
 		// obstacle.GetTransform().SetScale(engosdl.NewVector(4, 4))
 
 		scene.AddEntity(h.player)
-		scene.AddEntity(obstacle)
+		scene.AddEntity(obstacle1)
+		scene.AddEntity(obstacle2)
 		return true
 	}
 }

@@ -31,9 +31,42 @@ func init() {
 	componentManager = NewComponentManager("component-manager")
 }
 
+// Frames per second constants.
 const (
 	_fps   uint32 = 30
 	_delay uint32 = 1000 / _fps
+)
+
+// Graphics format constants.
+const (
+	// FormatBMP identifies sprites in BMP format.
+	FormatBMP int = 1
+	// FormatPNG identifies sprites in PNG format.
+	FormatPNG int = 2
+	// FormatJPG identifies sprites in JPG format.
+	FormatJPG int = 3
+)
+
+// Movement constants.
+const (
+	// No Movement.
+	MoveNo int = 0
+	// Move up in the screen (negative Y axis).
+	MoveUp int = 1
+	// Move down in the screen (positive Y axis).
+	MoveDown int = 2
+	// Move left in the screen (negative X axis).
+	MoveLeft int = 4
+	// Move right in the screen (positive X axis).
+	MoveRight int = 8
+)
+
+// Collision box modes.
+const (
+	// Box or rectangle mode. Collision box is a rectangle.
+	ModeBox int = 1
+	// Circle mode. Collision box is a circle.
+	ModeCircle int = 2
 )
 
 // GetComponentManager gets the component manager.

@@ -34,6 +34,7 @@ type IScene interface {
 	DoSwapFrom()
 	DoSwapBack()
 	DoUnLoad()
+	GetCollisionMode() int
 	GetEntities() []IEntity
 	GetEntitiesByTag(string) []IEntity
 	GetEntity(string) IEntity
@@ -45,6 +46,7 @@ type IScene interface {
 	OnEnable()
 	OnStart()
 	OnUpdate()
+	SetCollisionMode(int)
 	SetSceneCode(TSceneCodeSignature)
 	SetTag(string)
 }
@@ -60,6 +62,7 @@ type Scene struct {
 	collisionCollection []ICollider
 	sceneCode           TSceneCodeSignature
 	tag                 string
+	collisionMode       int
 }
 
 var _ IScene = (*Scene)(nil)
@@ -76,6 +79,7 @@ func NewScene(name string, tag string) *Scene {
 		layers:           make([][]IEntity, maxLayers),
 		sceneCode:        nil,
 		tag:              tag,
+		collisionMode:    ModeCircle,
 	}
 	return scene
 }
@@ -238,6 +242,11 @@ func (scene *Scene) DoUnLoad() {
 	// }
 	scene.collisionCollection = []ICollider{}
 	scene.layers = make([][]IEntity, maxLayers)
+}
+
+// GetCollisionMode returns the collision mode used to detect collisions.
+func (scene *Scene) GetCollisionMode() int {
+	return scene.collisionMode
 }
 
 // getEntity returns entity and index for the given name.
@@ -426,6 +435,11 @@ func (scene *Scene) OnUpdate() {
 			entity.OnUpdate()
 		}
 	}
+}
+
+//SetCollisionMode sets the scene collision mode used to detect collisions.
+func (scene *Scene) SetCollisionMode(mode int) {
+	scene.collisionMode = mode
 }
 
 // SetSceneCode sets the scene code.
