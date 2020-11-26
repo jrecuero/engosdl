@@ -110,22 +110,31 @@ func (scene *Scene) checkCollisions() {
 		collisionBoxI := colliderI.GetCollisionBox()
 		centerI := collisionBoxI.GetCenter()
 		radiusI := collisionBoxI.GetRadius()
-		// rectI := collisionBoxI.GetRect()
+		rectI := collisionBoxI.GetRect()
 		entityI := colliderI.GetEntity()
 		for j := i + 1; j < len(scene.collisionCollection); j++ {
 			colliderJ := scene.collisionCollection[j]
 			collisionBoxJ := colliderJ.GetCollisionBox()
 			centerJ := collisionBoxJ.GetCenter()
 			radiusJ := collisionBoxJ.GetRadius()
-			// rectJ := collisionBoxJ.GetRect()
+			rectJ := collisionBoxJ.GetRect()
 			entityJ := colliderJ.GetEntity()
-			distance := math.Sqrt(math.Pow(centerI.X-centerJ.X, 2) + math.Pow(centerI.Y-centerJ.Y, 2))
-			if distance < (radiusI + radiusJ) {
-				// if rectI.HasIntersection(rectJ) {
-				fmt.Printf("check collision %s with %s\n", entityI.GetName(), entityJ.GetName())
-				delegate := GetDelegateManager().GetCollisionDelegate()
-				// GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
-				GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ)
+			if scene.GetCollisionMode() == ModeCircle {
+				distance := math.Sqrt(math.Pow(centerI.X-centerJ.X, 2) + math.Pow(centerI.Y-centerJ.Y, 2))
+				if distance < (radiusI + radiusJ) {
+					// if rectI.HasIntersection(rectJ) {
+					fmt.Printf("circular collision %s with %s\n", entityI.GetName(), entityJ.GetName())
+					delegate := GetDelegateManager().GetCollisionDelegate()
+					// GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
+					GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ)
+				}
+			} else if scene.GetCollisionMode() == ModeBox {
+				if rectI.HasIntersection(rectJ) {
+					fmt.Printf("box collision %s with %s\n", entityI.GetName(), entityJ.GetName())
+					delegate := GetDelegateManager().GetCollisionDelegate()
+					// GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
+					GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ)
+				}
 			}
 		}
 	}
@@ -429,12 +438,12 @@ func (scene *Scene) OnStart() {
 // in the scene.
 func (scene *Scene) OnUpdate() {
 	// First check collisions in the scene.
-	scene.checkCollisions()
 	for _, entity := range scene.loadedEntities {
 		if entity.GetActive() {
 			entity.OnUpdate()
 		}
 	}
+	scene.checkCollisions()
 }
 
 //SetCollisionMode sets the scene collision mode used to detect collisions.

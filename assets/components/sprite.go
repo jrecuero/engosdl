@@ -8,7 +8,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-// ComponentNameSprite is the name to refer entity sprite component
+// ComponentNameSprite is the name to refer sprite component
 var ComponentNameSprite string = reflect.TypeOf(&Sprite{}).String()
 
 func init() {

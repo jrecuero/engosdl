@@ -20,7 +20,7 @@ func init() {
 type MoveIt struct {
 	*engosdl.Component
 	Speed    *engosdl.Vector `json:"speed"`
-	position *engosdl.Vector
+	LastMove *engosdl.Vector `json:"last-move"`
 }
 
 // NewMoveIt creates a new move-it instance.
@@ -30,7 +30,7 @@ func NewMoveIt(name string, speed *engosdl.Vector) *MoveIt {
 	result := &MoveIt{
 		Component: engosdl.NewComponent(name),
 		Speed:     speed,
-		position:  engosdl.NewVector(0, 0),
+		LastMove:  engosdl.NewVector(0, 0),
 	}
 	return result
 }
@@ -52,27 +52,34 @@ func (c *MoveIt) DefaultAddDelegateToRegister() {
 
 // DefaultOnOutOfBounds checks if the entity has gone out of bounds.
 func (c *MoveIt) DefaultOnOutOfBounds(params ...interface{}) bool {
-	c.GetEntity().GetTransform().SetPosition(engosdl.NewVector(c.position.X, c.position.Y))
+	x, y := c.GetEntity().GetTransform().GetPosition().Get()
+	c.GetEntity().GetTransform().SetPosition(engosdl.NewVector(x-c.LastMove.X, y-c.LastMove.Y))
 	return true
 }
 
 func (c *MoveIt) onKeyboard(params ...interface{}) bool {
 	position := c.GetEntity().GetTransform().GetPosition()
-	c.position.X = position.X
-	c.position.Y = position.Y
 	key := params[0].(int)
 	switch key {
 	case sdl.SCANCODE_LEFT:
 		position.X -= c.Speed.X
+		c.LastMove.X = -1 * c.Speed.X
+		c.LastMove.Y = 0
 		break
 	case sdl.SCANCODE_RIGHT:
 		position.X += c.Speed.X
+		c.LastMove.X = c.Speed.X
+		c.LastMove.Y = 0
 		break
 	case sdl.SCANCODE_UP:
 		position.Y -= c.Speed.Y
+		c.LastMove.Y = -1 * c.Speed.Y
+		c.LastMove.X = 0
 		break
 	case sdl.SCANCODE_DOWN:
 		position.Y += c.Speed.Y
+		c.LastMove.Y = c.Speed.Y
+		c.LastMove.X = 0
 		break
 	}
 	return true
@@ -94,4 +101,6 @@ func (c *MoveIt) Unmarshal(data map[string]interface{}) {
 	c.Component.Unmarshal(data)
 	speed := data["speed"].(map[string]interface{})
 	c.Speed = engosdl.NewVector(speed["X"].(float64), speed["Y"].(float64))
+	lastMove := data["last-move"].(map[string]interface{})
+	c.LastMove = engosdl.NewVector(lastMove["X"].(float64), lastMove["Y"].(float64))
 }

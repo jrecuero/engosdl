@@ -33,7 +33,7 @@ func init() {
 
 // Frames per second constants.
 const (
-	_fps   uint32 = 30
+	_fps   uint32 = 60
 	_delay uint32 = 1000 / _fps
 )
 
