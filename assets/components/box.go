@@ -45,6 +45,42 @@ func CreateBox(params ...interface{}) engosdl.IComponent {
 	return NewBox("", nil, sdl.Color{}, false)
 }
 
+// DefaultAddDelegateToRegister will proceed to add default delegate to
+// register for the component.
+// It register to "collision" delegate.
+// It register to "out-of-bounds" delegate.
+func (c *Box) DefaultAddDelegateToRegister() {
+	// c.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, c.DefaultOnCollision)
+	c.AddDelegateToRegister(nil, nil, &OutOfBounds{}, c.DefaultOnOutOfBounds)
+}
+
+// // DefaultOnCollision checks when there is a collision with other entity.
+// func (c *Box) DefaultOnCollision(params ...interface{}) bool {
+// 	collisionEntityOne := params[0].(*engosdl.Entity)
+// 	collisionEntityTwo := params[1].(*engosdl.Entity)
+// 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
+// 		fmt.Printf("%s sprite onCollision %s with %s\n", c.GetEntity().GetName(), collisionEntityOne.GetName(), collisionEntityTwo.GetName())
+// 		if collisionEntityOne.GetDieOnCollision() {
+// 			engosdl.GetEngine().DestroyEntity(collisionEntityOne)
+// 		}
+// 		if collisionEntityTwo.GetDieOnCollision() {
+// 			engosdl.GetEngine().DestroyEntity(collisionEntityTwo)
+// 		}
+// 	}
+// 	return true
+// }
+
+// DefaultOnOutOfBounds checks if the entity has gone out of bounds.
+func (c *Box) DefaultOnOutOfBounds(params ...interface{}) bool {
+	if c.GetEntity().GetDieOnOutOfBounds() {
+		entity := params[0].(engosdl.IEntity)
+		if entity.GetID() == c.GetEntity().GetID() {
+			engosdl.GetEngine().DestroyEntity(c.GetEntity())
+		}
+	}
+	return true
+}
+
 // OnAwake should create all component resources that don't have any dependency
 // with any other component or entity.
 func (c *Box) OnAwake() {

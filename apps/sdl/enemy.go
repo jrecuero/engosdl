@@ -47,7 +47,6 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	// enemySprite := components.NewMultiSprite("enemy-sprite", []string{"images/basic_enemy.bmp"}, engine.GetRenderer())
 	// enemySprite := components.NewSpriteSheet("enemy-sprite", []string{"images/enemies.bmp"}, 3, engine.GetRenderer())
 	enemySprite := newEnemySprite("enemy-sprite", []string{"images/enemies.bmp"}, 3)
-	enemySprite.SetDestroyOnOutOfBounds(false)
 	// enemySprite.DefaultAddDelegateToRegister()
 	enemySprite.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, enemySprite.DefaultOnCollision)
 	enemySprite.AddDelegateToRegister(nil, enemy, &components.Timer{}, func(params ...interface{}) bool {

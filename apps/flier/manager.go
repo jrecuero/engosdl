@@ -51,7 +51,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		// })
 		playerKeyboard := components.NewKeyboard("player-keyboard")
 		playerKeyboard.DefaultAddDelegateToRegister()
-		playerMoveIt := components.NewMoveIt("player-move-it", engosdl.NewVector(2, 2))
+		playerMoveIt := components.NewMoveIt("player-move-it", engosdl.NewVector(5, 5))
 		playerMoveIt.DefaultAddDelegateToRegister()
 		playerMoveIt.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, func(params ...interface{}) bool {
 			c := playerMoveIt
@@ -118,21 +118,54 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 
 		wall1 := engosdl.NewEntity("wall1")
 		wall1.GetTransform().SetPosition(engosdl.NewVector(400, 200))
+		wall1.GetTransform().SetScaleXY(1, 4)
 		wall1.SetTag("wall")
-		wallBox := components.NewBox("wall1/box", &sdl.Rect{X: 0, Y: 0, W: 64, H: 64}, sdl.Color{B: 255}, true)
-		wallCollider2D := components.NewCollider2D("wall1/collider-2d")
-		wall1.AddComponent(wallBox)
-		wall1.AddComponent(wallCollider2D)
+		wall1.SetDieOnOutOfBounds(true)
+		wall1.AddComponent(components.NewBox("wall1/box", &sdl.Rect{X: 0, Y: 0, W: 64, H: 64}, sdl.Color{B: 255, A: 255}, true))
+		wall1.AddComponent(components.NewCollider2D("wall1/collider-2d"))
+		wall1.AddComponent(components.NewMoveTo("wall1/move-to", engosdl.NewVector(-2, 0)))
+		wall1.AddComponent(components.NewOutOfBounds("wall1/out-of-bounds", false))
+		// wall1.GetComponent(&components.Box{}).DefaultAddDelegateToRegister()
+		wall1.GetComponent(&components.Box{}).AddDelegateToRegister(nil, nil, &components.OutOfBounds{}, func(params ...interface{}) bool {
+			entity := params[0].(engosdl.IEntity)
+			outAt := params[1].(int)
+			if outAt == engosdl.Left {
+				if entity.GetID() == wall1.GetID() {
+					engosdl.GetEngine().DestroyEntity(wall1)
+				}
+			}
+			return true
+		})
 
 		wall2 := engosdl.NewEntity("wall2")
-		wall2.GetTransform().SetPosition(engosdl.NewVector(500, 100))
+		wall2.GetTransform().SetPosition(engosdl.NewVector(900, 0))
+		wall2.GetTransform().SetScaleXY(1, 3)
 		wall2.SetTag("wall")
-		wall2.AddComponent(components.NewBox("wall2/box", &sdl.Rect{W: 64, H: 64}, sdl.Color{G: 255}, true))
+		wall2.SetDieOnOutOfBounds(true)
+		wall2.AddComponent(components.NewBox("wall2/box", &sdl.Rect{W: 64, H: 64}, sdl.Color{G: 255, A: 255}, true))
 		wall2.AddComponent(components.NewCollider2D("wall2/collider-2d"))
+		wall2.AddComponent(components.NewMoveTo("wall2/move-to", engosdl.NewVector(-2, 0)))
+		wall2.AddComponent(components.NewOutOfBounds("wall2/out-of-bounds", false))
+		// wall2.GetComponent(&components.Box{}).DefaultAddDelegateToRegister()
+		wall2.GetComponent(&components.Box{}).AddDelegateToRegister(nil, nil, &components.OutOfBounds{}, func(params ...interface{}) bool {
+			entity := params[0].(engosdl.IEntity)
+			outAt := params[1].(int)
+			if outAt == engosdl.Left {
+				if entity.GetID() == wall2.GetID() {
+					engosdl.GetEngine().DestroyEntity(wall2)
+				}
+			}
+			return true
+		})
+
+		// line1 := engosdl.NewEntity("line/1")
+		// line1.GetTransform().SetPosition(engosdl.NewVector(100, 100))
+		// line1.AddComponent(components.NewLine("line/1/line", engosdl.NewVector(200, 100), sdl.Color{R: 255, A: 255}))
 
 		scene.AddEntity(h.player)
 		scene.AddEntity(wall1)
 		scene.AddEntity(wall2)
+		// scene.AddEntity(line1)
 
 		scene.SetCollisionMode(engosdl.ModeBox)
 		return true

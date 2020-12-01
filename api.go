@@ -33,7 +33,7 @@ func init() {
 
 // Frames per second constants.
 const (
-	_fps   uint32 = 60
+	_fps   uint32 = 30
 	_delay uint32 = 1000 / _fps
 )
 
@@ -59,6 +59,18 @@ const (
 	MoveLeft int = 4
 	// Move right in the screen (positive X axis).
 	MoveRight int = 8
+)
+
+// Location constants.
+const (
+	// Up location.
+	Up int = 1
+	// Down location.
+	Down int = 2
+	// Left location.
+	Left int = 3
+	// Right location.
+	Right int = 4
 )
 
 // Collision box modes.

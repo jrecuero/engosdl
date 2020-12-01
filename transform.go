@@ -11,9 +11,12 @@ type ITransform interface {
 	GetRotation() float64
 	GetScale() *Vector
 	SetDim(*Vector) ITransform
+	SetDimXY(float64, float64) ITransform
 	SetPosition(*Vector) ITransform
+	SetPositionXY(float64, float64) ITransform
 	SetRotation(float64) ITransform
 	SetScale(*Vector) ITransform
+	SetScaleXY(float64, float64) ITransform
 }
 
 // Transform is the default implementation for ITransform interface.
@@ -76,10 +79,22 @@ func (t *Transform) SetDim(v *Vector) ITransform {
 	return t
 }
 
+// SetDimXY sets the transform original dimensions providing values for
+// X-axis and Y-axis.
+func (t *Transform) SetDimXY(x float64, y float64) ITransform {
+	return t.SetDim(NewVector(x, y))
+}
+
 // SetPosition sets the transform position.
 func (t *Transform) SetPosition(v *Vector) ITransform {
 	t.Position = v
 	return t
+}
+
+// SetPositionXY sets the transform position providing values for X-axis
+// and Y-axis.
+func (t *Transform) SetPositionXY(x float64, y float64) ITransform {
+	return t.SetPosition(NewVector(x, y))
 }
 
 // SetRotation sets the transform rotation.
@@ -92,4 +107,10 @@ func (t *Transform) SetRotation(r float64) ITransform {
 func (t *Transform) SetScale(v *Vector) ITransform {
 	t.Scale = v
 	return t
+}
+
+// SetScaleXY sets the transform scale providing values for X-axis and
+// Y-scale.
+func (t *Transform) SetScaleXY(x float64, y float64) ITransform {
+	return t.SetScale(NewVector(x, y))
 }

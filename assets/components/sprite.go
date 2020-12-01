@@ -21,18 +21,17 @@ func init() {
 // sprites, which can be animated.
 type Sprite struct {
 	*engosdl.Component
-	Filenames            []string `json:"filenames"`
-	width                int32
-	height               int32
-	renderer             *sdl.Renderer
-	textures             []*sdl.Texture
-	DestroyOnOutOfBounds bool `json:"destroy-on-out-of-bounds"`
-	camera               *sdl.Rect
-	fileImageIndex       int
-	SpriteTotal          int `json:"sprite-total"`
-	spriteIndex          int
-	resources            []engosdl.IResource
-	Format               int `json:"format"`
+	Filenames      []string `json:"filenames"`
+	width          int32
+	height         int32
+	renderer       *sdl.Renderer
+	textures       []*sdl.Texture
+	camera         *sdl.Rect
+	fileImageIndex int
+	SpriteTotal    int `json:"sprite-total"`
+	spriteIndex    int
+	resources      []engosdl.IResource
+	Format         int `json:"format"`
 }
 
 var _ engosdl.ISprite = (*Sprite)(nil)
@@ -43,17 +42,16 @@ var _ engosdl.ISprite = (*Sprite)(nil)
 func NewSprite(name string, filenames []string, numberOfSprites int, format int) *Sprite {
 	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", name).Msg("new sprite")
 	result := &Sprite{
-		Component:            engosdl.NewComponent(name),
-		Filenames:            filenames,
-		renderer:             engosdl.GetRenderer(),
-		textures:             []*sdl.Texture{},
-		DestroyOnOutOfBounds: true,
-		camera:               nil,
-		fileImageIndex:       0,
-		SpriteTotal:          numberOfSprites,
-		spriteIndex:          0,
-		resources:            []engosdl.IResource{},
-		Format:               format,
+		Component:      engosdl.NewComponent(name),
+		Filenames:      filenames,
+		renderer:       engosdl.GetRenderer(),
+		textures:       []*sdl.Texture{},
+		camera:         nil,
+		fileImageIndex: 0,
+		SpriteTotal:    numberOfSprites,
+		spriteIndex:    0,
+		resources:      []engosdl.IResource{},
+		Format:         format,
 	}
 	return result
 }
@@ -95,7 +93,7 @@ func (c *Sprite) DefaultOnCollision(params ...interface{}) bool {
 
 // DefaultOnOutOfBounds checks if the entity has gone out of bounds.
 func (c *Sprite) DefaultOnOutOfBounds(params ...interface{}) bool {
-	if c.DestroyOnOutOfBounds {
+	if c.GetEntity().GetDieOnOutOfBounds() {
 		entity := params[0].(engosdl.IEntity)
 		if entity.GetID() == c.GetEntity().GetID() {
 			engosdl.GetEngine().DestroyEntity(c.GetEntity())
@@ -236,12 +234,6 @@ func (c *Sprite) SetCamera(camera *sdl.Rect) {
 	c.camera = camera
 }
 
-// SetDestroyOnOutOfBounds sets internal attribute used to destroy sprite when
-// it is out of bounds or no.
-func (c *Sprite) SetDestroyOnOutOfBounds(destroy bool) {
-	c.DestroyOnOutOfBounds = destroy
-}
-
 // Unmarshal takes information from a ComponentToUnmarshal instance and
 //  creates a new component instance.
 func (c *Sprite) Unmarshal(data map[string]interface{}) {
@@ -252,6 +244,5 @@ func (c *Sprite) Unmarshal(data map[string]interface{}) {
 		c.Filenames = append(c.Filenames, filename.(string))
 	}
 	c.SpriteTotal = int(data["sprite-total"].(float64))
-	c.DestroyOnOutOfBounds = data["destroy-on-out-of-bounds"].(bool)
 	c.Format = int(data["format"].(float64))
 }

@@ -399,6 +399,7 @@ func (scene *Scene) OnAfterUpdate() {
 				scene.unloadedEntities = append(scene.unloadedEntities[:index], scene.unloadedEntities[index+1:]...)
 			}
 			entity.DoUnLoad()
+			entity.DoDestroy()
 		}
 		scene.toDeleteEntities = []IEntity{}
 	}

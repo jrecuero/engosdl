@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/jrecuero/engosdl"
@@ -61,22 +60,35 @@ func (c *OutOfBounds) OnUpdate() {
 	W := engosdl.GetEngine().GetWidth()
 	H := engosdl.GetEngine().GetHeight()
 	x, y, w, h := c.GetEntity().GetTransform().GetRectExt()
-	var testX, testY bool
+	var testLeft, testRight, testUp, testDown bool
 	if c.LeftCorner {
-		testX = x < 0 || int32(x+w) > W
-		testY = y < 0 || int32(y+h) > H
+		// testX = x < 0 || int32(x+w) > W
+		// testY = y < 0 || int32(y+h) > H
+		testLeft = x < 0
+		testRight = int32(x+w) > W
+		testUp = y < 0
+		testDown = int32(y+h) > H
 	} else {
-		testX = (x+w) < 0 || int32(x) > W
-		testY = (y+h) < 0 || int32(y) > H
+		testLeft = (x + w) < 0
+		testRight = int32(x) > W
+		testUp = (y + h) < 0
+		testDown = int32(y) > H
 	}
-	if testX {
+	if testLeft {
 		// fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), x)
-		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.GetEntity())
-
+		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.GetEntity(), engosdl.Left)
 	}
-	if testY {
-		fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), y)
-		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.GetEntity())
+	if testRight {
+		// fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), x)
+		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.GetEntity(), engosdl.Right)
+	}
+	if testUp {
+		// fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), y)
+		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.GetEntity(), engosdl.Up)
+	}
+	if testDown {
+		// fmt.Printf("[OutOfBounds] %s out of bounds %f\n", c.GetEntity().GetName(), y)
+		engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, c.GetEntity(), engosdl.Down)
 	}
 }
 

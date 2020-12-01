@@ -55,6 +55,7 @@ type IEntity interface {
 	GetComponents() []IComponent
 	GetDelegateForComponent(IComponent) IDelegate
 	GetDieOnCollision() bool
+	GetDieOnOutOfBounds() bool
 	GetLayer() int
 	GetParent() IEntity
 	GetRenderable() bool
@@ -69,6 +70,7 @@ type IEntity interface {
 	RemoveComponents() bool
 	SetActive(bool) IEntity
 	SetDieOnCollision(bool) IEntity
+	SetDieOnOutOfBounds(bool) IEntity
 	SetLayer(int) IEntity
 	SetParent(IEntity) IEntity
 	SetRenderable(bool)
@@ -92,6 +94,7 @@ type Entity struct {
 	loadedComponents   []IComponent
 	unloadedComponents []IComponent
 	DieOnCollision     bool `json:"die-on-collision"`
+	DieOnOutOfBounds   bool `json:"die-on-out-of-bounds"`
 }
 
 var _ IEntity = (*Entity)(nil)
@@ -113,6 +116,7 @@ func NewEntity(name string) *Entity {
 		loadedComponents:   []IComponent{},
 		unloadedComponents: []IComponent{},
 		DieOnCollision:     false,
+		DieOnOutOfBounds:   false,
 	}
 }
 
@@ -163,18 +167,14 @@ func (entity *Entity) DeleteChildByName(name string) bool {
 // DoDestroy calls all methods to clean up entity.
 func (entity *Entity) DoDestroy() {
 	Logger.Trace().Str("entity", entity.GetName()).Msg("DoDestroy")
-	entity.SetLoaded(false)
-	for _, component := range entity.loadedComponents {
+	for _, component := range entity.GetComponents() {
 		component.DoDestroy()
 	}
-	entity.unloadedComponents = []IComponent{}
-	for _, component := range entity.GetComponents() {
-		if !component.GetRemoveOnDestroy() {
-			entity.unloadedComponents = append(entity.unloadedComponents, component)
-		}
-	}
-	entity.components = entity.unloadedComponents
-	entity.loadedComponents = []IComponent{}
+	// for _, component := range entity.GetComponents() {
+	// 	if !component.GetRemoveOnDestroy() {
+	// 		entity.unloadedComponents = append(entity.unloadedComponents, component)
+	// 	}
+	// }
 }
 
 // DoDump dumps entity in JSON format.
@@ -319,6 +319,12 @@ func (entity *Entity) GetDieOnCollision() bool {
 	return entity.DieOnCollision
 }
 
+// GetDieOnOutOfBounds returns if the entity should be destroyed when it
+// is out of bounds.
+func (entity *Entity) GetDieOnOutOfBounds() bool {
+	return entity.DieOnOutOfBounds
+}
+
 // GetLayer returns the  layer where the entity has been placed.
 func (entity *Entity) GetLayer() int {
 	return entity.Layer
@@ -442,6 +448,13 @@ func (entity *Entity) SetDieOnCollision(die bool) IEntity {
 	return entity
 }
 
+// SetDieOnOutOfBounds sets if the entity should be destroyed if it is out
+// of bounds.
+func (entity *Entity) SetDieOnOutOfBounds(die bool) IEntity {
+	entity.DieOnOutOfBounds = die
+	return entity
+}
+
 // SetLayer sets the entity layer where it will be placed.
 func (entity *Entity) SetLayer(layer int) IEntity {
 	entity.Layer = layer
@@ -480,6 +493,8 @@ func (entity *Entity) Unmarshal(instance *EntityToUnmarshal) {
 	entity.SetTag(obj["tag"].(string))
 	entity.SetLayer(int(obj["layer"].(float64)))
 	entity.SetRenderable(obj["renderable"].(bool))
+	entity.SetDieOnCollision(obj["die-on-collision"].(bool))
+	entity.SetDieOnOutOfBounds(obj["die-on-out-of-bounds"].(bool))
 	position := obj["transform"].(map[string]interface{})["position"].(map[string]interface{})
 	scale := obj["transform"].(map[string]interface{})["scale"].(map[string]interface{})
 	dimension := obj["transform"].(map[string]interface{})["dimension"].(map[string]interface{})

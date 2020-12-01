@@ -32,13 +32,12 @@ func NewScrollSprite(name string, filename string, format int) *ScrollSprite {
 		// onCollision, and by default scroll sprite does not want to register
 		// to any of then.
 		Sprite: &Sprite{
-			Component:            engosdl.NewComponent(name),
-			Filenames:            []string{filename},
-			renderer:             engosdl.GetRenderer(),
-			DestroyOnOutOfBounds: true,
-			camera:               nil,
-			SpriteTotal:          1,
-			Format:               format,
+			Component:   engosdl.NewComponent(name),
+			Filenames:   []string{filename},
+			renderer:    engosdl.GetRenderer(),
+			camera:      nil,
+			SpriteTotal: 1,
+			Format:      format,
 		},
 		Scroll: engosdl.NewVector(0, -1),
 	}
@@ -115,6 +114,5 @@ func (c *ScrollSprite) Unmarshal(data map[string]interface{}) {
 	c.SpriteTotal = int(data["sprite-total"].(float64))
 	scroll := data["scroll"].(map[string]interface{})
 	c.SetScroll(engosdl.NewVector(scroll["X"].(float64), scroll["Y"].(float64)))
-	c.DestroyOnOutOfBounds = data["destroy-on-out-of-bounds"].(bool)
 	c.Format = int(data["format"].(float64))
 }

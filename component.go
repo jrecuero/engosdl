@@ -66,7 +66,6 @@ type ISprite interface {
 	PreviousFileImage() int
 	PreviousSprite() int
 	SetCamera(*sdl.Rect)
-	SetDestroyOnOutOfBounds(bool)
 }
 
 // IText represents the interface for any text component.

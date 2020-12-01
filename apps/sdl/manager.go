@@ -59,7 +59,6 @@ func (h *GameManager) CreateAssets() {
 func (h *GameManager) createEntityPlayer() engosdl.IEntity {
 	h.player.GetTransform().SetPosition(engosdl.NewVector(float64(h.engine.GetWidth())/2, float64(h.engine.GetHeight()-125)))
 	playerSprite := components.NewSprite("player-sprite", []string{"images/player.bmp"}, 1, engosdl.FormatBMP)
-	playerSprite.SetDestroyOnOutOfBounds(false)
 	playerSprite.DefaultAddDelegateToRegister()
 	playerKeyboard := components.NewKeyboard("player-keyboard")
 	playerKeyboard.DefaultAddDelegateToRegister()
