@@ -24,7 +24,7 @@ func createEntityBackground(engine *engosdl.Engine, filename string) engosdl.IEn
 // createWinner creates text at the end of battle scene.
 func createWinner(engine *engosdl.Engine) engosdl.IEntity {
 	winner := engosdl.NewEntity("winner")
-	winnerKeyboard := components.NewKeyboard("winner-keyboard")
+	winnerKeyboard := components.NewKeyboard("winner-keyboard", map[int]bool{sdl.SCANCODE_RETURN: false})
 	winnerKeyboard.DefaultAddDelegateToRegister()
 	winnerText := components.NewText("winner-text", "fonts/lato.ttf", 24, sdl.Color{R: 0, G: 0, B: 255}, "You Won..\ntype any key")
 	winnerText.DefaultAddDelegateToRegister()

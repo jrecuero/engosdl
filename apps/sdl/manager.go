@@ -60,7 +60,7 @@ func (h *GameManager) createEntityPlayer() engosdl.IEntity {
 	h.player.GetTransform().SetPosition(engosdl.NewVector(float64(h.engine.GetWidth())/2, float64(h.engine.GetHeight()-125)))
 	playerSprite := components.NewSprite("player-sprite", []string{"images/player.bmp"}, 1, engosdl.FormatBMP)
 	playerSprite.DefaultAddDelegateToRegister()
-	playerKeyboard := components.NewKeyboard("player-keyboard")
+	playerKeyboard := components.NewKeyboard("player-keyboard", map[int]bool{sdl.SCANCODE_RETURN: false})
 	playerKeyboard.DefaultAddDelegateToRegister()
 	playerKeyShooter := components.NewKeyShooter("player-key-shooter", sdl.SCANCODE_SPACE)
 	playerKeyShooter.DefaultAddDelegateToRegister()
@@ -127,7 +127,7 @@ func (h *GameManager) createScenePlay(bgFilename string, maxEnemies int) func(en
 		enemies := createEnemies(engine, maxEnemies, enemyController)
 		h.createEntityScore()
 		sceneController := engosdl.NewEntity("scene-controller")
-		sceneControllerKeyboard := components.NewKeyboard("scene-controller-keyboard")
+		sceneControllerKeyboard := components.NewKeyboard("scene-controller-keyboard", map[int]bool{sdl.SCANCODE_RETURN: false})
 		sceneControllerKeyboard.DefaultAddDelegateToRegister()
 		// sceneControllerComponent := engosdl.NewComponent("scene-controller-controller")
 		sceneControllerComponent := components.NewSceneController("scene-controller-component")
@@ -175,7 +175,7 @@ func (h *GameManager) createSceneStats(engine *engosdl.Engine, scene engosdl.ISc
 		}
 		return true
 	})
-	messageKeyboard := components.NewKeyboard("title-keyboard")
+	messageKeyboard := components.NewKeyboard("title-keyboard", map[int]bool{sdl.SCANCODE_RETURN: false})
 	messageKeyboard.DefaultAddDelegateToRegister()
 
 	message.AddComponent(messageText)

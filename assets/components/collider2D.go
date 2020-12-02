@@ -17,38 +17,39 @@ func init() {
 	}
 }
 
-type collisionBox struct {
+// CollisionBox identify the model to be used for collisions.
+type CollisionBox struct {
 	rect   *sdl.Rect
 	center *engosdl.Vector
 	radius float64
 }
 
 // GetRect returns collision box rectangle.
-func (c *collisionBox) GetRect() *sdl.Rect {
+func (c *CollisionBox) GetRect() *sdl.Rect {
 	return c.rect
 }
 
 // GetCenter returns collision box center point as a vector.
-func (c *collisionBox) GetCenter() *engosdl.Vector {
+func (c *CollisionBox) GetCenter() *engosdl.Vector {
 	return c.center
 }
 
 // GetRadius returns collision box radius.
-func (c *collisionBox) GetRadius() float64 {
+func (c *CollisionBox) GetRadius() float64 {
 	return c.radius
 }
 
 // Collider2D represents a component that check for 2D collisions.
 type Collider2D struct {
 	*engosdl.Component
-	collisionBox *collisionBox
+	collisionBox *CollisionBox
 }
 
 // NewCollider2D create a new collider-2D instance.
 func NewCollider2D(name string) *Collider2D {
 	return &Collider2D{
 		Component:    engosdl.NewComponent(name),
-		collisionBox: &collisionBox{},
+		collisionBox: &CollisionBox{},
 	}
 }
 

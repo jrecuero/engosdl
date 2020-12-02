@@ -32,7 +32,7 @@ func createSceneTitle(engine *engosdl.Engine, scene engosdl.IScene) bool {
 		}
 		return true
 	})
-	titleKeyboard := components.NewKeyboard("title-keyboard")
+	titleKeyboard := components.NewKeyboard("title-keyboard", map[int]bool{sdl.SCANCODE_RETURN: false})
 	titleKeyboard.DefaultAddDelegateToRegister()
 	titleOutOfBounds := components.NewOutOfBounds("title-out-of-bounds", true)
 	titleOutOfBounds.DefaultAddDelegateToRegister()

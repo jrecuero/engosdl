@@ -27,7 +27,7 @@ func TestComponent_ConvertToJSON(t *testing.T) {
 
 	player := engosdl.NewEntity("player")
 	cp1 := components.NewEntityStats("player-stats", 100)
-	cp2 := components.NewKeyboard("player-keyboard")
+	cp2 := components.NewKeyboard("player-keyboard", map[int]bool{})
 	player.AddComponent(cp1)
 	player.AddComponent(cp2)
 	fmt.Printf("%#+v\n", player)
