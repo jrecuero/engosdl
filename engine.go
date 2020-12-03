@@ -1,6 +1,10 @@
 package engosdl
 
 import (
+	"fmt"
+	"net/http"
+
+	"github.com/gorilla/mux"
 	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
@@ -21,6 +25,7 @@ type Engine struct {
 	sceneManager    ISceneManager
 	soundManager    ISoundManager
 	gameManager     IGameManager
+	debugServer     bool
 }
 
 // NewEngine creates a new engine instance.
@@ -41,6 +46,7 @@ func NewEngine(name string, w, h int32, gameManager IGameManager) *Engine {
 			sceneManager:    NewSceneManager("engine-scene-manager"),
 			soundManager:    NewSoundManager("engine-sound-manager"),
 			gameManager:     gameManager,
+			debugServer:     false,
 		}
 	}
 	return gameEngine
@@ -87,6 +93,32 @@ func (engine *Engine) DoInit() {
 	engine.DoInitSdl()
 	engine.DoInitResources()
 	engine.GetGameManager().DoInit()
+}
+
+// DoInitDebugServer initializes the debug server.
+func (engine *Engine) DoInitDebugServer() {
+	if !engine.debugServer {
+		engine.debugServer = true
+		fmt.Printf("init debug server %s", engine.name)
+		go func() {
+			router := mux.NewRouter().StrictSlash(true)
+			router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprintf(w, "debug server %s\n", engine.name)
+				fmt.Printf("debug server %s home page\n", engine.name)
+			})
+			router.HandleFunc("/scene", func(w http.ResponseWriter, r *http.Request) {
+				scene := engine.GetSceneManager().GetActiveScene()
+				fmt.Fprintf(w, "active scene: %s\n", scene.GetName())
+			})
+			router.HandleFunc("/entities", func(w http.ResponseWriter, r *http.Request) {
+				scene := engine.GetSceneManager().GetActiveScene()
+				for _, entity := range scene.GetEntities() {
+					fmt.Fprintf(w, "entity %s: %t\n", entity.GetName(), entity.GetActive())
+				}
+			})
+			Logger.Error().Err(http.ListenAndServe("localhost:6060", router))
+		}()
+	}
 }
 
 // DoInitResources initializes all internal resources, like scene handler and
@@ -269,6 +301,7 @@ func (engine *Engine) RunEngine(scene IScene) bool {
 	engine.DoInit()
 	engine.GetGameManager().CreateAssets()
 	engine.DoStart(scene)
+	engine.DoInitDebugServer()
 	engine.DoRun()
 	engine.DoCleanup()
 	return true
