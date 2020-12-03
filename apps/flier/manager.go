@@ -38,19 +38,27 @@ func (h *GameManager) createBullet() engosdl.IEntity {
 	bullet.SetTag("bullet")
 	bullet.SetLayer(engosdl.LayerBottom)
 	box := components.NewBox("bullet-box", &sdl.Rect{W: 10, H: 10}, sdl.Color{R: 255}, true)
-	box.DefaultAddDelegateToRegister()
 	body := components.NewBody("bullet-body", true)
 	move := components.NewMoveTo("bullet-move", engosdl.NewVector(10, 0))
 	bullet.AddComponent(box)
 	bullet.AddComponent(body)
 	bullet.AddComponent(move)
+	bullet.GetComponent(&components.Box{}).AddDelegateToRegister(nil, nil, &components.Body{}, func(params ...interface{}) bool {
+		entity := params[0].(engosdl.IEntity)
+		if outAt := params[2].(int); outAt == engosdl.Right {
+			if entity.GetID() == bullet.GetID() {
+				engosdl.GetEngine().DestroyEntity(bullet)
+			}
+		}
+		return true
+	})
 	return bullet
 }
 
 // createCoin creates every coin in the scene.
 func (h *GameManager) createCoin() engosdl.IEntity {
 	coin := engosdl.NewEntity("coin")
-	coin.GetTransform().SetPositionXY(900.0, 200.0)
+	coin.GetTransform().SetPositionXY(800.0, 200.0)
 	coin.SetTag("coin")
 	coin.SetDieOnOutOfBounds(true)
 	coin.AddComponent(components.NewBox("coin/box", &sdl.Rect{W: 32, H: 32}, sdl.Color{B: 255}, true))
@@ -58,7 +66,7 @@ func (h *GameManager) createCoin() engosdl.IEntity {
 	coin.AddComponent(components.NewMoveTo("coin/move-to", engosdl.NewVector(-1, 0)))
 	coin.GetComponent(&components.Box{}).AddDelegateToRegister(nil, nil, &components.Body{}, func(params ...interface{}) bool {
 		entity := params[0].(engosdl.IEntity)
-		if outAt := params[1].(int); outAt == engosdl.Left {
+		if outAt := params[2].(int); outAt == engosdl.Left {
 			if entity.GetID() == coin.GetID() {
 				engosdl.GetEngine().DestroyEntity(coin)
 			}
@@ -121,11 +129,15 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		})
 		waller.AddComponent(wallerCaller)
 
+		trigger := false
 		coiner := engosdl.NewEntity("coiner")
 		coiner.AddComponent(components.NewTimer("coiner-timer", 200))
 		coinerCaller := engosdl.NewComponent("cointer-caller")
 		coinerCaller.AddDelegateToRegister(nil, nil, &components.Timer{}, func(params ...interface{}) bool {
-			scene.AddEntity(h.createCoin())
+			if !trigger {
+				scene.AddEntity(h.createCoin())
+				trigger = true
+			}
 			return true
 		})
 		coiner.AddComponent(coinerCaller)
@@ -148,7 +160,7 @@ func (h *GameManager) createWall() engosdl.IEntity {
 		pos = 400 - length*64
 	}
 	wall := engosdl.NewEntity("wall2")
-	wall.GetTransform().SetPosition(engosdl.NewVector(900, float64(pos)))
+	wall.GetTransform().SetPosition(engosdl.NewVector(800, float64(pos)))
 	wall.GetTransform().SetScaleXY(1, float64(length))
 	wall.SetTag("wall")
 	wall.SetDieOnOutOfBounds(true)
