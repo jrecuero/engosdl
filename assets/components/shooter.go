@@ -2,8 +2,10 @@ package components
 
 import (
 	"reflect"
+	"time"
 
 	"github.com/jrecuero/engosdl"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 // ShooterSignatureT is the type used to pass the function called to create
@@ -23,8 +25,10 @@ func init() {
 type Shooter struct {
 	*engosdl.Component
 	// delegate engosdl.IDelegate
-	counter   int
+	// counter   int
 	newBullet ShooterSignatureT
+	Cooldown  time.Duration `json:"cool-down"`
+	lastshoot time.Time
 }
 
 // NewShooter creates a instance of shooter.
@@ -33,7 +37,10 @@ func NewShooter(name string, newBullet ShooterSignatureT) *Shooter {
 	engosdl.Logger.Trace().Str("component", "shoot-bullet").Str("shoot-bullet", name).Msg("new shoot-bullet")
 	result := &Shooter{
 		Component: engosdl.NewComponent(name),
+		// counter:   0,
 		newBullet: newBullet,
+		Cooldown:  500 * time.Millisecond,
+		lastshoot: time.Now(),
 	}
 	return result
 }
@@ -60,32 +67,40 @@ func (c *Shooter) OnStart() {
 }
 
 // ShooterSignature trigger a bullet.
-func (c *Shooter) ShooterSignature(...interface{}) bool {
-	x, y := c.GetEntity().GetTransform().GetPosition().Get()
-	w, h := c.GetEntity().GetTransform().GetDim().Get()
-	c.counter++
-	// bullet := engosdl.NewEntity("bullet" + strconv.Itoa(c.counter))
-	// bullet.SetTag("bullet")
-	// bullet.SetParent(c.GetEntity())
-	// bulletSprite := NewSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, 1, engosdl.FormatBMP)
-	// bulletSprite.DefaultAddDelegateToRegister()
-	// bulletMoveTo := NewMoveTo("bullet-move-to", c.Speed)
-	// bulletMoveTo.DefaultAddDelegateToRegister()
-	// bulletOutOfBounds := NewOutOfBounds("bullet-out-of-bounds", false)
-	// bulletOutOfBounds.DefaultAddDelegateToRegister()
-	// bulletCollider2D := NewCollider2D("bullet-collider-2D")
-	// bulletCollider2D.DefaultAddDelegateToRegister()
-	// bullet.SetLayer(engosdl.LayerBottom)
-	// bullet.AddComponent(bulletSprite)
-	// bullet.AddComponent(bulletMoveTo)
-	// bullet.AddComponent(bulletOutOfBounds)
-	// bullet.AddComponent(bulletCollider2D)
-	// bulletSprite.LoadSprite()
-	bullet := c.newBullet()
-	bulletW, bulletH := bullet.GetTransform().GetDim().Get()
-	bullet.GetTransform().SetPosition(engosdl.NewVector((x + w/2 - bulletW/2), (y + h/2 - bulletH/2)))
-	bullet.SetDieOnCollision(false)
-	c.GetEntity().GetScene().AddEntity(bullet)
+func (c *Shooter) ShooterSignature(params ...interface{}) bool {
+	if time.Since(c.lastshoot) >= c.Cooldown {
+		if len(params) == 1 {
+			if key, ok := params[0].(int); ok && key == sdl.SCANCODE_SPACE {
+				x, y := c.GetEntity().GetTransform().GetPosition().Get()
+				w, h := c.GetEntity().GetTransform().GetDim().Get()
+				// c.counter++
+				// bullet := engosdl.NewEntity("bullet" + strconv.Itoa(c.counter))
+				// bullet.SetTag("bullet")
+				// bullet.SetParent(c.GetEntity())
+				// bulletSprite := NewSprite("bullet-sprite", []string{"images/player_bullet.bmp"}, 1, engosdl.FormatBMP)
+				// bulletSprite.DefaultAddDelegateToRegister()
+				// bulletMoveTo := NewMoveTo("bullet-move-to", c.Speed)
+				// bulletMoveTo.DefaultAddDelegateToRegister()
+				// bulletOutOfBounds := NewOutOfBounds("bullet-out-of-bounds", false)
+				// bulletOutOfBounds.DefaultAddDelegateToRegister()
+				// bulletCollider2D := NewCollider2D("bullet-collider-2D")
+				// bulletCollider2D.DefaultAddDelegateToRegister()
+				// bullet.SetLayer(engosdl.LayerBottom)
+				// bullet.AddComponent(bulletSprite)
+				// bullet.AddComponent(bulletMoveTo)
+				// bullet.AddComponent(bulletOutOfBounds)
+				// bullet.AddComponent(bulletCollider2D)
+				// bulletSprite.LoadSprite()
+				bullet := c.newBullet()
+				bulletW, bulletH := bullet.GetTransform().GetDim().Get()
+				bullet.SetParent(c.GetEntity())
+				bullet.GetTransform().SetPosition(engosdl.NewVector((x + w/2 - bulletW/2), (y + h/2 - bulletH/2)))
+				bullet.SetDieOnCollision(false)
+				c.GetEntity().GetScene().AddEntity(bullet)
+				c.lastshoot = time.Now()
+			}
+		}
+	}
 	return true
 }
 

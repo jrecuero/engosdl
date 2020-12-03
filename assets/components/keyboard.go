@@ -25,6 +25,15 @@ var KeyboardStandardMove map[int]bool = map[int]bool{
 	sdl.SCANCODE_DOWN:  true,
 }
 
+// KeyboardStandardMoveAndShoot contains all directional keys and space.
+var KeyboardStandardMoveAndShoot map[int]bool = map[int]bool{
+	sdl.SCANCODE_LEFT:  true,
+	sdl.SCANCODE_RIGHT: true,
+	sdl.SCANCODE_UP:    true,
+	sdl.SCANCODE_DOWN:  true,
+	sdl.SCANCODE_SPACE: true,
+}
+
 // Keyboard represents a component that can take keyboard input
 type Keyboard struct {
 	*engosdl.Component

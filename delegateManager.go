@@ -325,28 +325,9 @@ func (h *DelegateManager) RegisterToDelegate(obj IObject, delegate IDelegate, si
 }
 
 // TriggerDelegate calls all signatures registered to a given delegate.
+// Boolean parameter identifies if the notification should call all methods
+// registered at this time or after all updates have been executed.
 func (h *DelegateManager) TriggerDelegate(delegate IDelegate, now bool, params ...interface{}) {
-	// for _, register := range h.registers {
-	// 	if register.GetDelegate() != nil && register.GetDelegate().GetID() == delegate.GetID() {
-	// 		// Check if the entity for the component in the register belongs
-	// 		// to the active scene.
-	// 		if source, ok := register.GetObject().(IComponent); ok {
-	// 			entity := source.GetEntity()
-	// 			if entity.GetScene().GetID() != GetSceneManager().GetActiveScene().GetID() {
-	// 				continue
-	// 			}
-	// 		}
-	// 		if now {
-	// 			register.GetSignature()(params...)
-	// 		} else {
-	// 			storeRegister := NewRegister(register.GetName(), register.GetObject(), register.GetEntity(), register.GetComponent(), register.GetDelegate(), register.GetSignature())
-	// 			storeRegister.SetRegisterID(register.GetRegisterID())
-	// 			storeRegister.SetParams(params)
-	// 			h.toBeCalled = append(h.toBeCalled, storeRegister)
-	// 		}
-	// 	}
-	// }
-	// return
 	h.TriggerDelegateFor(delegate, []IEntity{}, now, params...)
 }
 
