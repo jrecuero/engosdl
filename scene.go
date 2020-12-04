@@ -149,6 +149,9 @@ func (scene *Scene) DeleteEntity(entity IEntity) bool {
 			// Entity to be deleted in OnAfterUpdate method.
 			// scene.Entities = append(scene.Entities[:i], scene.Entities[i+1:]...)
 			scene.toDeleteEntities = append(scene.toDeleteEntities, entity)
+			for _, child := range entity.GetChildren() {
+				scene.toDeleteEntities = append(scene.toDeleteEntities, child)
+			}
 			// Remove collider from the collision collection, so there is not
 			// more checks between this collider and other other one.
 			if index, ok := scene.getIndexInCollisionCollectionByEntity(entity); ok {
@@ -326,7 +329,19 @@ func (scene *Scene) getIndexInCollisionCollectionByEntity(entity IEntity) (int, 
 	return -1, false
 }
 
-// getIndexInLoadedEntity return the index for the given entity in
+// getIndexInLayer returns the index for the given entity in layers array.
+func (scene *Scene) getIndexInLayer(entity IEntity) (int, int, bool) {
+	for ilayer, layer := range scene.layers {
+		for i, ent := range layer {
+			if ent.GetID() == entity.GetID() {
+				return ilayer, i, true
+			}
+		}
+	}
+	return -1, -1, false
+}
+
+// getIndexInLoadedEntity returns the index for the given entity in
 // loadedEntity array.
 func (scene *Scene) getIndexInLoadedEntity(entity IEntity) (int, bool) {
 	for i, obj := range scene.loadedEntities {
@@ -337,7 +352,7 @@ func (scene *Scene) getIndexInLoadedEntity(entity IEntity) (int, bool) {
 	return -1, false
 }
 
-// getIndexInUnloadedEntity return the index for the given entity in
+// getIndexInUnloadedEntity returns the index for the given entity in
 // unloadedEntity array.
 func (scene *Scene) getIndexInUnloadedEntity(entity IEntity) (int, bool) {
 	for i, obj := range scene.unloadedEntities {
@@ -398,6 +413,9 @@ func (scene *Scene) OnAfterUpdate() {
 			}
 			if index, ok := scene.getIndexInUnloadedEntity(entity); ok {
 				scene.unloadedEntities = append(scene.unloadedEntities[:index], scene.unloadedEntities[index+1:]...)
+			}
+			if ilayer, index, ok := scene.getIndexInLayer(entity); ok {
+				scene.layers[ilayer] = append(scene.layers[ilayer][:index], scene.layers[ilayer][index+1:]...)
 			}
 			entity.DoUnLoad()
 			entity.DoDestroy()
