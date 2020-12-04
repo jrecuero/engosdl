@@ -69,6 +69,7 @@ type IEntity interface {
 	RemoveComponent(IComponent) bool
 	RemoveComponents() bool
 	SetActive(bool) IEntity
+	SetCustomOnUpdate(func(IEntity))
 	SetDieOnCollision(bool) IEntity
 	SetDieOnOutOfBounds(bool) IEntity
 	SetLayer(int) IEntity
@@ -95,6 +96,7 @@ type Entity struct {
 	unloadedComponents []IComponent
 	DieOnCollision     bool `json:"die-on-collision"`
 	DieOnOutOfBounds   bool `json:"die-on-out-of-bounds"`
+	customOnUpdate     func(IEntity)
 }
 
 var _ IEntity = (*Entity)(nil)
@@ -117,12 +119,16 @@ func NewEntity(name string) *Entity {
 		unloadedComponents: []IComponent{},
 		DieOnCollision:     false,
 		DieOnOutOfBounds:   false,
+		customOnUpdate:     nil,
 	}
 }
 
 // AddChild adds a new child to entity children.
 func (entity *Entity) AddChild(child IEntity) bool {
 	entity.children = append(entity.children, child)
+	child.SetParent(entity)
+	// Child entity inherits layer from parent.
+	child.SetLayer(entity.GetLayer())
 	return true
 }
 
@@ -407,6 +413,9 @@ func (entity *Entity) OnUpdate() {
 			component.OnUpdate()
 		}
 	}
+	if entity.customOnUpdate != nil {
+		entity.customOnUpdate(entity)
+	}
 }
 
 // RemoveComponent removes the given component.
@@ -440,6 +449,11 @@ func (entity *Entity) RemoveComponents() bool {
 func (entity *Entity) SetActive(active bool) IEntity {
 	entity.active = active
 	return entity
+}
+
+// SetCustomOnUpdate sets a custom method to be called OnUpdate.
+func (entity *Entity) SetCustomOnUpdate(customCall func(IEntity)) {
+	entity.customOnUpdate = customCall
 }
 
 // SetDieOnCollision sets if the entity should be destroyed in any collision.

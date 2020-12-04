@@ -34,6 +34,7 @@ type IComponent interface {
 	OnUpdate()
 	RemoveDelegateToRegister(IDelegate, IEntity, IComponent) error
 	SetActive(bool)
+	SetCustomOnUpdate(func(IComponent))
 	SetDelegate(IDelegate)
 	SetEntity(IEntity)
 	SetRemoveOnDestroy(bool)
@@ -83,6 +84,7 @@ type Component struct {
 	delegate        IDelegate
 	registers       []IRegister
 	removeOnDestroy bool
+	customOnUpdate  func(IComponent)
 }
 
 var _ IComponent = (*Component)(nil)
@@ -97,6 +99,7 @@ func NewComponent(name string) *Component {
 		delegate:        nil,
 		registers:       []IRegister{},
 		removeOnDestroy: true,
+		customOnUpdate:  nil,
 	}
 }
 
@@ -279,6 +282,9 @@ func (c *Component) OnStart() {
 // OnUpdate is called for every update tick.
 func (c *Component) OnUpdate() {
 	// Logger.Trace().Str("component", c.GetName()).Msg("OnUpdate")
+	if c.customOnUpdate != nil {
+		c.customOnUpdate(c)
+	}
 }
 
 // RemoveDelegateToRegister removes a register for the given delegate in
@@ -314,6 +320,11 @@ func (c *Component) RemoveDelegateToRegister(delegate IDelegate, entity IEntity,
 // SetActive sets component active attribute
 func (c *Component) SetActive(active bool) {
 	c.active = active
+}
+
+// SetCustomOnUpdate sets the custom call to be executed OnUpdate.
+func (c *Component) SetCustomOnUpdate(customCall func(IComponent)) {
+	c.customOnUpdate = customCall
 }
 
 // SetDelegate sets component delegate.

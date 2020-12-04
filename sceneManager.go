@@ -43,6 +43,7 @@ type ISceneManager interface {
 	OnEnable()
 	OnStart()
 	OnUpdate()
+	RestartScene() bool
 	SetActiveFirstScene() IScene
 	SetActiveLastScene() IScene
 	SetActiveNextScene() IScene
@@ -217,6 +218,14 @@ func (h *SceneManager) OnUpdate() {
 	if activeScene := h.GetActiveScene(); activeScene != nil {
 		activeScene.OnUpdate()
 	}
+}
+
+// RestartScene restart the active scene.
+func (h *SceneManager) RestartScene() bool {
+	if scene := h.GetActiveScene(); scene != nil {
+		return h.SetActiveScene(scene)
+	}
+	return false
 }
 
 // SetActiveFirstScene sets the first scene as the active one.

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/jrecuero/engosdl"
 	"github.com/jrecuero/engosdl/assets/components"
 	"github.com/veandco/go-sdl2/sdl"
@@ -10,8 +12,9 @@ import (
 // GameManager is the flier application game manager.
 type GameManager struct {
 	*engosdl.GameManager
-	player *engosdl.Entity
-	score  *engosdl.Entity
+	player     *engosdl.Entity
+	dashboard  *engosdl.Entity
+	scoreTotal int
 }
 
 var _ engosdl.IGameManager = (*GameManager)(nil)
@@ -90,12 +93,44 @@ func (h *GameManager) createCoin() engosdl.IEntity {
 // createScenePlay creates the main scene to play.
 func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
-		gameOver := engosdl.NewEntity("game-over")
 		text := components.NewText("game-over/text", "fonts/lato.ttf", 64, sdl.Color{R: 255}, "Game Over")
-		gameOver.GetTransform().SetPositionXY(250, 150)
-		gameOver.SetActive(false)
-		gameOver.SetLayer(engosdl.LayerTop)
-		gameOver.AddComponent(text)
+		message := h.dashboard.GetChildByName("message")
+		message.GetTransform().SetPositionXY(250, 150)
+		message.SetActive(false)
+		message.AddComponent(text)
+
+		score := h.dashboard.GetChildByName("score")
+		score.GetTransform().SetPosition(engosdl.NewVector(10, 360))
+		if obj := score.GetComponent(&components.Text{}); obj != nil {
+			if text, ok := obj.(*components.Text); ok {
+				text.DefaultAddDelegateToRegister()
+				destroyDelegate := engosdl.GetDelegateManager().GetDestroyDelegate()
+				text.AddDelegateToRegister(destroyDelegate, nil, nil, func(params ...interface{}) bool {
+					entity := params[0].(engosdl.IEntity)
+					if entity.GetTag() == "coin" {
+						h.scoreTotal += 10
+						text.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
+					}
+					return true
+				})
+			}
+		}
+		scoreHandler := engosdl.NewComponent("score/handler")
+		score.AddComponent(scoreHandler)
+		scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000")
+		scoreText.SetRemoveOnDestroy(false)
+		score.AddComponent(scoreText)
+		func(timer int) {
+			counter := 0
+			scoreHandler.SetCustomOnUpdate(func(c engosdl.IComponent) {
+				counter++
+				if counter == timer {
+					counter = 0
+					h.scoreTotal++
+					scoreText.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
+				}
+			})
+		}(100)
 
 		h.player.GetTransform().SetPosition(engosdl.NewVector(100, 100))
 		// playerSprite := components.NewSprite("player-sprite", []string{"images/plane.png"}, 1, engosdl.FormatPNG)
@@ -113,7 +148,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 					// x, y := c.GetEntity().GetTransform().GetPosition().Get()
 					// c.GetEntity().GetTransform().SetPosition(engosdl.NewVector(x-c.LastMove.X, y-c.LastMove.Y))
 					engosdl.GetEngine().DestroyEntity(c.GetEntity())
-					gameOver.SetActive(true)
+					h.dashboard.GetChildByName("message").SetActive(true)
 				} else if other.GetTag() == "coin" {
 					engosdl.GetEngine().DestroyEntity(other)
 				}
@@ -150,7 +185,8 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		scene.AddEntity(h.player)
 		scene.AddEntity(waller)
 		scene.AddEntity(coiner)
-		scene.AddEntity(gameOver)
+		// scene.AddEntity(gameOver)
+		scene.AddEntity(h.dashboard)
 
 		scene.SetCollisionMode(engosdl.ModeBox)
 		return true
@@ -200,5 +236,30 @@ func (h *GameManager) DoInit() {
 	h.player = engosdl.NewEntity("player")
 	h.player.SetTag("player")
 
-	h.score = engosdl.NewEntity("score")
+	h.dashboard = engosdl.NewEntity("dashboard")
+	h.dashboard.SetTag("dashboard")
+	h.dashboard.SetLayer(engosdl.LayerTop)
+
+	// score := engosdl.NewEntity("score")
+	// // scoreHandler := engosdl.NewComponent("score/handler")
+	// // score.AddComponent(scoreHandler)
+	// // scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000")
+	// // scoreText.SetRemoveOnDestroy(false)
+	// // score.AddComponent(scoreText)
+	// // func(timer int) {
+	// // 	counter := 0
+	// // 	scoreHandler.SetCustomOnUpdate(func(c engosdl.IComponent) {
+	// // 		counter++
+	// // 		if counter == timer {
+	// // 			counter = 0
+	// // 			h.scoreTotal++
+	// // 			scoreText.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
+	// // 		}
+	// // 	})
+	// // }(100)
+	// message := engosdl.NewEntity("message")
+	// h.dashboard.AddChild(score)
+	// h.dashboard.AddChild(message)
+	h.dashboard.AddChild(engosdl.NewEntity("score"))
+	h.dashboard.AddChild(engosdl.NewEntity("message"))
 }

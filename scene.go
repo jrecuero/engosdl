@@ -84,7 +84,8 @@ func NewScene(name string, tag string) *Scene {
 	return scene
 }
 
-// AddEntity adds a new entity to the scene.
+// AddEntity adds a new entity to the scene. If entity has children entities,
+// all children are being added at this time in a recursive way.
 func (scene *Scene) AddEntity(entity IEntity) bool {
 	Logger.Trace().Str("scene", scene.GetName()).Str("Entity", entity.GetName()).Msg("add entity")
 	scene.entities = append(scene.entities, entity)
