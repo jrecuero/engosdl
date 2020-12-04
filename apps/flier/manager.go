@@ -52,6 +52,17 @@ func (h *GameManager) createBullet() engosdl.IEntity {
 		}
 		return true
 	})
+	bullet.GetComponent(&components.Box{}).AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, func(params ...interface{}) bool {
+		if _, other, err := engosdl.EntitiesInCollision(bullet, params...); err == nil {
+			if other.GetTag() == "wall" || other.GetTag() == "coin" {
+				engosdl.GetEngine().DestroyEntity(bullet)
+				if other.GetTag() == "coin" {
+					engosdl.GetEngine().DestroyEntity(other)
+				}
+			}
+		}
+		return true
+	})
 	return bullet
 }
 
@@ -79,34 +90,32 @@ func (h *GameManager) createCoin() engosdl.IEntity {
 // createScenePlay creates the main scene to play.
 func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
+		gameOver := engosdl.NewEntity("game-over")
+		text := components.NewText("game-over/text", "fonts/lato.ttf", 64, sdl.Color{R: 255}, "Game Over")
+		gameOver.GetTransform().SetPositionXY(250, 150)
+		gameOver.SetActive(false)
+		gameOver.SetLayer(engosdl.LayerTop)
+		gameOver.AddComponent(text)
+
 		h.player.GetTransform().SetPosition(engosdl.NewVector(100, 100))
 		// playerSprite := components.NewSprite("player-sprite", []string{"images/plane.png"}, 1, engosdl.FormatPNG)
 		playerSprite := components.NewBox("player-box", &sdl.Rect{X: 0, Y: 0, W: 64, H: 64}, sdl.Color{R: 255}, true)
 		// playerSprite.DefaultAddDelegateToRegister()
 		playerSprite.AddDelegateToRegister(nil, nil, &components.OutOfBounds{}, playerSprite.DefaultOnOutOfBounds)
-		// playerSprite.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, func(params ...interface{}) bool {
-		// 	c := playerSprite
-		// 	collisionEntityOne := params[0].(*engosdl.Entity)
-		// 	collisionEntityTwo := params[1].(*engosdl.Entity)
-		// 	if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
-		// 		if collisionEntityOne.GetTag() == "wall" || collisionEntityTwo.GetTag() == "wall" {
-		// 			engosdl.GetEngine().DestroyEntity(c.GetEntity())
-		// 		}
-		// 	}
-		// 	return true
-		// })
 		playerKeyboard := components.NewKeyboard("player-keyboard", components.KeyboardStandardMoveAndShoot)
 		playerKeyboard.DefaultAddDelegateToRegister()
 		playerMoveIt := components.NewMoveIt("player-move-it", engosdl.NewVector(5, 5))
 		playerMoveIt.DefaultAddDelegateToRegister()
 		playerMoveIt.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, func(params ...interface{}) bool {
 			c := playerMoveIt
-			collisionEntityOne := params[0].(*engosdl.Entity)
-			collisionEntityTwo := params[1].(*engosdl.Entity)
-			if c.GetEntity().GetID() == collisionEntityOne.GetID() || c.GetEntity().GetID() == collisionEntityTwo.GetID() {
-				if collisionEntityOne.GetTag() == "wall" || collisionEntityTwo.GetTag() == "wall" {
-					x, y := c.GetEntity().GetTransform().GetPosition().Get()
-					c.GetEntity().GetTransform().SetPosition(engosdl.NewVector(x-c.LastMove.X, y-c.LastMove.Y))
+			if _, other, err := engosdl.EntitiesInCollision(h.player, params...); err == nil {
+				if other.GetTag() == "wall" {
+					// x, y := c.GetEntity().GetTransform().GetPosition().Get()
+					// c.GetEntity().GetTransform().SetPosition(engosdl.NewVector(x-c.LastMove.X, y-c.LastMove.Y))
+					engosdl.GetEngine().DestroyEntity(c.GetEntity())
+					gameOver.SetActive(true)
+				} else if other.GetTag() == "coin" {
+					engosdl.GetEngine().DestroyEntity(other)
 				}
 			}
 			return true
@@ -129,15 +138,11 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		})
 		waller.AddComponent(wallerCaller)
 
-		trigger := false
 		coiner := engosdl.NewEntity("coiner")
 		coiner.AddComponent(components.NewTimer("coiner-timer", 200))
 		coinerCaller := engosdl.NewComponent("cointer-caller")
 		coinerCaller.AddDelegateToRegister(nil, nil, &components.Timer{}, func(params ...interface{}) bool {
-			if !trigger {
-				scene.AddEntity(h.createCoin())
-				trigger = true
-			}
+			scene.AddEntity(h.createCoin())
 			return true
 		})
 		coiner.AddComponent(coinerCaller)
@@ -145,6 +150,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		scene.AddEntity(h.player)
 		scene.AddEntity(waller)
 		scene.AddEntity(coiner)
+		scene.AddEntity(gameOver)
 
 		scene.SetCollisionMode(engosdl.ModeBox)
 		return true

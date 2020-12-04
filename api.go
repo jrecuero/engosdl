@@ -1,6 +1,7 @@
 package engosdl
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -153,4 +154,25 @@ func GetSoundManager() ISoundManager {
 		return engine.GetSoundManager()
 	}
 	return nil
+}
+
+// EntitiesInCollision identifies entities being passed in a collision
+// notification.
+func EntitiesInCollision(entity IEntity, params ...interface{}) (IEntity, IEntity, error) {
+	collisionEntityOne := params[0].(*Entity)
+	collisionEntityTwo := params[1].(*Entity)
+	var me, other IEntity
+	var result error = nil
+	if entity.GetID() == collisionEntityOne.GetID() {
+		me = collisionEntityOne
+		other = collisionEntityTwo
+	} else if entity.GetID() == collisionEntityTwo.GetID() {
+		me = collisionEntityTwo
+		other = collisionEntityOne
+	} else {
+		me = collisionEntityOne
+		other = collisionEntityTwo
+		result = fmt.Errorf("entity %s not found in collision", entity.GetName())
+	}
+	return me, other, result
 }
