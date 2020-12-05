@@ -93,6 +93,18 @@ func (h *GameManager) createCoin() engosdl.IEntity {
 // createScenePlay creates the main scene to play.
 func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
+		h.player = engosdl.NewEntity("player")
+		h.player.SetTag("player")
+
+		controller := engosdl.NewEntity("controller")
+		controller.AddComponent(components.NewSceneController("controller/scene-controller"))
+		timer := components.NewTimer("controller-timer", 500, 0)
+		controller.AddComponent(timer)
+		controller.GetComponent(&components.SceneController{}).AddDelegateToRegister(nil, nil, &components.Timer{}, func(params ...interface{}) bool {
+			engosdl.GetSceneManager().RestartScene()
+			return true
+		})
+
 		text := components.NewText("game-over/text", "fonts/fira.ttf", 64, sdl.Color{R: 255}, "Game Over")
 		message := h.dashboard.GetChildByName("message")
 		message.GetTransform().SetPositionXY(250, 150)
@@ -122,29 +134,29 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 			}
 		}
 		// Set a custom OnUpdate.
-		func(timer int) {
+		func(component engosdl.IText, timer int) {
 			counter := 0
-			scoreHandler.SetCustomOnUpdate(func(c engosdl.IComponent) {
+			scoreHandler.SetCustomOnUpdate(func(engosdl.IComponent) {
 				counter++
 				if counter == timer {
 					counter = 0
 					h.scoreTotal++
-					scoreText.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
+					component.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
 				}
 			})
-		}(100)
+		}(scoreText, 100)
 
 		music := h.dashboard.GetChildByName("music")
 		sound := components.NewSound("music/sound", "sounds/main.mp3", engosdl.SoundMP3)
 		music.AddComponent(sound)
-		func(times int, loaded bool) {
-			sound.SetCustomOnUpdate(func(c engosdl.IComponent) {
+		func(component engosdl.ISound, times int, loaded bool) {
+			sound.SetCustomOnUpdate(func(engosdl.IComponent) {
 				if !loaded {
 					loaded = true
-					sound.Play(times)
+					component.Play(times)
 				}
 			})
-		}(-1, false)
+		}(sound, -1, false)
 
 		h.player.GetTransform().SetPosition(engosdl.NewVector(100, 100))
 		// playerSprite := components.NewSprite("player-sprite", []string{"images/plane.png"}, 1, engosdl.FormatPNG)
@@ -163,6 +175,8 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 					// c.GetEntity().GetTransform().SetPosition(engosdl.NewVector(x-c.LastMove.X, y-c.LastMove.Y))
 					engosdl.GetEngine().DestroyEntity(c.GetEntity())
 					h.dashboard.GetChildByName("message").SetActive(true)
+					timer := controller.GetComponent(&components.Timer{}).(engosdl.ITimer)
+					timer.SetTimes(1)
 				} else if other.GetTag() == "coin" {
 					engosdl.GetEngine().DestroyEntity(other)
 				}
@@ -179,7 +193,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		h.player.AddComponent(playerShooter)
 
 		waller := engosdl.NewEntity("waller")
-		waller.AddComponent(components.NewTimer("waller-timer", 100))
+		waller.AddComponent(components.NewTimer("waller-timer", 100, -1))
 		wallerCaller := engosdl.NewComponent("waller-caller")
 		wallerCaller.AddDelegateToRegister(nil, nil, &components.Timer{}, func(params ...interface{}) bool {
 			scene.AddEntity(h.createWall())
@@ -188,7 +202,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		waller.AddComponent(wallerCaller)
 
 		coiner := engosdl.NewEntity("coiner")
-		coiner.AddComponent(components.NewTimer("coiner-timer", 200))
+		coiner.AddComponent(components.NewTimer("coiner-timer", 200, 2))
 		coinerCaller := engosdl.NewComponent("cointer-caller")
 		coinerCaller.AddDelegateToRegister(nil, nil, &components.Timer{}, func(params ...interface{}) bool {
 			scene.AddEntity(h.createCoin())
@@ -200,6 +214,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		scene.AddEntity(waller)
 		scene.AddEntity(coiner)
 		scene.AddEntity(h.dashboard)
+		scene.AddEntity(controller)
 
 		scene.SetCollisionMode(engosdl.ModeBox)
 		return true
@@ -208,7 +223,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 
 // createWall creates every wall in the scene.
 func (h *GameManager) createWall() engosdl.IEntity {
-	length := rand.Intn(5)
+	length := rand.Intn(4) + 1
 	up := rand.Intn(2)
 	pos := 0
 	if up != 0 {
@@ -246,8 +261,8 @@ func (h *GameManager) DoFrameStart() {
 
 // DoInit initializes internal game manager resources.
 func (h *GameManager) DoInit() {
-	h.player = engosdl.NewEntity("player")
-	h.player.SetTag("player")
+	// h.player = engosdl.NewEntity("player")
+	// h.player.SetTag("player")
 
 	h.dashboard = engosdl.NewEntity("dashboard")
 	h.dashboard.SetTag("dashboard")

@@ -176,6 +176,10 @@ func (entity *Entity) DoDestroy() {
 	for _, component := range entity.GetComponents() {
 		component.DoDestroy()
 	}
+	entity.components = []IComponent{}
+	entity.loadedComponents = []IComponent{}
+	entity.unloadedComponents = []IComponent{}
+
 	// for _, component := range entity.GetComponents() {
 	// 	if !component.GetRemoveOnDestroy() {
 	// 		entity.unloadedComponents = append(entity.unloadedComponents, component)

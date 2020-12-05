@@ -58,7 +58,7 @@ func createEnemy(engine *engosdl.Engine, index int, position *engosdl.Vector, en
 	enemyStats.DefaultAddDelegateToRegister()
 	enemyCollider := components.NewCollider2D("enemy-collider-2D")
 	enemyCollider.DefaultAddDelegateToRegister()
-	enemyTimer := components.NewTimer("enemy-timer", 100)
+	enemyTimer := components.NewTimer("enemy-timer", 100, -1)
 	enemyShotBullet := components.NewShootBullet("enemy-bullet", engosdl.NewVector(0, 5))
 	enemyShotBullet.AddDelegateToRegister(nil, nil, &components.Timer{}, enemyShotBullet.ShootBulletSignature)
 

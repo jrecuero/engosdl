@@ -78,9 +78,20 @@ type ISound interface {
 
 // IText represents the interface for any text component.
 type IText interface {
+	IComponent
 	SetFontFilename(string) IText
 	SetColor(sdl.Color) IText
 	SetMessage(string) IText
+}
+
+// ITimer represents the timer component. Timer should be base in engine
+// frames.
+type ITimer interface {
+	IComponent
+	GetTick() int
+	SetTick(int)
+	GetTimes() int
+	SetTimes(int)
 }
 
 // Component represents the default IComponent implementation.
