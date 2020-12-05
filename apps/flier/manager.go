@@ -5,6 +5,7 @@ import (
 
 	"github.com/jrecuero/engosdl"
 	"github.com/jrecuero/engosdl/assets/components"
+	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
 	"golang.org/x/exp/rand"
 )
@@ -15,6 +16,8 @@ type GameManager struct {
 	player     *engosdl.Entity
 	dashboard  *engosdl.Entity
 	scoreTotal int
+	gameOver   bool
+	lives      int
 }
 
 var _ engosdl.IGameManager = (*GameManager)(nil)
@@ -24,6 +27,7 @@ func NewGameManager(name string) *GameManager {
 	engosdl.Logger.Trace().Str("game-manager", name).Msg("new game-manager")
 	return &GameManager{
 		GameManager: engosdl.NewGameManager(name),
+		lives:       3,
 	}
 }
 
@@ -93,6 +97,8 @@ func (h *GameManager) createCoin() engosdl.IEntity {
 // createScenePlay creates the main scene to play.
 func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
+		h.gameOver = false
+
 		h.player = engosdl.NewEntity("player")
 		h.player.SetTag("player")
 
@@ -111,11 +117,16 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		message.SetActive(false)
 		message.AddComponent(text)
 
+		textLives := components.NewText("lives/text", "fonts/lato.ttf", 32, sdl.Color{B: 255, R: 100}, "Lives: "+strconv.Itoa(h.lives))
+		lives := h.dashboard.GetChildByName("lives")
+		lives.GetTransform().SetPositionXY(700, 360)
+		lives.AddComponent(textLives)
+
 		score := h.dashboard.GetChildByName("score")
 		score.GetTransform().SetPosition(engosdl.NewVector(10, 360))
 		scoreHandler := engosdl.NewComponent("score/handler")
 		score.AddComponent(scoreHandler)
-		scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000")
+		scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: "+strconv.Itoa(h.scoreTotal))
 		scoreText.SetRemoveOnDestroy(false)
 		score.AddComponent(scoreText)
 		// Register notification when coin is destroyed.
@@ -124,10 +135,12 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 				text.DefaultAddDelegateToRegister()
 				destroyDelegate := engosdl.GetDelegateManager().GetDestroyDelegate()
 				text.AddDelegateToRegister(destroyDelegate, nil, nil, func(params ...interface{}) bool {
-					entity := params[0].(engosdl.IEntity)
-					if entity.GetTag() == "coin" {
-						h.scoreTotal += 10
-						text.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
+					if !h.gameOver {
+						entity := params[0].(engosdl.IEntity)
+						if entity.GetTag() == "coin" {
+							h.scoreTotal += 10
+							text.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
+						}
 					}
 					return true
 				})
@@ -137,11 +150,13 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		func(component engosdl.IText, timer int) {
 			counter := 0
 			scoreHandler.SetCustomOnUpdate(func(engosdl.IComponent) {
-				counter++
-				if counter == timer {
-					counter = 0
-					h.scoreTotal++
-					component.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
+				if !h.gameOver {
+					counter++
+					if counter == timer {
+						counter = 0
+						h.scoreTotal++
+						component.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
+					}
 				}
 			})
 		}(scoreText, 100)
@@ -175,8 +190,16 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 					// c.GetEntity().GetTransform().SetPosition(engosdl.NewVector(x-c.LastMove.X, y-c.LastMove.Y))
 					engosdl.GetEngine().DestroyEntity(c.GetEntity())
 					h.dashboard.GetChildByName("message").SetActive(true)
-					timer := controller.GetComponent(&components.Timer{}).(engosdl.ITimer)
-					timer.SetTimes(1)
+					if h.lives > 1 {
+						h.lives--
+						h.dashboard.GetChildByName("message").GetComponent(&components.Text{}).(engosdl.IText).SetMessage("Lives: " + strconv.Itoa(h.lives) + "\nScore: " + strconv.Itoa(h.scoreTotal))
+						timer := controller.GetComponent(&components.Timer{}).(engosdl.ITimer)
+						timer.SetTimes(1)
+					} else {
+						h.dashboard.GetChildByName("message").GetComponent(&components.Text{}).(engosdl.IText).SetMessage("Game Over\nScore: " + strconv.Itoa(h.scoreTotal))
+					}
+					h.gameOver = true
+					mix.FadeOutMusic(5000)
 				} else if other.GetTag() == "coin" {
 					engosdl.GetEngine().DestroyEntity(other)
 				}
@@ -202,7 +225,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		waller.AddComponent(wallerCaller)
 
 		coiner := engosdl.NewEntity("coiner")
-		coiner.AddComponent(components.NewTimer("coiner-timer", 200, 2))
+		coiner.AddComponent(components.NewTimer("coiner-timer", 200, -1))
 		coinerCaller := engosdl.NewComponent("cointer-caller")
 		coinerCaller.AddDelegateToRegister(nil, nil, &components.Timer{}, func(params ...interface{}) bool {
 			scene.AddEntity(h.createCoin())
@@ -268,6 +291,7 @@ func (h *GameManager) DoInit() {
 	h.dashboard.SetTag("dashboard")
 	h.dashboard.SetLayer(engosdl.LayerTop)
 	h.dashboard.AddChild(engosdl.NewEntity("score"))
+	h.dashboard.AddChild(engosdl.NewEntity("lives"))
 	h.dashboard.AddChild(engosdl.NewEntity("message"))
 	h.dashboard.AddChild(engosdl.NewEntity("music"))
 }

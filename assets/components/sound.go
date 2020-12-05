@@ -91,7 +91,8 @@ func (c *Sound) OnStart() {
 
 // Play plays the sound.
 func (c *Sound) Play(times int) {
-	if err := c.resource.GetResource().Play(times); err != nil {
+	// if err := c.resource.GetResource().Play(times); err != nil {
+	if err := c.resource.GetResource().FadeIn(times, 2500); err != nil {
 		engosdl.Logger.Error().Err(err).Msg("play mix resource error")
 		panic(err)
 	}
