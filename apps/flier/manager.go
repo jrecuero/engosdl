@@ -101,6 +101,12 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 
 		score := h.dashboard.GetChildByName("score")
 		score.GetTransform().SetPosition(engosdl.NewVector(10, 360))
+		scoreHandler := engosdl.NewComponent("score/handler")
+		score.AddComponent(scoreHandler)
+		scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000")
+		scoreText.SetRemoveOnDestroy(false)
+		score.AddComponent(scoreText)
+		// Register notification when coin is destroyed.
 		if obj := score.GetComponent(&components.Text{}); obj != nil {
 			if text, ok := obj.(*components.Text); ok {
 				text.DefaultAddDelegateToRegister()
@@ -115,11 +121,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 				})
 			}
 		}
-		scoreHandler := engosdl.NewComponent("score/handler")
-		score.AddComponent(scoreHandler)
-		scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000")
-		scoreText.SetRemoveOnDestroy(false)
-		score.AddComponent(scoreText)
+		// Set a custom OnUpdate.
 		func(timer int) {
 			counter := 0
 			scoreHandler.SetCustomOnUpdate(func(c engosdl.IComponent) {
@@ -131,6 +133,18 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 				}
 			})
 		}(100)
+
+		music := h.dashboard.GetChildByName("music")
+		sound := components.NewSound("music/sound", "sounds/main.mp3", engosdl.SoundMP3)
+		music.AddComponent(sound)
+		func(times int, loaded bool) {
+			sound.SetCustomOnUpdate(func(c engosdl.IComponent) {
+				if !loaded {
+					loaded = true
+					sound.Play(times)
+				}
+			})
+		}(-1, false)
 
 		h.player.GetTransform().SetPosition(engosdl.NewVector(100, 100))
 		// playerSprite := components.NewSprite("player-sprite", []string{"images/plane.png"}, 1, engosdl.FormatPNG)
@@ -240,4 +254,5 @@ func (h *GameManager) DoInit() {
 	h.dashboard.SetLayer(engosdl.LayerTop)
 	h.dashboard.AddChild(engosdl.NewEntity("score"))
 	h.dashboard.AddChild(engosdl.NewEntity("message"))
+	h.dashboard.AddChild(engosdl.NewEntity("music"))
 }

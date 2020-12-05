@@ -48,6 +48,12 @@ const (
 	FormatJPG int = 3
 )
 
+// Sound format constants.
+const (
+	// SoundMP3 identifies sound in MP3 format.
+	SoundMP3 int = 1
+)
+
 // Movement constants.
 const (
 	// No Movement.

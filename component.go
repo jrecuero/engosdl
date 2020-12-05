@@ -69,6 +69,13 @@ type ISprite interface {
 	SetCamera(*sdl.Rect)
 }
 
+// ISound represents the interface for any sound component.
+type ISound interface {
+	IComponent
+	LoadSound()
+	Play(int)
+}
+
 // IText represents the interface for any text component.
 type IText interface {
 	SetFontFilename(string) IText

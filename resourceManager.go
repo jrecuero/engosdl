@@ -134,17 +134,16 @@ type ResourceManager struct {
 
 var _ IResourceManager = (*ResourceManager)(nil)
 
-// NewResourceManager creates a new resource handler instance.
+// NewResourceManager creates a new resource manager instance.
 func NewResourceManager(name string) *ResourceManager {
 	Logger.Trace().Str("resource-manager", name).Msg("new resource-manager")
 	return &ResourceManager{
 		Object:    NewObject(name),
 		resources: []IResource{},
 	}
-
 }
 
-// Clear removes all resources from the resource handler.
+// Clear removes all resources from the resource manager.
 func (h *ResourceManager) Clear() {
 	Logger.Trace().Str("resource-manager", h.GetName()).Msg("Clear")
 	for _, r := range h.resources {
@@ -168,7 +167,7 @@ func (h *ResourceManager) CreateResource(name string, filename string, format in
 	return resource
 }
 
-// DeleteResource deletes resource from the handler. Memory resources are
+// DeleteResource deletes resource from the manager. Memory resources are
 // released from the given resource.
 func (h *ResourceManager) DeleteResource(resource IResource) bool {
 	Logger.Trace().Str("resource-manager", h.GetName()).Str("name", resource.GetName()).Str("filename", resource.GetFilename()).Msg("DeleteResource")

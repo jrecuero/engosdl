@@ -104,6 +104,7 @@ func (c *Sprite) DefaultOnOutOfBounds(params ...interface{}) bool {
 
 // DoDestroy calls all methods to clean up sprite.
 func (c *Sprite) DoDestroy() {
+	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("DoDestroy")
 	for _, texture := range c.textures {
 		texture.Destroy()
 	}
@@ -115,6 +116,7 @@ func (c *Sprite) DoDestroy() {
 // DoUnLoad is called when component is unloaded, so all resources have
 // to be released.
 func (c *Sprite) DoUnLoad() {
+	engosdl.Logger.Trace().Str("component", "sprite").Str("sprite", c.GetName()).Msg("DoUnLoad")
 	// for _, texture := range c.textures {
 	// 	texture.Destroy()
 	// }

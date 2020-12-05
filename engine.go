@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/veandco/go-sdl2/img"
+	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 )
@@ -70,6 +71,10 @@ func (engine *Engine) DestroyEntity(entity IEntity) bool {
 // DoCleanup clean-ups all graphical resources created by teh engine.
 func (engine *Engine) DoCleanup() {
 	Logger.Trace().Str("engine", engine.name).Msg("end engine")
+	defer ttf.Quit()
+	defer img.Quit()
+	defer mix.CloseAudio()
+	defer mix.Quit()
 	defer sdl.Quit()
 	defer engine.window.Destroy()
 	defer engine.renderer.Destroy()
@@ -138,12 +143,33 @@ func (engine *Engine) DoInitResources() {
 func (engine *Engine) DoInitSdl() {
 	var err error
 
-	ttf.Init()
-	img.Init(img.INIT_PNG)
-
 	Logger.Trace().Str("engine", engine.name).Msg("init sdl module")
 	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		Logger.Error().Err(err).Msg("sdl.Init error")
+		panic(err)
+	}
+
+	Logger.Trace().Str("engine", engine.name).Msg("init ttf module")
+	if err = ttf.Init(); err != nil {
+		Logger.Error().Err(err).Msg("ttf.Init error")
+		panic(err)
+	}
+
+	Logger.Trace().Str("engine", engine.name).Msg("init img module")
+	if err = img.Init(img.INIT_PNG); err != nil {
+		Logger.Error().Err(err).Msg("img.Init error")
+		panic(err)
+	}
+
+	Logger.Trace().Str("engine", engine.name).Msg("open audio module")
+	if err = mix.OpenAudio(22050, mix.DEFAULT_FORMAT, 2, 4096); err != nil {
+		Logger.Error().Err(err).Msg("mix.OpenAudio error")
+		panic(err)
+	}
+
+	Logger.Trace().Str("engine", engine.name).Msg("init mix module")
+	if err = mix.Init(mix.INIT_MP3); err != nil {
+		Logger.Error().Err(err).Msg("mix.Init error")
 		panic(err)
 	}
 
