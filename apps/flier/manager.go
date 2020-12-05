@@ -93,7 +93,7 @@ func (h *GameManager) createCoin() engosdl.IEntity {
 // createScenePlay creates the main scene to play.
 func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
-		text := components.NewText("game-over/text", "fonts/lato.ttf", 64, sdl.Color{R: 255}, "Game Over")
+		text := components.NewText("game-over/text", "fonts/fira.ttf", 64, sdl.Color{R: 255}, "Game Over")
 		message := h.dashboard.GetChildByName("message")
 		message.GetTransform().SetPositionXY(250, 150)
 		message.SetActive(false)
@@ -185,7 +185,6 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		scene.AddEntity(h.player)
 		scene.AddEntity(waller)
 		scene.AddEntity(coiner)
-		// scene.AddEntity(gameOver)
 		scene.AddEntity(h.dashboard)
 
 		scene.SetCollisionMode(engosdl.ModeBox)
@@ -239,27 +238,6 @@ func (h *GameManager) DoInit() {
 	h.dashboard = engosdl.NewEntity("dashboard")
 	h.dashboard.SetTag("dashboard")
 	h.dashboard.SetLayer(engosdl.LayerTop)
-
-	// score := engosdl.NewEntity("score")
-	// // scoreHandler := engosdl.NewComponent("score/handler")
-	// // score.AddComponent(scoreHandler)
-	// // scoreText := components.NewText("score-text", "fonts/lato.ttf", 24, sdl.Color{R: 255, G: 0, B: 0}, "Score: 0000")
-	// // scoreText.SetRemoveOnDestroy(false)
-	// // score.AddComponent(scoreText)
-	// // func(timer int) {
-	// // 	counter := 0
-	// // 	scoreHandler.SetCustomOnUpdate(func(c engosdl.IComponent) {
-	// // 		counter++
-	// // 		if counter == timer {
-	// // 			counter = 0
-	// // 			h.scoreTotal++
-	// // 			scoreText.SetMessage("Score: " + strconv.Itoa(h.scoreTotal))
-	// // 		}
-	// // 	})
-	// // }(100)
-	// message := engosdl.NewEntity("message")
-	// h.dashboard.AddChild(score)
-	// h.dashboard.AddChild(message)
 	h.dashboard.AddChild(engosdl.NewEntity("score"))
 	h.dashboard.AddChild(engosdl.NewEntity("message"))
 }
