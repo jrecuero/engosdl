@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/jrecuero/engosdl"
 	"github.com/jrecuero/engosdl/assets/components"
@@ -38,9 +38,21 @@ func (h *GameManager) CreateAssets() {
 
 func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
+		speed := 4.0
+
 		net := engosdl.NewEntity("net")
 		net.GetTransform().SetPositionXY(395, 0)
 		net.AddComponent(components.NewBox("net/box", &sdl.Rect{W: 10, H: 400}, sdl.Color{B: 255}, true))
+
+		score1 := engosdl.NewEntity("score1")
+		score1.GetTransform().SetPositionXY(50, 10)
+		text1 := components.NewText("score1/text", "fonts/fira.ttf", 32, sdl.Color{R: 255}, strconv.Itoa(h.score1))
+		score1.AddComponent(text1)
+
+		score2 := engosdl.NewEntity("score2")
+		score2.GetTransform().SetPositionXY(750, 10)
+		text2 := components.NewText("score2/text", "fonts/fira.ttf", 32, sdl.Color{R: 255}, strconv.Itoa(h.score1))
+		score2.AddComponent(text2)
 
 		player1 := engosdl.NewEntity("player1")
 		player1.SetTag("player")
@@ -105,28 +117,50 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		ball := engosdl.NewEntity("ball")
 		ball.GetTransform().SetPositionXY(100, 180)
 		box3 := components.NewBox("ball/box", &sdl.Rect{W: 10, H: 10}, sdl.Color{}, true)
-		body3 := components.NewBody("ball/body", true)
-		moveTo3 := components.NewMoveTo("ball/move-it", engosdl.NewVector(5, 0))
+		body3 := components.NewBody("ball/body", false)
+		moveTo3 := components.NewMoveTo("ball/move-it", engosdl.NewVector(speed, speed))
 		moveTo3.AddDelegateToRegister(nil, nil, &components.Body{}, func(params ...interface{}) bool {
 			c := moveTo3
-			entity := params[0].(engosdl.IEntity)
-			if outAt := params[2].(int); outAt == engosdl.Left || outAt == engosdl.Right {
-				if entity.GetID() == c.GetEntity().GetID() {
-					if outAt == engosdl.Left {
-						h.score2++
-					} else {
-						h.score1++
-					}
-					fmt.Printf("p1: %d - p2: %d\n", h.score1, h.score2)
-					engosdl.GetEngine().DestroyEntity(c.GetEntity())
-				}
+			outAt := params[2].(int)
+			switch outAt {
+			case engosdl.Left:
+				// c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y))
+				c.GetEntity().GetTransform().SetPositionXY(100, 180)
+				c.SetSpeed(engosdl.NewVector(speed, speed))
+				h.score2++
+				text2.SetMessage(strconv.Itoa(h.score2))
+				break
+			case engosdl.Right:
+				// c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y))
+				c.GetEntity().GetTransform().SetPositionXY(700, 180)
+				c.SetSpeed(engosdl.NewVector(speed*-1, speed))
+				h.score1++
+				text1.SetMessage(strconv.Itoa(h.score1))
+				break
+			case engosdl.Up:
+				c.SetSpeed(engosdl.NewVector(c.GetSpeed().X, c.GetSpeed().Y*-1))
+				break
+			case engosdl.Down:
+				c.SetSpeed(engosdl.NewVector(c.GetSpeed().X, c.GetSpeed().Y*-1))
+				break
 			}
+			// entity := params[0].(engosdl.IEntity)
+			// if outAt := params[2].(int); outAt == engosdl.Left || outAt == engosdl.Right {
+			// 	if entity.GetID() == c.GetEntity().GetID() {
+			// 		if outAt == engosdl.Left {
+			// 			h.score2++
+			// 		} else {
+			// 			h.score1++
+			// 		}
+			// 		engosdl.GetEngine().DestroyEntity(c.GetEntity())
+			// 	}
+			// }
 			return true
 		})
 		moveTo3.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, func(params ...interface{}) bool {
 			c := moveTo3
 			if _, other, err := engosdl.EntitiesInCollision(c.GetEntity(), params...); err == nil && other.GetTag() == "player" {
-				c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y*-1))
+				c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y))
 			}
 			return true
 		})
@@ -138,6 +172,8 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		scene.AddEntity(player1)
 		scene.AddEntity(player2)
 		scene.AddEntity(ball)
+		scene.AddEntity(score1)
+		scene.AddEntity(score2)
 		scene.SetCollisionMode(engosdl.ModeBox)
 		return true
 	}
