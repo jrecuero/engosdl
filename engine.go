@@ -104,7 +104,7 @@ func (engine *Engine) DoInit() {
 func (engine *Engine) DoInitDebugServer() {
 	if !engine.debugServer {
 		engine.debugServer = true
-		fmt.Printf("init debug server %s", engine.name)
+		fmt.Printf("init debug server %s\n", engine.name)
 		go func() {
 			router := mux.NewRouter().StrictSlash(true)
 			router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
