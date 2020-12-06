@@ -48,6 +48,7 @@ type IEntity interface {
 	DoLoad()
 	DoUnLoad()
 	GetActive() bool
+	GetCache(string) (interface{}, error)
 	GetChild(string) IEntity
 	GetChildByName(string) IEntity
 	GetChildren() []IEntity
@@ -69,6 +70,7 @@ type IEntity interface {
 	RemoveComponent(IComponent) bool
 	RemoveComponents() bool
 	SetActive(bool) IEntity
+	SetCache(string, interface{})
 	SetCustomOnUpdate(func(IEntity))
 	SetDieOnCollision(bool) IEntity
 	SetDieOnOutOfBounds(bool) IEntity
@@ -97,6 +99,7 @@ type Entity struct {
 	DieOnCollision     bool `json:"die-on-collision"`
 	DieOnOutOfBounds   bool `json:"die-on-out-of-bounds"`
 	customOnUpdate     func(IEntity)
+	cache              map[string]interface{}
 }
 
 var _ IEntity = (*Entity)(nil)
@@ -120,6 +123,7 @@ func NewEntity(name string) *Entity {
 		DieOnCollision:     false,
 		DieOnOutOfBounds:   false,
 		customOnUpdate:     nil,
+		cache:              make(map[string]interface{}),
 	}
 }
 
@@ -255,6 +259,14 @@ func (entity *Entity) DoUnLoad() {
 // GetActive returns if the entity is active (enable) or not (disable).
 func (entity *Entity) GetActive() bool {
 	return entity.active
+}
+
+// GetCache retrieves entity cache data for the given key.
+func (entity *Entity) GetCache(key string) (interface{}, error) {
+	if data, ok := entity.cache[key]; ok {
+		return data, nil
+	}
+	return nil, fmt.Errorf("no cache data found for key: %s", key)
 }
 
 // getChild returns child and index by child id from entity children.
@@ -453,6 +465,11 @@ func (entity *Entity) RemoveComponents() bool {
 func (entity *Entity) SetActive(active bool) IEntity {
 	entity.active = active
 	return entity
+}
+
+// SetCache sets a new cache entry for the given key and data.
+func (entity *Entity) SetCache(key string, data interface{}) {
+	entity.cache[key] = data
 }
 
 // SetCustomOnUpdate sets a custom method to be called OnUpdate.

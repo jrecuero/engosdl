@@ -115,6 +115,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		player2.AddComponent(moveIt2)
 
 		ball := engosdl.NewEntity("ball")
+		ball.SetCache("last", "")
 		ball.GetTransform().SetPositionXY(100, 180)
 		box3 := components.NewBox("ball/box", &sdl.Rect{W: 10, H: 10}, sdl.Color{}, true)
 		body3 := components.NewBody("ball/body", false)
@@ -129,6 +130,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 				c.SetSpeed(engosdl.NewVector(speed, speed))
 				h.score2++
 				text2.SetMessage(strconv.Itoa(h.score2))
+				ball.SetCache("last", "")
 				break
 			case engosdl.Right:
 				// c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y))
@@ -136,6 +138,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 				c.SetSpeed(engosdl.NewVector(speed*-1, speed))
 				h.score1++
 				text1.SetMessage(strconv.Itoa(h.score1))
+				ball.SetCache("last", "")
 				break
 			case engosdl.Up:
 				c.SetSpeed(engosdl.NewVector(c.GetSpeed().X, c.GetSpeed().Y*-1))
@@ -160,7 +163,10 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		moveTo3.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, func(params ...interface{}) bool {
 			c := moveTo3
 			if _, other, err := engosdl.EntitiesInCollision(c.GetEntity(), params...); err == nil && other.GetTag() == "player" {
-				c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y))
+				if last, err := c.GetEntity().GetCache("last"); err == nil && last != other.GetID() {
+					c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y))
+					c.GetEntity().SetCache("last", other.GetID())
+				}
 			}
 			return true
 		})
