@@ -117,6 +117,11 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		ball := engosdl.NewEntity("ball")
 		ball.SetCache("last", "")
 		ball.GetTransform().SetPositionXY(100, 180)
+		ballPong := engosdl.NewEntity("ball-pong")
+		ballPong.AddComponent(components.NewSound("ball-pong/sound", "sounds/pong.mp3", engosdl.SoundMP3))
+		ballOut := engosdl.NewEntity("ball-out")
+		ballOut.AddComponent(components.NewSound("ball-out/sound", "sounds/out.mp3", engosdl.SoundMP3))
+
 		box3 := components.NewBox("ball/box", &sdl.Rect{W: 10, H: 10}, sdl.Color{}, true)
 		body3 := components.NewBody("ball/body", false)
 		moveTo3 := components.NewMoveTo("ball/move-it", engosdl.NewVector(speed, speed))
@@ -131,6 +136,11 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 				h.score2++
 				text2.SetMessage(strconv.Itoa(h.score2))
 				ball.SetCache("last", "")
+				if child := c.GetEntity().GetChildByName("ball-out"); child != nil {
+					if sound := child.GetComponent(&components.Sound{}); sound != nil {
+						sound.(*components.Sound).Play(1)
+					}
+				}
 				break
 			case engosdl.Right:
 				// c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y))
@@ -139,6 +149,11 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 				h.score1++
 				text1.SetMessage(strconv.Itoa(h.score1))
 				ball.SetCache("last", "")
+				if child := c.GetEntity().GetChildByName("ball-out"); child != nil {
+					if sound := child.GetComponent(&components.Sound{}); sound != nil {
+						sound.(*components.Sound).Play(1)
+					}
+				}
 				break
 			case engosdl.Up:
 				c.SetSpeed(engosdl.NewVector(c.GetSpeed().X, c.GetSpeed().Y*-1))
@@ -147,29 +162,25 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 				c.SetSpeed(engosdl.NewVector(c.GetSpeed().X, c.GetSpeed().Y*-1))
 				break
 			}
-			// entity := params[0].(engosdl.IEntity)
-			// if outAt := params[2].(int); outAt == engosdl.Left || outAt == engosdl.Right {
-			// 	if entity.GetID() == c.GetEntity().GetID() {
-			// 		if outAt == engosdl.Left {
-			// 			h.score2++
-			// 		} else {
-			// 			h.score1++
-			// 		}
-			// 		engosdl.GetEngine().DestroyEntity(c.GetEntity())
-			// 	}
-			// }
 			return true
 		})
 		moveTo3.AddDelegateToRegister(engosdl.GetDelegateManager().GetCollisionDelegate(), nil, nil, func(params ...interface{}) bool {
 			c := moveTo3
 			if _, other, err := engosdl.EntitiesInCollision(c.GetEntity(), params...); err == nil && other.GetTag() == "player" {
 				if last, err := c.GetEntity().GetCache("last"); err == nil && last != other.GetID() {
+					if child := c.GetEntity().GetChildByName("ball-pong"); child != nil {
+						if sound := child.GetComponent(&components.Sound{}); sound != nil {
+							sound.(*components.Sound).Play(1)
+						}
+					}
 					c.SetSpeed(engosdl.NewVector(c.GetSpeed().X*-1, c.GetSpeed().Y))
 					c.GetEntity().SetCache("last", other.GetID())
 				}
 			}
 			return true
 		})
+		ball.AddChild(ballPong)
+		ball.AddChild(ballOut)
 		ball.AddComponent(box3)
 		ball.AddComponent(body3)
 		ball.AddComponent(moveTo3)

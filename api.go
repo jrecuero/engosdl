@@ -52,6 +52,8 @@ const (
 const (
 	// SoundMP3 identifies sound in MP3 format.
 	SoundMP3 int = 1
+	// SoundWAV identifies sound in WAV format.
+	SoundWAV int = 2
 )
 
 // Movement constants.

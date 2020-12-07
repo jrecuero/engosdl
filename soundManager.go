@@ -1,6 +1,10 @@
 package engosdl
 
-import "github.com/veandco/go-sdl2/mix"
+import (
+	"io/ioutil"
+
+	"github.com/veandco/go-sdl2/mix"
+)
 
 // ISoundResource represents any sound resource to be handled by the sound manager.
 type ISoundResource interface {
@@ -9,7 +13,7 @@ type ISoundResource interface {
 	Delete() int
 	GetFilename() string
 	GetFormat() int
-	GetResource() *mix.Music
+	GetResource() (interface{}, int)
 	New()
 }
 
@@ -20,6 +24,7 @@ type SoundResource struct {
 	format   int
 	counter  int
 	sound    *mix.Music
+	chunk    *mix.Chunk
 }
 
 var _ ISoundResource = (*SoundResource)(nil)
@@ -34,6 +39,7 @@ func NewSound(name string, filename string, format int) *SoundResource {
 		format:   format,
 		counter:  0,
 		sound:    nil,
+		chunk:    nil,
 	}
 	switch format {
 	case SoundMP3:
@@ -41,6 +47,18 @@ func NewSound(name string, filename string, format int) *SoundResource {
 			Logger.Error().Err(err).Str("filename", filename).Msg("load MP3 error")
 			panic(err)
 		}
+		break
+	case SoundWAV:
+		var data []byte
+		if data, err = ioutil.ReadFile(filename); err != nil {
+			Logger.Error().Err(err).Str("filename", filename).Msg("load WAV file error")
+			panic(err)
+		}
+		if result.chunk, err = mix.QuickLoadWAV(data); err != nil {
+			Logger.Error().Err(err).Str("filename", filename).Msg("load WAV error")
+			panic(err)
+		}
+		break
 	}
 	return result
 }
@@ -57,7 +75,11 @@ func (s *SoundResource) Delete() int {
 	Logger.Trace().Str("source", s.GetName()).Str("filename", s.GetFilename()).Msg("delete source")
 	s.counter--
 	if s.counter == 0 {
-		s.sound.Free()
+		if s.sound != nil {
+			s.sound.Free()
+		} else if s.chunk != nil {
+			s.chunk.Free()
+		}
 	}
 	return s.counter
 }
@@ -72,9 +94,14 @@ func (s *SoundResource) GetFormat() int {
 	return s.format
 }
 
-// GetResource returns the sound resource.
-func (s *SoundResource) GetResource() *mix.Music {
-	return s.sound
+// GetResource returns the sound resource and sound type
+func (s *SoundResource) GetResource() (interface{}, int) {
+	if s.sound != nil {
+		return s.sound, s.format
+	} else if s.chunk != nil {
+		return s.chunk, s.format
+	}
+	return nil, -1
 }
 
 // New increases the number of times this sound is being used.

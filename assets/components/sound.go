@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/jrecuero/engosdl"
+	"github.com/veandco/go-sdl2/mix"
 )
 
 // ComponentNameSound is the name to refer sound component.
@@ -92,9 +93,18 @@ func (c *Sound) OnStart() {
 // Play plays the sound.
 func (c *Sound) Play(times int) {
 	// if err := c.resource.GetResource().Play(times); err != nil {
-	if err := c.resource.GetResource().FadeIn(times, 2500); err != nil {
-		engosdl.Logger.Error().Err(err).Msg("play mix resource error")
-		panic(err)
+	if sound, format := c.resource.GetResource(); sound != nil {
+		if format == engosdl.SoundMP3 {
+			if err := sound.(*mix.Music).FadeIn(times, 2500); err != nil {
+				engosdl.Logger.Error().Err(err).Msg("play mix MP3 resource error")
+				panic(err)
+			}
+		} else if format == engosdl.SoundWAV {
+			if _, err := sound.(*mix.Chunk).Play(1, 1); err != nil {
+				engosdl.Logger.Error().Err(err).Msg("play mix WAV resource error")
+				panic(err)
+			}
+		}
 	}
 }
 
