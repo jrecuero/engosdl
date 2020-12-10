@@ -124,17 +124,18 @@ func (scene *Scene) checkCollisions() {
 				distance := math.Sqrt(math.Pow(centerI.X-centerJ.X, 2) + math.Pow(centerI.Y-centerJ.Y, 2))
 				if distance < (radiusI + radiusJ) {
 					// if rectI.HasIntersection(rectJ) {
-					fmt.Printf("circular collision %s with %s\n", entityI.GetName(), entityJ.GetName())
+					// fmt.Printf("circular collision %s with %s\n", entityI.GetName(), entityJ.GetName())
 					delegate := GetDelegateManager().GetCollisionDelegate()
 					// GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
 					GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ)
 				}
 			} else if scene.GetCollisionMode() == ModeBox {
 				if rectI.HasIntersection(rectJ) {
-					fmt.Printf("box collision %s with %s\n", entityI.GetName(), entityJ.GetName())
+					collisionRect, _ := rectI.Intersect(rectJ)
+					// fmt.Printf("box collision %s with %s\n", entityI.GetName(), entityJ.GetName())
 					delegate := GetDelegateManager().GetCollisionDelegate()
 					// GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
-					GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ)
+					GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ, &collisionRect)
 				}
 			}
 		}
