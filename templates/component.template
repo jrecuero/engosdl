@@ -1,5 +1,6 @@
 package components
 
+// ComponentName<COMPONENT> is the name to refer <COMPONENT> component.
 var ComponentName<COMPONENT> string = reflect.TypeOf(&<COMPONENT>{}).String()
 
 func init() {
