@@ -16,6 +16,18 @@ type GameManager struct {
 
 var _ engosdl.IGameManager = (*GameManager)(nil)
 
+// Pixel represents any child from an alive entity.
+type Pixel struct {
+	*engosdl.Entity
+}
+
+// NewPixel creates a new pixel instance.
+func NewPixel(name string) *Pixel {
+	return &Pixel{
+		Entity: engosdl.NewEntity(name),
+	}
+}
+
 // NewGameManager created a new game manager instance.
 func NewGameManager(name string) *GameManager {
 	engosdl.Logger.Trace().Str("game-manager", name).Msg("new game-manager")
@@ -36,7 +48,7 @@ func (h *GameManager) CreateAssets() {
 
 func (h *GameManager) createAlive(name string, row int, col int, color sdl.Color) engosdl.IEntity {
 	alive := engosdl.NewEntity(name)
-	alive.AddComponent(NewAlive(fmt.Sprintf("%s/alive", name), 30, row, col, 10, color))
+	alive.AddComponent(NewAlive(fmt.Sprintf("%s/alive", name), 10, row, col, 10, color))
 	return alive
 }
 
@@ -44,23 +56,19 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 		controller := engosdl.NewEntity("controller")
 		board := NewBoard("board", 80, 80, engosdl.NewVector(0, 0), 10)
-		// fmt.Println(len(board.Space))
-		// for i, row := range board.Space {
-		// 	for j, col := range row {
-		// 		fmt.Printf("[%d, %d]: %v\n", i, j, col)
-		// 	}
-		// }
+
 		controller.AddComponent(board)
-		alive1 := h.createAlive("alive-1", 20, 20, sdl.Color{R: 255})
-		alive2 := h.createAlive("alive-1", 20, 60, sdl.Color{B: 255})
-		alive3 := h.createAlive("alive-1", 60, 20, sdl.Color{G: 255})
-		alive4 := h.createAlive("alive-1", 60, 60, sdl.Color{})
+		alive1 := h.createAlive("alive-1", 30, 40, sdl.Color{R: 255})
+		alive2 := h.createAlive("alive-1", 30, 50, sdl.Color{B: 255})
+		alive3 := h.createAlive("alive-1", 40, 40, sdl.Color{G: 255})
+		alive4 := h.createAlive("alive-1", 40, 50, sdl.Color{})
 
 		scene.AddEntity(controller)
 		scene.AddEntity(alive1)
 		scene.AddEntity(alive2)
 		scene.AddEntity(alive3)
 		scene.AddEntity(alive4)
+		scene.SetCollisionCheck(false)
 		return true
 	}
 }

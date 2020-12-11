@@ -110,6 +110,24 @@ func (c *Board) IsCellFree(row int, col int) bool {
 	return false
 }
 
+// UseCell checks if cell in the board is free to be used, if it is already
+// used, if it is already used, remove the entity without assigning the
+// new one.
+func (c *Board) UseCell(row int, col int) bool {
+	if row < 0 || row >= c.Height || col < 0 || col >= c.Width {
+		return false
+	} else if c.Space[row][col] != nil {
+		entity := c.Space[row][col].(*Pixel)
+		parent := entity.GetParent()
+		parent.DeleteChild(entity.GetID())
+		parent.GetScene().DeleteEntity(entity)
+		c.Space[row][col] = nil
+		fmt.Printf("delete pixel at %d, %d\n", row, col)
+		return false
+	}
+	return true
+}
+
 // OnAwake is called when component is first loaded into the scene and all
 // component resources have to be created. No resources dependent with other
 // components or entities can be created at this point.

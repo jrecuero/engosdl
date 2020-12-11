@@ -102,39 +102,42 @@ func (c *Alive) OnStart() {
 func (c *Alive) OnUpdate() {
 	var row, col int
 	if c.counter == c.Tick {
-		c.counter = 0
 		scene := c.GetEntity().GetScene()
 		if controller := scene.GetEntityByName("controller"); controller != nil {
 			if board := controller.GetComponent(&Board{}); board != nil {
-				dead := true
-				for i := 0; i < 9; i++ {
-					if c.firstCell {
-						row, col = c.Row, c.Col
-						c.firstCell = false
+				if c.firstCell {
+					row, col = c.Row, c.Col
+					c.firstCell = false
+				} else {
+					var colValue int
+					values := []int{-1, 0, 1}
+					values2 := []int{-1, 1}
+					iRow := rand.Intn(len(values))
+					rowValue := values[iRow]
+					if rowValue == 0 {
+						iCol := rand.Intn(len(values2))
+						colValue = values2[iCol]
 					} else {
-						values := []int{-1, 0, 1}
-						iRow := rand.Intn(len(values))
 						iCol := rand.Intn(len(values))
-						row = values[iRow] + c.Row
-						col = values[iCol] + c.Col
+						colValue = values[iCol]
 					}
-					if board.(*Board).IsCellFree(row, col) {
-						child := engosdl.NewEntity(fmt.Sprintf("%s-child", c.GetEntity().GetName()))
-						box := components.NewBox("child/box", &sdl.Rect{W: c.Size, H: c.Size}, c.Color, true)
-						child.AddComponent(box)
-						c.GetEntity().AddChild(child)
-						scene.AddEntity(child)
-						board.(*Board).AddEntityAt(child, row, col)
-						pos, _ := board.(*Board).GetPositionFromCell(row, col)
-						child.GetTransform().SetPosition(pos)
-						c.Row = row
-						c.Col = col
-						dead = false
-						break
-					}
+					row = c.Row + rowValue
+					col = c.Col + colValue
 				}
-				if dead {
-					fmt.Printf("alive is dead")
+				// if board.(*Board).IsCellFree(row, col) {
+				if board.(*Board).UseCell(row, col) {
+					child := NewPixel(fmt.Sprintf("%s-child", c.GetEntity().GetName()))
+					box := components.NewBox("child/box", &sdl.Rect{W: c.Size, H: c.Size}, c.Color, true)
+					child.AddComponent(box)
+					c.GetEntity().AddChild(child)
+					scene.AddEntity(child)
+					board.(*Board).AddEntityAt(child, row, col)
+					pos, _ := board.(*Board).GetPositionFromCell(row, col)
+					child.GetTransform().SetPosition(pos)
+					c.Row = row
+					c.Col = col
+					fmt.Printf("new pixel at: %d, %d\n", row, col)
+					c.counter = 0
 				}
 			}
 		}

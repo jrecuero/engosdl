@@ -224,6 +224,7 @@ func (engine *Engine) DoRun() {
 		frameTime := sdl.GetTicks() - frameStart
 
 		if frameTime < _delay {
+			// fmt.Println(_delay - frameTime)
 			sdl.Delay(_delay - frameTime)
 		}
 	}
