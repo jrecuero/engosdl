@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/jrecuero/engosdl"
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 // ComponentNameBody is the name to refer body component.
@@ -56,7 +55,7 @@ func (c *Body) GetCollisionBox() engosdl.ICollisionBox {
 	c.collisionBox.center = engosdl.NewVector(x+(w/2), y+(h/2))
 	// Set collision box radius as 75% of the minimum radius.
 	c.collisionBox.radius = (math.Min(w, h) / 2) * 0.75
-	c.collisionBox.rect = &sdl.Rect{X: int32(x), Y: int32(y), W: int32(w), H: int32(h)}
+	c.collisionBox.rect = &engosdl.Rect{X: x, Y: y, W: w, H: h}
 	return c.collisionBox
 }
 

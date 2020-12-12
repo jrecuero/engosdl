@@ -42,7 +42,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 
 		net := engosdl.NewEntity("net")
 		net.GetTransform().SetPositionXY(395, 0)
-		net.AddComponent(components.NewBox("net/box", &sdl.Rect{W: 10, H: 400}, sdl.Color{B: 255}, true))
+		net.AddComponent(components.NewBox("net/box", &engosdl.Rect{W: 10, H: 400}, sdl.Color{B: 255}, true))
 
 		score1 := engosdl.NewEntity("score1")
 		score1.GetTransform().SetPositionXY(50, 10)
@@ -57,7 +57,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		player1 := engosdl.NewEntity("player1")
 		player1.SetTag("player")
 		player1.GetTransform().SetPositionXY(750, 180)
-		box1 := components.NewBox("player1/box", &sdl.Rect{W: 10, H: 40}, sdl.Color{B: 255}, true)
+		box1 := components.NewBox("player1/box", &engosdl.Rect{W: 10, H: 40}, sdl.Color{B: 255}, true)
 		body1 := components.NewBody("player1/body", false)
 		keyboard1 := components.NewKeyboard("player1/keyboard", map[int]bool{sdl.SCANCODE_LEFT: true, sdl.SCANCODE_RIGHT: true})
 		moveIt1 := components.NewMoveIt("player1/move-it", engosdl.NewVector(0, 5))
@@ -87,7 +87,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		player2 := engosdl.NewEntity("player2")
 		player2.SetTag("player")
 		player2.GetTransform().SetPositionXY(50, 180)
-		box2 := components.NewBox("player2/box", &sdl.Rect{W: 10, H: 40}, sdl.Color{B: 255}, true)
+		box2 := components.NewBox("player2/box", &engosdl.Rect{W: 10, H: 40}, sdl.Color{B: 255}, true)
 		body2 := components.NewBody("player2/body", false)
 		keyboard2 := components.NewKeyboard("player2/keyboard", map[int]bool{sdl.SCANCODE_A: true, sdl.SCANCODE_S: true})
 		moveIt2 := components.NewMoveIt("player2/move-it", engosdl.NewVector(0, 5))
@@ -122,7 +122,7 @@ func (h *GameManager) createScenePlay() func(engine *engosdl.Engine, scene engos
 		ballOut := engosdl.NewEntity("ball-out")
 		ballOut.AddComponent(components.NewSound("ball-out/sound", "sounds/out.mp3", engosdl.SoundMP3))
 
-		box3 := components.NewBox("ball/box", &sdl.Rect{W: 10, H: 10}, sdl.Color{}, true)
+		box3 := components.NewBox("ball/box", &engosdl.Rect{W: 10, H: 10}, sdl.Color{}, true)
 		body3 := components.NewBody("ball/body", false)
 		moveTo3 := components.NewMoveTo("ball/move-it", engosdl.NewVector(speed, speed))
 		moveTo3.AddDelegateToRegister(nil, nil, &components.Body{}, func(params ...interface{}) bool {

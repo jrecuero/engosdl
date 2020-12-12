@@ -43,7 +43,7 @@ type IComponent interface {
 
 // ICollisionBox represets the interface for any collider collision box.
 type ICollisionBox interface {
-	GetRect() *sdl.Rect
+	GetRect() *Rect
 	GetCenter() *Vector
 	GetRadius() float64
 }
@@ -57,7 +57,7 @@ type ICollider interface {
 // ISprite represents the interface for any sprite component.
 type ISprite interface {
 	IComponent
-	GetCamera() *sdl.Rect
+	GetCamera() *Rect
 	GetFileImageIndex() int
 	GetFilename() []string
 	LoadSprite()
@@ -66,7 +66,7 @@ type ISprite interface {
 	NextSprite() int
 	PreviousFileImage() int
 	PreviousSprite() int
-	SetCamera(*sdl.Rect)
+	SetCamera(*Rect)
 }
 
 // ISound represents the interface for any sound component.

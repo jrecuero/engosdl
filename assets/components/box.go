@@ -20,13 +20,13 @@ func init() {
 type Box struct {
 	*engosdl.Component
 	renderer *sdl.Renderer
-	box      *sdl.Rect
+	box      *engosdl.Rect
 	color    sdl.Color
 	filled   bool
 }
 
 // NewBox create a new box instance.
-func NewBox(name string, box *sdl.Rect, color sdl.Color, filled bool) *Box {
+func NewBox(name string, box *engosdl.Rect, color sdl.Color, filled bool) *Box {
 	engosdl.Logger.Trace().Str("component", "box").Str("box", name).Msg("new box")
 	return &Box{
 		Component: engosdl.NewComponent(name),
@@ -40,7 +40,7 @@ func NewBox(name string, box *sdl.Rect, color sdl.Color, filled bool) *Box {
 // CreateBox implements box constructor used by component manager.
 func CreateBox(params ...interface{}) engosdl.IComponent {
 	if len(params) == 4 {
-		return NewBox(params[0].(string), params[1].(*sdl.Rect), params[2].(sdl.Color), params[3].(bool))
+		return NewBox(params[0].(string), params[1].(*engosdl.Rect), params[2].(sdl.Color), params[3].(bool))
 	}
 	return NewBox("", nil, sdl.Color{}, false)
 }

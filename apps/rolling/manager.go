@@ -21,6 +21,17 @@ func NewGameManager(name string) *GameManager {
 // before game engine starts in order to create all required assets and
 // resources.
 func (h *GameManager) CreateAssets() {
+	scenePlay := engosdl.NewScene("play-scene", "play")
+	scenePlay.SetSceneCode(h.createScenePlay())
+	engosdl.GetEngine().AddScene(scenePlay)
+}
+
+func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bool {
+	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
+		player := engosdl.NewEntity("player")
+		player.SetTag("player")
+		return true
+	}
 }
 
 // DoFrameEnd is called at the end of every engine frame.

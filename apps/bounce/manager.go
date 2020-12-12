@@ -37,7 +37,7 @@ func (h *GameManager) createBox(name string, position *engosdl.Vector, speed *en
 	box.SetCache("counter", 0)
 	box.SetTag("box")
 	box.GetTransform().SetPositionXY(position.X, position.Y)
-	box.AddComponent(components.NewBox("box/box", &sdl.Rect{W: 50, H: 50}, sdl.Color{B: 255}, true))
+	box.AddComponent(components.NewBox("box/box", &engosdl.Rect{W: 50, H: 50}, sdl.Color{B: 255}, true))
 	box.AddComponent(components.NewBody("box/body", false))
 	box.AddComponent(components.NewMoveTo("box/move-to", speed))
 	box.GetComponent(&components.MoveTo{}).AddDelegateToRegister(nil, nil, &components.Body{}, func(params ...interface{}) bool {
@@ -58,7 +58,7 @@ func (h *GameManager) createBox(name string, position *engosdl.Vector, speed *en
 			if counter, err := me.GetCache("counter"); err == nil {
 				me.SetCache("counter", counter.(int)+1)
 			}
-			collisionRect := params[2].(*sdl.Rect)
+			collisionRect := params[2].(*engosdl.Rect)
 			if collisionRect.W > collisionRect.H {
 				if (collisionRect.Y > me.GetTransform().GetRect().Y && c.GetSpeed().Y > 0) ||
 					(collisionRect.Y <= me.GetTransform().GetRect().Y && c.GetSpeed().Y < 0) {

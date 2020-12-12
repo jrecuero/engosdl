@@ -26,7 +26,7 @@ type Sprite struct {
 	height         int32
 	renderer       *sdl.Renderer
 	textures       []*sdl.Texture
-	camera         *sdl.Rect
+	camera         *engosdl.Rect
 	fileImageIndex int
 	SpriteTotal    int `json:"sprite-total"`
 	spriteIndex    int
@@ -126,7 +126,7 @@ func (c *Sprite) DoUnLoad() {
 }
 
 // GetCamera returns the camera used to display the sprite
-func (c *Sprite) GetCamera() *sdl.Rect {
+func (c *Sprite) GetCamera() *engosdl.Rect {
 	return c.camera
 }
 
@@ -232,7 +232,7 @@ func (c *Sprite) PreviousSprite() int {
 }
 
 // SetCamera sets the camera used to display the sprite.
-func (c *Sprite) SetCamera(camera *sdl.Rect) {
+func (c *Sprite) SetCamera(camera *engosdl.Rect) {
 	c.camera = camera
 }
 

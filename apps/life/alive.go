@@ -127,7 +127,7 @@ func (c *Alive) OnUpdate() {
 				// if board.(*Board).IsCellFree(row, col) {
 				if board.(*Board).UseCell(row, col) {
 					child := NewPixel(fmt.Sprintf("%s-child", c.GetEntity().GetName()))
-					box := components.NewBox("child/box", &sdl.Rect{W: c.Size, H: c.Size}, c.Color, true)
+					box := components.NewBox("child/box", &engosdl.Rect{W: float64(c.Size), H: float64(c.Size)}, c.Color, true)
 					child.AddComponent(box)
 					c.GetEntity().AddChild(child)
 					scene.AddEntity(child)

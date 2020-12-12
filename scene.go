@@ -140,7 +140,7 @@ func (scene *Scene) checkCollisions() {
 						// fmt.Printf("box collision %s with %s\n", entityI.GetName(), entityJ.GetName())
 						delegate := GetDelegateManager().GetCollisionDelegate()
 						// GetDelegateManager().TriggerDelegate(delegate, true, entityI, entityJ)
-						GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ, &collisionRect)
+						GetDelegateManager().TriggerDelegateFor(delegate, []IEntity{entityI, entityJ}, true, entityI, entityJ, collisionRect)
 					}
 				}
 			}

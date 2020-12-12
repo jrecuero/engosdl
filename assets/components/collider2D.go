@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/jrecuero/engosdl"
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 // ComponentNameCollider2D is the name to refer collider-2 component.
@@ -19,13 +18,13 @@ func init() {
 
 // CollisionBox identify the model to be used for collisions.
 type CollisionBox struct {
-	rect   *sdl.Rect
+	rect   *engosdl.Rect
 	center *engosdl.Vector
 	radius float64
 }
 
 // GetRect returns collision box rectangle.
-func (c *CollisionBox) GetRect() *sdl.Rect {
+func (c *CollisionBox) GetRect() *engosdl.Rect {
 	return c.rect
 }
 
@@ -68,7 +67,7 @@ func (c *Collider2D) GetCollisionBox() engosdl.ICollisionBox {
 	c.collisionBox.center = engosdl.NewVector(x+(w/2), y+(h/2))
 	// Set collision box radius as 75% of the minimum radius.
 	c.collisionBox.radius = (math.Min(w, h) / 2) * 0.75
-	c.collisionBox.rect = &sdl.Rect{X: int32(x), Y: int32(y), W: int32(w), H: int32(h)}
+	c.collisionBox.rect = &engosdl.Rect{X: x, Y: y, W: w, H: h}
 	return c.collisionBox
 }
 
