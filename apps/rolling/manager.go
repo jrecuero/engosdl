@@ -1,6 +1,12 @@
 package main
 
-import "github.com/jrecuero/engosdl"
+import (
+	"fmt"
+
+	"github.com/jrecuero/engosdl"
+	"github.com/jrecuero/engosdl/assets/components"
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 // GameManager is the application game manager.
 type GameManager struct {
@@ -30,6 +36,44 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 		player := engosdl.NewEntity("player")
 		player.SetTag("player")
+		mouse := components.NewMouse("player/mouse", true)
+		player.AddComponent(mouse)
+
+		lookButton := engosdl.NewEntity("player-look-button")
+		lookButton.GetTransform().SetPositionXY(10, 50)
+		lookText := components.NewText("player/look-text", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "LOOK")
+		lookText.AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+			return func(params ...interface{}) bool {
+				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
+				if c.GetEntity().IsInside(mousePos) {
+					fmt.Println("you clicked inside LOOK button")
+				} else {
+					fmt.Println("you clicked outside LOOK button")
+				}
+				return true
+			}
+		}(lookText))
+		lookButton.AddComponent(lookText)
+		player.AddChild(lookButton)
+
+		moveButton := engosdl.NewEntity("player-move-button")
+		moveButton.GetTransform().SetPositionXY(100, 50)
+		moveText := components.NewText("player/move-text", "fonts/fira.ttf", 32, sdl.Color{R: 255}, "MOVE")
+		moveText.AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+			return func(params ...interface{}) bool {
+				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
+				if c.GetEntity().IsInside(mousePos) {
+					fmt.Println("you clicked inside MOVE button")
+				} else {
+					fmt.Println("you clicked outside MOVE button")
+				}
+				return true
+			}
+		}(moveText))
+		moveButton.AddComponent(moveText)
+		player.AddChild(moveButton)
+
+		scene.AddEntity(player)
 		return true
 	}
 }
