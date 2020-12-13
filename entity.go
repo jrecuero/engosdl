@@ -63,6 +63,7 @@ type IEntity interface {
 	GetScene() IScene
 	GetTag() string
 	GetTransform() ITransform
+	IsInside(*Vector) bool
 	OnRender()
 	OnEnable()
 	OnStart()
@@ -376,6 +377,12 @@ func (entity *Entity) GetTag() string {
 // GetTransform returns the entity transform.
 func (entity *Entity) GetTransform() ITransform {
 	return entity.Transform
+}
+
+// IsInside returns if the given position is inside the entity rectangle.
+func (entity *Entity) IsInside(pos *Vector) bool {
+	rect := entity.GetTransform().GetRect()
+	return pos.InRect(rect)
 }
 
 // loadUnloadedComponents proceeds to load any unloaded component.
