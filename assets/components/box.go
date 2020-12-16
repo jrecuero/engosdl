@@ -20,8 +20,8 @@ func init() {
 type Box struct {
 	*engosdl.Component
 	renderer *sdl.Renderer
-	box      *engosdl.Rect
-	color    sdl.Color
+	Border   *engosdl.Rect
+	Color    sdl.Color
 	filled   bool
 }
 
@@ -31,8 +31,8 @@ func NewBox(name string, box *engosdl.Rect, color sdl.Color, filled bool) *Box {
 	return &Box{
 		Component: engosdl.NewComponent(name),
 		renderer:  engosdl.GetRenderer(),
-		box:       box,
-		color:     color,
+		Border:    box,
+		Color:     color,
 		filled:    filled,
 	}
 }
@@ -85,14 +85,14 @@ func (c *Box) DefaultOnOutOfBounds(params ...interface{}) bool {
 // with any other component or entity.
 func (c *Box) OnAwake() {
 	engosdl.Logger.Trace().Str("component", "box").Str("box", c.GetName()).Msg("OnAwake")
-	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.box.W), float64(c.box.H)))
+	c.GetEntity().GetTransform().SetDim(engosdl.NewVector(float64(c.Border.W), float64(c.Border.H)))
 	c.Component.OnAwake()
 }
 
 // OnRender is called every engine frame in order to render component.
 func (c *Box) OnRender() {
 	x, y, w, h := c.GetEntity().GetTransform().GetRectExt()
-	c.renderer.SetDrawColor(c.color.R, c.color.G, c.color.B, c.color.A)
+	c.renderer.SetDrawColor(c.Color.R, c.Color.G, c.Color.B, c.Color.A)
 	if c.filled {
 		c.renderer.FillRect(&sdl.Rect{X: int32(x), Y: int32(y), W: int32(w), H: int32(h)})
 	} else {
