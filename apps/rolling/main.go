@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	fmt.Println("flier game")
+	fmt.Println("rol player game")
 	if engine := engosdl.NewEngine("flier", 800, 400, NewGameManager("rolling-game-manager")); engine != nil {
 		engine.RunEngine(nil)
 	}
