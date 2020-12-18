@@ -100,12 +100,20 @@ func (c *Text) onUpdateStats(params ...interface{}) bool {
 // SetColor sets text color.
 func (c *Text) SetColor(color sdl.Color) engosdl.IText {
 	c.Color = color
+	c.loadTextureFromTTF()
 	return c
 }
 
 // SetFontFilename sets the filename with the font.
 func (c *Text) SetFontFilename(filename string) engosdl.IText {
 	c.FontFile = filename
+	return c
+}
+
+// SetFontSize sets the font size.
+func (c *Text) SetFontSize(size int) engosdl.IText {
+	c.FontSize = size
+	c.loadTextureFromTTF()
 	return c
 }
 

@@ -25,6 +25,7 @@ type IComponent interface {
 	DoUnLoad()
 	GetActive() bool
 	GetDelegate() IDelegate
+	GetEnable() bool
 	GetEntity() IEntity
 	GetRemoveOnDestroy() bool
 	OnAwake()
@@ -36,6 +37,7 @@ type IComponent interface {
 	SetActive(bool)
 	SetCustomOnUpdate(func(IComponent))
 	SetDelegate(IDelegate)
+	SetEnable(bool)
 	SetEntity(IEntity)
 	SetRemoveOnDestroy(bool)
 	Unmarshal(map[string]interface{})
@@ -99,6 +101,7 @@ type Component struct {
 	*Object
 	entity          IEntity
 	active          bool
+	enable          bool
 	delegate        IDelegate
 	registers       []IRegister
 	removeOnDestroy bool
@@ -114,6 +117,7 @@ func NewComponent(name string) *Component {
 		Object:          NewObject(name),
 		entity:          nil,
 		active:          true,
+		enable:          true,
 		delegate:        nil,
 		registers:       []IRegister{},
 		removeOnDestroy: true,
@@ -237,6 +241,11 @@ func (c *Component) GetDelegate() IDelegate {
 	return c.delegate
 }
 
+// GetEnable returns if component is enabled or not.
+func (c *Component) GetEnable() bool {
+	return c.enable
+}
+
 // GetEntity return the component entity parent.
 func (c *Component) GetEntity() IEntity {
 	return c.entity
@@ -348,6 +357,11 @@ func (c *Component) SetCustomOnUpdate(customCall func(IComponent)) {
 // SetDelegate sets component delegate.
 func (c *Component) SetDelegate(delegate IDelegate) {
 	c.delegate = delegate
+}
+
+// SetEnable sets component enable attribute.
+func (c *Component) SetEnable(enable bool) {
+	c.enable = enable
 }
 
 // SetEntity sets component new entity instance.
