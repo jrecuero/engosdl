@@ -50,7 +50,7 @@ type IRegister interface {
 	SetSignature(TDelegateSignature) IRegister
 }
 
-// IDelegateManager represents the interface for the delefate event handler.
+// IDelegateManager represents the interface for the delegate event manager.
 type IDelegateManager interface {
 	IObject
 	AuditDelegates()
@@ -274,7 +274,7 @@ func (h *DelegateManager) DeregisterFromDelegate(registerID string) bool {
 }
 
 // DoInit initializes all delegate manager resources.
-func (h DelegateManager) DoInit() {
+func (h *DelegateManager) DoInit() {
 	Logger.Trace().Str("delegate-manager", h.GetName()).Msg("DoInit")
 	h.defaults[collisionDelegate] = h.CreateDelegate(h, collisionDelegate)
 	h.defaults[destroyDelegate] = h.CreateDelegate(h, destroyDelegate)

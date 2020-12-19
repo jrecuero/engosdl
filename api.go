@@ -100,7 +100,15 @@ func GetEngine() *Engine {
 	return gameEngine
 }
 
-// GetDelegateManager returns the delegate handler.
+// GetCursorManager returns the engine cursor manager.
+func GetCursorManager() ICursorManager {
+	if engine := GetEngine(); engine != nil {
+		return engine.GetCursorManager()
+	}
+	return nil
+}
+
+// GetDelegateManager returns the engine delegate manager.
 func GetDelegateManager() IDelegateManager {
 	if engine := GetEngine(); engine != nil {
 		return engine.GetDelegateManager()
@@ -108,7 +116,7 @@ func GetDelegateManager() IDelegateManager {
 	return nil
 }
 
-// GetEventManager returns the event handler.
+// GetEventManager returns the engine event manager.
 func GetEventManager() IEventManager {
 	if engine := GetEngine(); engine != nil {
 		return engine.GetEventManager()
@@ -116,7 +124,7 @@ func GetEventManager() IEventManager {
 	return nil
 }
 
-// GetFontManager returns the font handler.
+// GetFontManager returns the engine font manager.
 func GetFontManager() IFontManager {
 	if engine := GetEngine(); engine != nil {
 		return engine.GetFontManager()
@@ -124,7 +132,7 @@ func GetFontManager() IFontManager {
 	return nil
 }
 
-// GetGameManager returns the game manager.
+// GetGameManager returns the engine game manager.
 func GetGameManager() IGameManager {
 	if engine := GetEngine(); engine != nil {
 		return engine.GetGameManager()

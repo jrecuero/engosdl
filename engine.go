@@ -26,6 +26,7 @@ type Engine struct {
 	sceneManager    ISceneManager
 	soundManager    ISoundManager
 	gameManager     IGameManager
+	cursorManager   ICursorManager
 	debugServer     bool
 }
 
@@ -46,6 +47,7 @@ func NewEngine(name string, w, h int32, gameManager IGameManager) *Engine {
 			resourceManager: NewResourceManager("engine-resource-manager"),
 			sceneManager:    NewSceneManager("engine-scene-manager"),
 			soundManager:    NewSoundManager("engine-sound-manager"),
+			cursorManager:   NewCursorManager("engine-cursor-manager"),
 			gameManager:     gameManager,
 			debugServer:     false,
 		}
@@ -250,6 +252,7 @@ func (engine *Engine) DoStart(scene IScene) {
 	engine.GetSoundManager().OnStart()
 	engine.GetSceneManager().OnStart()
 	engine.GetGameManager().OnStart()
+	engine.GetCursorManager().OnStart()
 
 	// Set first scene as the active by default.
 	if scene != nil {
@@ -271,19 +274,26 @@ func (engine *Engine) DoUpdate() {
 	engine.GetSceneManager().OnAfterUpdate()
 	// Call game manager after update.
 	engine.GetGameManager().OnAfterUpdate()
+	// Call cursor manager after ALL updates.
+	engine.GetCursorManager().OnAfterUpdate()
 }
 
-// GetDelegateManager returns the engine delegate handler.
+// GetCursorManager returns the engine cursor manager.
+func (engine *Engine) GetCursorManager() ICursorManager {
+	return engine.cursorManager
+}
+
+// GetDelegateManager returns the engine delegate manager.
 func (engine *Engine) GetDelegateManager() IDelegateManager {
 	return engine.delegateManager
 }
 
-// GetEventManager returns the engine event handler.
+// GetEventManager returns the engine event manager.
 func (engine *Engine) GetEventManager() IEventManager {
 	return engine.eventManager
 }
 
-// GetFontManager returns the engine font handler.
+// GetFontManager returns the engine font manager.
 func (engine *Engine) GetFontManager() IFontManager {
 	return engine.fontManager
 }

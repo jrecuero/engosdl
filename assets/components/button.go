@@ -117,10 +117,12 @@ func (c *Button) OnUpdate() {
 	if entity.IsInside(engosdl.NewVector(float64(x), float64(y))) {
 		// cursor := sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_HAND)
 		// sdl.SetCursor(cursor)
+		engosdl.GetCursorManager().CursorUpdate(c.GetEntity(), sdl.SYSTEM_CURSOR_HAND)
 		c.borderColor.A = 255
 	} else {
 		// cursor := sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_ARROW)
 		// sdl.SetCursor(cursor)
+		engosdl.GetCursorManager().CursorUpdate(nil, sdl.SYSTEM_CURSOR_ARROW)
 		c.borderColor.A = 0
 	}
 	// c.Component.OnUpdate()
