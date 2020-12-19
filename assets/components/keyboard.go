@@ -101,36 +101,4 @@ func (c *Keyboard) OnUpdate() {
 			c.keys[key] = false
 		}
 	}
-	// if keys[sdl.SCANCODE_LEFT] == 1 {
-	// 	engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, sdl.SCANCODE_LEFT)
-	// }
-	// if keys[sdl.SCANCODE_RIGHT] == 1 {
-	// 	engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, sdl.SCANCODE_RIGHT)
-	// }
-	// if keys[sdl.SCANCODE_UP] == 1 {
-	// 	engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, sdl.SCANCODE_UP)
-	// }
-	// if keys[sdl.SCANCODE_DOWN] == 1 {
-	// 	engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), true, sdl.SCANCODE_DOWN)
-	// }
-	// if keys[sdl.SCANCODE_RETURN] == 1 {
-	// 	if _, ok := c.keys[sdl.SCANCODE_RETURN]; !ok {
-	// 		c.keys[sdl.SCANCODE_RETURN] = true
-	// 	}
-	// 	// engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), false, sdl.SCANCODE_RETURN)
-	// }
-	// if keys[sdl.SCANCODE_N] == 1 {
-	// 	engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), false, sdl.SCANCODE_N)
-	// }
-	// if keys[sdl.SCANCODE_P] == 1 {
-	// 	engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), false, sdl.SCANCODE_P)
-	// }
-	// if keys[sdl.SCANCODE_SPACE] == 1 {
-	// 	engosdl.Logger.Trace().Str("component", "keyboard").Str("keyboard", c.GetName()).Msg("space key pressed")
-	// }
-
-	// if keys[sdl.SCANCODE_RETURN] == 0 && c.keys[sdl.SCANCODE_RETURN] {
-	// 	engosdl.GetDelegateManager().TriggerDelegate(c.GetDelegate(), false, sdl.SCANCODE_RETURN)
-	// 	c.keys[sdl.SCANCODE_RETURN] = false
-	// }
 }

@@ -39,6 +39,7 @@ type IEntity interface {
 	IObject
 	AddChild(IEntity) bool
 	AddComponent(IComponent) IEntity
+	AddComponentExt(IComponent, IEntity) IEntity
 	DeleteChild(string) bool
 	DeleteChildByName(string) bool
 	DoDestroy()
@@ -139,22 +140,44 @@ func (entity *Entity) AddChild(child IEntity) bool {
 
 // AddComponent adds a new component to the entity.
 func (entity *Entity) AddComponent(component IComponent) IEntity {
-	Logger.Trace().Str("entity", entity.GetName()).
+	// Logger.Trace().Str("entity", entity.GetName()).
+	// 	Str("component", component.GetName()).
+	// 	Str("type", reflect.TypeOf(component).String()).
+	// 	Msg("add component")
+	// for _, comp := range entity.GetComponents() {
+	// 	if reflect.TypeOf(comp) == reflect.TypeOf(component) {
+	// 		err := fmt.Errorf("component type %s already exist", reflect.TypeOf(component))
+	// 		Logger.Error().Err(err).Msg("AddComponent error")
+	// 		panic(err)
+	// 	}
+	// }
+	// component.SetEntity(entity)
+	// // component.OnAwake()
+	// entity.components = append(entity.components, component)
+	// entity.unloadedComponents = append(entity.unloadedComponents, component)
+	// return entity
+	return entity.AddComponentExt(component, entity)
+}
+
+// AddComponentExt adds a new component to the entity, but it provides the
+// entity as an additional parameter. Required for custom entities with
+// methods not defined in IEntity interface.
+func (entity *Entity) AddComponentExt(component IComponent, extEntity IEntity) IEntity {
+	Logger.Trace().Str("entity", extEntity.GetName()).
 		Str("component", component.GetName()).
 		Str("type", reflect.TypeOf(component).String()).
 		Msg("add component")
-	for _, comp := range entity.GetComponents() {
+	for _, comp := range extEntity.GetComponents() {
 		if reflect.TypeOf(comp) == reflect.TypeOf(component) {
 			err := fmt.Errorf("component type %s already exist", reflect.TypeOf(component))
 			Logger.Error().Err(err).Msg("AddComponent error")
 			panic(err)
 		}
 	}
-	component.SetEntity(entity)
-	// component.OnAwake()
+	component.SetEntity(extEntity)
 	entity.components = append(entity.components, component)
 	entity.unloadedComponents = append(entity.unloadedComponents, component)
-	return entity
+	return extEntity
 }
 
 // DeleteChild removes a child from entity children using child ID.
@@ -495,6 +518,13 @@ func (entity *Entity) SetDieOnCollision(die bool) IEntity {
 func (entity *Entity) SetDieOnOutOfBounds(die bool) IEntity {
 	entity.DieOnOutOfBounds = die
 	return entity
+}
+
+// SetEnabled sets the entity to be enabled.
+func (entity *Entity) SetEnabled(enabled bool) {
+	for _, component := range entity.components {
+		component.SetEnabled(enabled)
+	}
 }
 
 // SetLayer sets the entity layer where it will be placed.

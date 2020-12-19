@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/jrecuero/engosdl"
 	"github.com/jrecuero/engosdl/assets/components"
 	"github.com/veandco/go-sdl2/sdl"
@@ -33,7 +31,41 @@ func (h *GameManager) CreateAssets() {
 }
 
 func (h *GameManager) createBoard() *Board {
+	var cell *Cell
 	board := NewBoard("dungeon", 10, 1, engosdl.NewVector(5, 5), 32)
+
+	cell = NewCell(0, 0)
+	cell.EnterDialog = "You enter in the dungeon"
+	cell.ExitDialog = "Perils follow from this point"
+	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		newPos := &Position{Row: position.Row, Col: position.Col + 1}
+		board.DeleteEntityAt(position.Row, position.Col)
+		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
+		return "Move to the next cell", nil
+	}
+	board.Cells[0][0] = cell
+
+	cell = NewCell(0, 1)
+	cell.EnterDialog = "There is an enemy here"
+	cell.ExitDialog = "You beat the enemy. You can continue"
+	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		return "Enemy is ready to fight", nil
+	}
+	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		newPos := &Position{Row: position.Row, Col: position.Col + 1}
+		board.DeleteEntityAt(position.Row, position.Col)
+		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
+		return "Move to the next cell", nil
+	}
+	board.Cells[0][1] = cell
+
+	cell = NewCell(0, 2)
+	cell.EnterDialog = "You reach your destination"
+	cell.ExitDialog = "This is the end"
+	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		return "You made it!", nil
+	}
+	board.Cells[0][2] = cell
 	return board
 }
 
@@ -43,26 +75,25 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 		board.GetTransform().SetPositionXY(5, 5)
 		board.AddComponent(h.createBoard())
 
-		player := engosdl.NewEntity("player")
+		// player := engosdl.NewEntity("player")
+		player := NewPlayer("player")
 		player.SetTag("player")
 		mouse := components.NewMouse("player/mouse", true)
 		player.AddComponent(mouse)
 		player.AddComponent(components.NewBox("player/box", &engosdl.Rect{W: 32, H: 32}, sdl.Color{B: 125}, true))
 		row, col := 0, 0
-		board.GetComponent(&Board{}).(*Board).AddEntityAt(player, row, col)
-		counter := 0
-		player.SetCustomOnUpdate(func(entity engosdl.IEntity) {
-			if counter == 30 {
-				board.GetComponent(&Board{}).(*Board).DeleteEntityAt(row, col)
-				col++
-				col %= 10
-				board.GetComponent(&Board{}).(*Board).AddEntityAt(player, row, col)
-				counter = 0
-			} else {
-				counter++
-			}
+		board.GetComponent(&Board{}).(*Board).AddEntityAt(player, row, col, true)
 
-		})
+		playerController := engosdl.NewComponent("player/controller")
+		player.AddComponentExt(playerController, player)
+		// playerController.SetEntity(player)
+		playerController.AddDelegateToRegister(nil, board, &Board{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+			return func(params ...interface{}) bool {
+				actions := params[0].([]string)
+				c.GetEntity().(*Player).UpdateActions(actions)
+				return true
+			}
+		}(playerController))
 
 		console := engosdl.NewEntity("console")
 		console.GetTransform().SetPositionXY(10, 200)
@@ -71,11 +102,11 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 		console.AddComponent(consoleText)
 		message := ""
 
-		lookButton := engosdl.NewEntity("player-look-button")
-		moveButton := engosdl.NewEntity("player-move-button")
+		lookButton := engosdl.NewEntity("look")
+		moveButton := engosdl.NewEntity("move")
 
 		lookButton.GetTransform().SetPositionXY(10, 50)
-		lookButton.AddComponent(components.NewBox("look/box", &engosdl.Rect{}, sdl.Color{R: 255}, true))
+		lookButton.AddComponent(components.NewBox("look/box", &engosdl.Rect{}, sdl.Color{R: 255}, false))
 		lookButton.GetComponent(&components.Box{}).SetCustomOnUpdate(func(c engosdl.IComponent) {
 			entity := c.GetEntity()
 			x, y, _ := sdl.GetMouseState()
@@ -93,23 +124,29 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 		})
 		lookText := components.NewText("player/look-text", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "LOOK")
 		lookText.AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
-			enabled := false
+			// enabled := false
 			return func(params ...interface{}) bool {
 				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
 				if c.GetEntity().IsInside(mousePos) {
-					message += "You clicked inside LOOK button\n"
-					consoleText.SetMessage(message)
-					fmt.Println("you clicked inside LOOK button")
-					moveText := moveButton.GetComponent(&components.Text{}).(*components.Text)
-					moveText.SetEnable(enabled)
-					if enabled {
-						moveText.SetColor(sdl.Color{R: 255, A: 255})
-					} else {
-						moveText.SetColor(sdl.Color{R: 255, A: 100})
+					if c.GetEnabled() {
+						// message += "You clicked inside LOOK button\n"
+						// consoleText.SetMessage(message)
+						// fmt.Println("you clicked inside LOOK button")
+						// 	moveText := moveButton.GetComponent(&components.Text{}).(*components.Text)
+						// 	moveText.SetEnabled(enabled)
+						// 	if enabled {
+						// 		moveText.SetColor(sdl.Color{R: 255, A: 255})
+						// 	} else {
+						// 		moveText.SetColor(sdl.Color{R: 255, A: 100})
+						// 	}
+						// 	enabled = !enabled
+						if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("look"); err == nil {
+							message += output + "\n"
+							consoleText.SetMessage(message)
+						}
 					}
-					enabled = !enabled
-				} else {
-					fmt.Println("you clicked outside LOOK button")
+					// } else {
+					// 	fmt.Println("you clicked outside LOOK button")
 				}
 				return true
 			}
@@ -124,16 +161,20 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 			return func(params ...interface{}) bool {
 				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
 				if c.GetEntity().IsInside(mousePos) {
-					if c.GetEnable() {
-						message += "You clicked inside MOVE button\n"
-						consoleText.SetMessage(message)
-						fmt.Println("you clicked inside MOVE button")
-					} else {
-						message += "Component MOVE is not enabled\n"
-						consoleText.SetMessage(message)
+					if c.GetEnabled() {
+						// message += "You clicked inside MOVE button\n"
+						// consoleText.SetMessage(message)
+						// fmt.Println("you clicked inside MOVE button")
+						if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("move"); err == nil {
+							message += output + "\n"
+							consoleText.SetMessage(message)
+						}
+						// } else {
+						// 	message += "Component MOVE is not enabled\n"
+						// 	consoleText.SetMessage(message)
 					}
-				} else {
-					fmt.Println("you clicked outside MOVE button")
+					// } else {
+					// 	fmt.Println("you clicked outside MOVE button")
 				}
 				return true
 			}

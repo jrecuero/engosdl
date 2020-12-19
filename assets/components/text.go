@@ -70,6 +70,16 @@ func (c *Text) loadTextureFromTTF() {
 // OnRender is called for every render tick.
 func (c *Text) OnRender() {
 	x, y, width, height := c.GetEntity().GetTransform().GetRectExt()
+	if c.GetDirty() {
+		color := c.Color
+		if c.GetEnabled() {
+			color.A = 255
+		} else {
+			color.A = 100
+		}
+		c.SetColor(color)
+		c.SetDirty(false)
+	}
 	c.renderer.CopyEx(c.texture,
 		&sdl.Rect{X: 0, Y: 0, W: c.width, H: c.height},
 		&sdl.Rect{X: int32(x), Y: int32(y), W: int32(width), H: int32(height)},
