@@ -57,6 +57,9 @@ func (h *GameManager) createBoard() *Board {
 		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
 		return "Move to the next cell", nil
 	}
+	cell.ActionAndResult["attack"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		return "Attack enemy", nil
+	}
 	board.Cells[0][1] = cell
 
 	cell = NewCell(0, 2)
@@ -80,7 +83,7 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 		player.SetTag("player")
 		mouse := components.NewMouse("player/mouse", true)
 		player.AddComponent(mouse)
-		player.AddComponent(components.NewBox("player/box", &engosdl.Rect{W: 32, H: 32}, sdl.Color{B: 125}, true))
+		player.AddComponent(components.NewBox("player/box", &engosdl.Rect{W: 32, H: 32}, sdl.Color{B: 125, A: 255}, true))
 		row, col := 0, 0
 		board.GetComponent(&Board{}).(*Board).AddEntityAt(player, row, col, true)
 
@@ -97,90 +100,68 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 
 		console := engosdl.NewEntity("console")
 		console.GetTransform().SetPositionXY(10, 200)
-		console.AddComponent(components.NewBox("console/box", &engosdl.Rect{}, sdl.Color{}, false))
+		// console.AddComponent(components.NewBox("console/box", &engosdl.Rect{}, sdl.Color{}, false))
 		consoleText := components.NewText("console/text", "fonts/fira2.ttf", 12, sdl.Color{}, " ")
 		console.AddComponent(consoleText)
 		message := ""
 
 		lookButton := engosdl.NewEntity("look")
 		moveButton := engosdl.NewEntity("move")
+		attackButton := engosdl.NewEntity("attack")
 
 		lookButton.GetTransform().SetPositionXY(10, 50)
-		lookButton.AddComponent(components.NewBox("look/box", &engosdl.Rect{}, sdl.Color{R: 255}, false))
-		lookButton.GetComponent(&components.Box{}).SetCustomOnUpdate(func(c engosdl.IComponent) {
-			entity := c.GetEntity()
-			x, y, _ := sdl.GetMouseState()
-			box := entity.GetComponent(&components.Box{}).(*components.Box)
-			if entity.IsInside(engosdl.NewVector(float64(x), float64(y))) {
-				box.Color = sdl.Color{G: 255}
-				cursor := sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_HAND)
-				sdl.SetCursor(cursor)
-			} else {
-				box.Color = sdl.Color{R: 255}
-				cursor := sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_ARROW)
-				sdl.SetCursor(cursor)
-			}
-
-		})
-		lookText := components.NewText("player/look-text", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "LOOK")
-		lookText.AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
-			// enabled := false
+		lookButton.AddComponent(components.NewButton("loo/button", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "LOOK", &engosdl.Rect{}, sdl.Color{B: 255}, false))
+		lookButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
 			return func(params ...interface{}) bool {
 				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
 				if c.GetEntity().IsInside(mousePos) {
 					if c.GetEnabled() {
-						// message += "You clicked inside LOOK button\n"
-						// consoleText.SetMessage(message)
-						// fmt.Println("you clicked inside LOOK button")
-						// 	moveText := moveButton.GetComponent(&components.Text{}).(*components.Text)
-						// 	moveText.SetEnabled(enabled)
-						// 	if enabled {
-						// 		moveText.SetColor(sdl.Color{R: 255, A: 255})
-						// 	} else {
-						// 		moveText.SetColor(sdl.Color{R: 255, A: 100})
-						// 	}
-						// 	enabled = !enabled
 						if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("look"); err == nil {
 							message += output + "\n"
 							consoleText.SetMessage(message)
 						}
 					}
-					// } else {
-					// 	fmt.Println("you clicked outside LOOK button")
 				}
 				return true
 			}
-		}(lookText))
-		lookButton.AddComponent(lookText)
+		}(lookButton.GetComponent(&components.Button{})))
 		player.AddChild(lookButton)
 
 		moveButton.GetTransform().SetPositionXY(100, 50)
-		// moveButton.AddComponent(components.NewBox("move/box", &engosdl.Rect{}, sdl.Color{B: 255}, true))
-		moveText := components.NewText("player/move-text", "fonts/fira.ttf", 32, sdl.Color{R: 255}, "MOVE")
-		moveText.AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+		moveButton.AddComponent(components.NewButton("loo/button", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "MOVE", &engosdl.Rect{}, sdl.Color{B: 255}, false))
+		moveButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
 			return func(params ...interface{}) bool {
 				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
 				if c.GetEntity().IsInside(mousePos) {
 					if c.GetEnabled() {
-						// message += "You clicked inside MOVE button\n"
-						// consoleText.SetMessage(message)
-						// fmt.Println("you clicked inside MOVE button")
 						if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("move"); err == nil {
 							message += output + "\n"
 							consoleText.SetMessage(message)
 						}
-						// } else {
-						// 	message += "Component MOVE is not enabled\n"
-						// 	consoleText.SetMessage(message)
 					}
-					// } else {
-					// 	fmt.Println("you clicked outside MOVE button")
 				}
 				return true
 			}
-		}(moveText))
-		moveButton.AddComponent(moveText)
+		}(moveButton.GetComponent(&components.Button{})))
 		player.AddChild(moveButton)
+
+		attackButton.GetTransform().SetPositionXY(210, 50)
+		attackButton.AddComponent(components.NewButton("attack/button", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "ATTACK", &engosdl.Rect{}, sdl.Color{B: 255}, false))
+		attackButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+			return func(params ...interface{}) bool {
+				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
+				if c.GetEntity().IsInside(mousePos) {
+					if c.GetEnabled() {
+						if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("attack"); err == nil {
+							message += output + "\n"
+							consoleText.SetMessage(message)
+						}
+					}
+				}
+				return true
+			}
+		}(attackButton.GetComponent(&components.Button{})))
+		player.AddChild(attackButton)
 
 		scene.AddEntity(board)
 		scene.AddEntity(player)

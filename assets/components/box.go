@@ -92,6 +92,7 @@ func (c *Box) OnAwake() {
 // OnRender is called every engine frame in order to render component.
 func (c *Box) OnRender() {
 	x, y, w, h := c.GetEntity().GetTransform().GetRectExt()
+	c.renderer.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 	c.renderer.SetDrawColor(c.Color.R, c.Color.G, c.Color.B, c.Color.A)
 	if c.filled {
 		c.renderer.FillRect(&sdl.Rect{X: int32(x), Y: int32(y), W: int32(w), H: int32(h)})

@@ -84,6 +84,14 @@ type IText interface {
 	SetMessage(string) IText
 }
 
+// IButton represents the interface for any button component.
+type IButton interface {
+	IComponent
+	SetFontFilename(string) IButton
+	SetColor(sdl.Color) IButton
+	SetMessage(string) IButton
+}
+
 // ITimer represents the timer component. Timer should be base in engine
 // frames.
 type ITimer interface {
