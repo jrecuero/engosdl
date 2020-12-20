@@ -71,7 +71,7 @@ func (c *SceneController) addDelegateToRegisterToButton(name string) {
 	})
 }
 
-func (h *SceneController) createBoard() *Board {
+func (c *SceneController) createBoard() *Board {
 	var cell *Cell
 	board := NewBoard("dungeon", 10, 1, engosdl.NewVector(5, 5), 32)
 
