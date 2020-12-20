@@ -167,24 +167,6 @@ func (c *SceneController) SetupResources() {
 		return true
 	})
 
-	// lookButton := c.Player.GetChildByName("look").GetComponent(&components.Button{})
-	// lookButton.AddDelegateToRegister(nil, c.Player, &components.Mouse{}, func(comp engosdl.IComponent) func(params ...interface{}) bool {
-	// 	return func(params ...interface{}) bool {
-	// 		mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
-	// 		if comp.GetEntity().IsInside(mousePos) {
-	// 			if comp.GetEnabled() {
-	// 				if output, err := c.Board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("look"); err == nil {
-	// 					if obj, error := c.Console.GetCache("message"); error == nil {
-	// 						message := obj.(string) + output + "\n"
-	// 						c.Console.SetCache("message", message)
-	// 						c.Console.GetComponent(&components.Text{}).(*components.Text).SetMessage(message)
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 		return true
-	// 	}
-	// }(lookButton))
 	c.addDelegateToRegisterToButton("look")
 	c.addDelegateToRegisterToButton("move")
 	c.addDelegateToRegisterToButton("attack")
