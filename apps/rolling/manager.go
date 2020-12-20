@@ -74,12 +74,16 @@ func (h *GameManager) createBoard() *Board {
 
 func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bool {
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
-		board := engosdl.NewEntity("board")
+		sceneController := engosdl.NewEntity("scene-controller")
+		sceneController.AddComponent(NewSceneController("scene-controller/component"))
+
+		// board := engosdl.NewEntity("board")
+		board := sceneController.GetComponent(&SceneController{}).(*SceneController).Board
 		board.GetTransform().SetPositionXY(5, 5)
 		board.AddComponent(h.createBoard())
 
-		// player := engosdl.NewEntity("player")
-		player := NewPlayer("player")
+		// player := NewPlayer("player")
+		player := sceneController.GetComponent(&SceneController{}).(*SceneController).Player
 		player.SetTag("player")
 		mouse := components.NewMouse("player/mouse", true)
 		player.AddComponent(mouse)
@@ -89,80 +93,86 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 
 		playerController := engosdl.NewComponent("player/controller")
 		player.AddComponentExt(playerController, player)
-		// playerController.SetEntity(player)
-		playerController.AddDelegateToRegister(nil, board, &Board{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
-			return func(params ...interface{}) bool {
-				actions := params[0].([]string)
-				c.GetEntity().(*Player).UpdateActions(actions)
-				return true
-			}
-		}(playerController))
+		// playerController.AddDelegateToRegister(nil, board, &Board{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+		// 	return func(params ...interface{}) bool {
+		// 		actions := params[0].([]string)
+		// 		c.GetEntity().(*Player).UpdateActions(actions)
+		// 		return true
+		// 	}
+		// }(playerController))
 
-		console := engosdl.NewEntity("console")
+		// console := engosdl.NewEntity("console")
+		console := sceneController.GetComponent(&SceneController{}).(*SceneController).Console
 		console.GetTransform().SetPositionXY(10, 200)
 		// console.AddComponent(components.NewBox("console/box", &engosdl.Rect{}, sdl.Color{}, false))
 		consoleText := components.NewText("console/text", "fonts/fira2.ttf", 12, sdl.Color{}, " ")
 		console.AddComponent(consoleText)
-		message := ""
+		// message := ""
 
-		lookButton := engosdl.NewEntity("look")
-		moveButton := engosdl.NewEntity("move")
-		attackButton := engosdl.NewEntity("attack")
+		// lookButton := engosdl.NewEntity("look")
+		// moveButton := engosdl.NewEntity("move")
+		// attackButton := engosdl.NewEntity("attack")
+		lookButton := player.GetChildByName("look")
+		moveButton := player.GetChildByName("move")
+		attackButton := player.GetChildByName("attack")
 
 		lookButton.GetTransform().SetPositionXY(10, 50)
 		lookButton.AddComponent(components.NewButton("loo/button", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "LOOK", &engosdl.Rect{}, sdl.Color{B: 255}, false))
-		lookButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
-			return func(params ...interface{}) bool {
-				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
-				if c.GetEntity().IsInside(mousePos) {
-					if c.GetEnabled() {
-						if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("look"); err == nil {
-							message += output + "\n"
-							consoleText.SetMessage(message)
-						}
-					}
-				}
-				return true
-			}
-		}(lookButton.GetComponent(&components.Button{})))
+		// lookButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+		// 	return func(params ...interface{}) bool {
+		// 		mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
+		// 		if c.GetEntity().IsInside(mousePos) {
+		// 			if c.GetEnabled() {
+		// 				if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("look"); err == nil {
+		// 					message += output + "\n"
+		// 					consoleText.SetMessage(message)
+		// 				}
+		// 			}
+		// 		}
+		// 		return true
+		// 	}
+		// }(lookButton.GetComponent(&components.Button{})))
 		player.AddChild(lookButton)
 
 		moveButton.GetTransform().SetPositionXY(100, 50)
 		moveButton.AddComponent(components.NewButton("loo/button", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "MOVE", &engosdl.Rect{}, sdl.Color{B: 255}, false))
-		moveButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
-			return func(params ...interface{}) bool {
-				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
-				if c.GetEntity().IsInside(mousePos) {
-					if c.GetEnabled() {
-						if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("move"); err == nil {
-							message += output + "\n"
-							consoleText.SetMessage(message)
-						}
-					}
-				}
-				return true
-			}
-		}(moveButton.GetComponent(&components.Button{})))
+		// moveButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+		// 	return func(params ...interface{}) bool {
+		// 		mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
+		// 		if c.GetEntity().IsInside(mousePos) {
+		// 			if c.GetEnabled() {
+		// 				if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("move"); err == nil {
+		// 					message += output + "\n"
+		// 					consoleText.SetMessage(message)
+		// 				}
+		// 			}
+		// 		}
+		// 		return true
+		// 	}
+		// }(moveButton.GetComponent(&components.Button{})))
 		player.AddChild(moveButton)
 
 		attackButton.GetTransform().SetPositionXY(210, 50)
 		attackButton.AddComponent(components.NewButton("attack/button", "fonts/fira.ttf", 32, sdl.Color{B: 255}, "ATTACK", &engosdl.Rect{}, sdl.Color{B: 255}, false))
-		attackButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
-			return func(params ...interface{}) bool {
-				mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
-				if c.GetEntity().IsInside(mousePos) {
-					if c.GetEnabled() {
-						if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("attack"); err == nil {
-							message += output + "\n"
-							consoleText.SetMessage(message)
-						}
-					}
-				}
-				return true
-			}
-		}(attackButton.GetComponent(&components.Button{})))
+		// attackButton.GetComponent(&components.Button{}).AddDelegateToRegister(nil, player, &components.Mouse{}, func(c engosdl.IComponent) func(params ...interface{}) bool {
+		// 	return func(params ...interface{}) bool {
+		// 		mousePos := engosdl.NewVector(float64(params[0].(int32)), float64(params[1].(int32)))
+		// 		if c.GetEntity().IsInside(mousePos) {
+		// 			if c.GetEnabled() {
+		// 				if output, err := board.GetComponent(&Board{}).(*Board).ExecuteAtPlayerPos("attack"); err == nil {
+		// 					message += output + "\n"
+		// 					consoleText.SetMessage(message)
+		// 				}
+		// 			}
+		// 		}
+		// 		return true
+		// 	}
+		// }(attackButton.GetComponent(&components.Button{})))
 		player.AddChild(attackButton)
 
+		sceneController.GetComponent(&SceneController{}).(*SceneController).SetupResources()
+
+		scene.AddEntity(sceneController)
 		scene.AddEntity(board)
 		scene.AddEntity(player)
 		scene.AddEntity(console)
