@@ -9,6 +9,7 @@ import (
 // GameManager is the application game manager.
 type GameManager struct {
 	*engosdl.GameManager
+	Player *Player
 }
 
 var _ engosdl.IGameManager = (*GameManager)(nil)
@@ -18,6 +19,7 @@ func NewGameManager(name string) *GameManager {
 	engosdl.Logger.Trace().Str("game-manager", name).Msg("new game-manager")
 	return &GameManager{
 		GameManager: engosdl.NewGameManager(name),
+		Player:      NewPlayer("player"),
 	}
 }
 
@@ -30,57 +32,57 @@ func (h *GameManager) CreateAssets() {
 	engosdl.GetEngine().AddScene(scenePlay)
 }
 
-func (h *GameManager) createBoard() *Board {
-	var cell *Cell
-	board := NewBoard("dungeon", 10, 1, engosdl.NewVector(5, 5), 32)
+// func (h *GameManager) createBoard() *Board {
+// 	var cell *Cell
+// 	board := NewBoard("dungeon", 10, 1, engosdl.NewVector(5, 5), 32)
 
-	cell = NewCell(0, 0)
-	cell.EnterDialog = "You enter in the dungeon"
-	cell.ExitDialog = "Perils follow from this point"
-	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
-		newPos := &Position{Row: position.Row, Col: position.Col + 1}
-		board.DeleteEntityAt(position.Row, position.Col)
-		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
-		return "Move to the next cell", nil
-	}
-	board.Cells[0][0] = cell
+// 	cell = NewCell(0, 0)
+// 	cell.EnterDialog = "You enter in the dungeon"
+// 	cell.ExitDialog = "Perils follow from this point"
+// 	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+// 		newPos := &Position{Row: position.Row, Col: position.Col + 1}
+// 		board.DeleteEntityAt(position.Row, position.Col)
+// 		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
+// 		return "Move to the next cell", nil
+// 	}
+// 	board.Cells[0][0] = cell
 
-	cell = NewCell(0, 1)
-	cell.EnterDialog = "There is an enemy here"
-	cell.ExitDialog = "You beat the enemy. You can continue"
-	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
-		return "Enemy is ready to fight", nil
-	}
-	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
-		newPos := &Position{Row: position.Row, Col: position.Col + 1}
-		board.DeleteEntityAt(position.Row, position.Col)
-		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
-		return "Move to the next cell", nil
-	}
-	cell.ActionAndResult["attack"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
-		return "Attack enemy", nil
-	}
-	board.Cells[0][1] = cell
+// 	cell = NewCell(0, 1)
+// 	cell.EnterDialog = "There is an enemy here"
+// 	cell.ExitDialog = "You beat the enemy. You can continue"
+// 	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+// 		return "Enemy is ready to fight", nil
+// 	}
+// 	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+// 		newPos := &Position{Row: position.Row, Col: position.Col + 1}
+// 		board.DeleteEntityAt(position.Row, position.Col)
+// 		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
+// 		return "Move to the next cell", nil
+// 	}
+// 	cell.ActionAndResult["attack"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+// 		return "Attack enemy", nil
+// 	}
+// 	board.Cells[0][1] = cell
 
-	cell = NewCell(0, 2)
-	cell.EnterDialog = "You reach your destination"
-	cell.ExitDialog = "This is the end"
-	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
-		return "You made it!", nil
-	}
-	board.Cells[0][2] = cell
-	return board
-}
+// 	cell = NewCell(0, 2)
+// 	cell.EnterDialog = "You reach your destination"
+// 	cell.ExitDialog = "This is the end"
+// 	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+// 		return "You made it!", nil
+// 	}
+// 	board.Cells[0][2] = cell
+// 	return board
+// }
 
 func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bool {
 	return func(engine *engosdl.Engine, scene engosdl.IScene) bool {
 		sceneController := engosdl.NewEntity("scene-controller")
-		sceneController.AddComponent(NewSceneController("scene-controller/component"))
+		sceneController.AddComponent(NewSceneController("scene-controller/component", h.Player))
 
 		// board := engosdl.NewEntity("board")
 		board := sceneController.GetComponent(&SceneController{}).(*SceneController).Board
 		board.GetTransform().SetPositionXY(5, 5)
-		board.AddComponent(h.createBoard())
+		// board.AddComponent(h.createBoard())
 
 		// player := NewPlayer("player")
 		player := sceneController.GetComponent(&SceneController{}).(*SceneController).Player

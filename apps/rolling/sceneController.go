@@ -27,17 +27,18 @@ type SceneController struct {
 // var _ engosdl.ISceneController = (*SceneController)(nil)
 
 // NewSceneController create a new SceneController instance.
-func NewSceneController(name string) *SceneController {
+func NewSceneController(name string, player *Player) *SceneController {
 	engosdl.Logger.Trace().Str("component", "SceneController").Str("SceneController", name).Msg("new SceneController")
 	result := &SceneController{
 		Component: engosdl.NewComponent(name),
-		Player:    NewPlayer("player"),
+		Player:    player,
 		Board:     engosdl.NewEntity("board"),
 		Console:   engosdl.NewEntity("console"),
 	}
 	result.Player.AddChild(engosdl.NewEntity("look"))
 	result.Player.AddChild(engosdl.NewEntity("move"))
 	result.Player.AddChild(engosdl.NewEntity("attack"))
+	result.Board.AddComponent(result.createBoard())
 	result.Console.SetCache("message", "")
 	return result
 }
@@ -46,9 +47,9 @@ func NewSceneController(name string) *SceneController {
 // manager.
 func CreateSceneController(params ...interface{}) engosdl.IComponent {
 	if len(params) == 1 {
-		return NewSceneController(params[0].(string))
+		return NewSceneController(params[0].(string), params[1].(*Player))
 	}
-	return NewSceneController("")
+	return NewSceneController("", nil)
 }
 
 func (c *SceneController) addDelegateToRegisterToButton(name string) {
@@ -68,6 +69,48 @@ func (c *SceneController) addDelegateToRegisterToButton(name string) {
 		}
 		return true
 	})
+}
+
+func (h *SceneController) createBoard() *Board {
+	var cell *Cell
+	board := NewBoard("dungeon", 10, 1, engosdl.NewVector(5, 5), 32)
+
+	cell = NewCell(0, 0)
+	cell.EnterDialog = "You enter in the dungeon"
+	cell.ExitDialog = "Perils follow from this point"
+	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		newPos := &Position{Row: position.Row, Col: position.Col + 1}
+		board.DeleteEntityAt(position.Row, position.Col)
+		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
+		return "Move to the next cell", nil
+	}
+	board.Cells[0][0] = cell
+
+	cell = NewCell(0, 1)
+	cell.EnterDialog = "There is an enemy here"
+	cell.ExitDialog = "You beat the enemy. You can continue"
+	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		return "Enemy is ready to fight", nil
+	}
+	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		newPos := &Position{Row: position.Row, Col: position.Col + 1}
+		board.DeleteEntityAt(position.Row, position.Col)
+		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
+		return "Move to the next cell", nil
+	}
+	cell.ActionAndResult["attack"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		return "Attack enemy", nil
+	}
+	board.Cells[0][1] = cell
+
+	cell = NewCell(0, 2)
+	cell.EnterDialog = "You reach your destination"
+	cell.ExitDialog = "This is the end"
+	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+		return "You made it!", nil
+	}
+	board.Cells[0][2] = cell
+	return board
 }
 
 // DefaultAddDelegateToRegister will proceed to add default delegates to
