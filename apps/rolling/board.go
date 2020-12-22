@@ -34,7 +34,7 @@ func (p *Position) EqualTo(row int, col int) bool {
 }
 
 // TCellResultSignature is the callback to execute a cell action.
-type TCellResultSignature func(*Board, engosdl.IEntity, *Position, ...interface{}) (string, error)
+type TCellResultSignature func(*Board, engosdl.IEntity, []engosdl.IEntity, *Position, ...interface{}) (string, error)
 
 // Cell represents any cell in a board component.
 type Cell struct {
@@ -42,6 +42,7 @@ type Cell struct {
 	ExitDialog      string
 	ActionAndResult map[string]TCellResultSignature
 	Position        *Position
+	Entities        []engosdl.IEntity
 }
 
 // NewCell creates a new cell instance.
@@ -51,6 +52,7 @@ func NewCell(row int, column int) *Cell {
 		ExitDialog:      "",
 		ActionAndResult: make(map[string]TCellResultSignature),
 		Position:        &Position{Row: row, Col: column},
+		Entities:        []engosdl.IEntity{},
 	}
 }
 
@@ -68,7 +70,6 @@ func (c *Cell) GetActions() []string {
 // Board represents a component.
 type Board struct {
 	*engosdl.Component
-	Entities       [][]engosdl.IEntity
 	Columns        int
 	Rows           int
 	Origin         *engosdl.Vector
@@ -76,6 +77,7 @@ type Board struct {
 	Cells          [][]*Cell
 	dirty          bool
 	playerPosition *Position
+	player         engosdl.IEntity
 }
 
 // var _ engosdl.IBoard = (*Board)(nil)
@@ -89,16 +91,14 @@ func NewBoard(name string, columns int, rows int, origin *engosdl.Vector, cellSi
 		Rows:           rows,
 		Origin:         origin,
 		CellSize:       cellSize,
-		Entities:       [][]engosdl.IEntity{},
 		Cells:          [][]*Cell{},
 		dirty:          true,
 		playerPosition: &Position{},
+		player:         nil,
 	}
 	result.playerPosition.None()
-	result.Entities = make([][]engosdl.IEntity, rows)
 	result.Cells = make([][]*Cell, rows)
 	for i := 0; i < rows; i++ {
-		result.Entities[i] = make([]engosdl.IEntity, columns)
 		result.Cells[i] = make([]*Cell, columns)
 	}
 	return result
@@ -115,17 +115,19 @@ func CreateBoard(params ...interface{}) engosdl.IComponent {
 
 // AddEntityAt adds an entity to the given position.
 func (c *Board) AddEntityAt(entity engosdl.IEntity, row int, col int, player bool) error {
-	if c.Entities[row][col] == nil {
-		c.Entities[row][col] = entity
+	if cell := c.Cells[row][col]; cell != nil {
+		cell.Entities = append(cell.Entities, entity)
 		pos, _ := c.GetPositionFromCell(row, col)
 		entity.GetTransform().SetPosition(pos)
 		if player {
 			c.dirty = true
+			c.player = entity
 			c.playerPosition = &Position{Row: row, Col: col}
 		}
 		return nil
+
 	}
-	return fmt.Errorf("cell at row %d col %d is not free", row, col)
+	return fmt.Errorf("cell at row %d col %d is not available", row, col)
 }
 
 // GetPositionFromCell returns display position for the given cell.
@@ -142,13 +144,25 @@ func (c *Board) DefaultAddDelegateToRegister() {
 }
 
 // DeleteEntityAt deletes entity at given position.
-func (c *Board) DeleteEntityAt(row int, col int) error {
-	c.Entities[row][col] = nil
-	if c.playerPosition.EqualTo(row, col) {
-		c.dirty = true
-		c.playerPosition.None()
+func (c *Board) DeleteEntityAt(entity engosdl.IEntity, row int, col int) error {
+	if cell := c.Cells[row][col]; cell != nil {
+		index := -1
+		for i, ent := range cell.Entities {
+			if ent.GetID() == entity.GetID() {
+				index = i
+				break
+			}
+		}
+		if index != -1 {
+			cell.Entities = append(cell.Entities[:index], cell.Entities[index+1:]...)
+			if c.playerPosition.EqualTo(row, col) {
+				c.dirty = true
+				c.playerPosition.None()
+			}
+		}
+		return nil
 	}
-	return nil
+	return fmt.Errorf("cell at row %d col %d is not available", row, col)
 }
 
 // DoDestroy should destroy all component resources. This is called when
@@ -169,25 +183,17 @@ func (c *Board) DoUnLoad() {
 func (c *Board) ExecuteAtPlayerPos(action string) (string, error) {
 	cell := c.Cells[c.playerPosition.Row][c.playerPosition.Col]
 	if actionSignature := cell.ActionAndResult[action]; actionSignature != nil {
-		player := c.Entities[c.playerPosition.Row][c.playerPosition.Col]
+		entities := c.Cells[c.playerPosition.Row][c.playerPosition.Col].Entities
 		c.dirty = true
-		return actionSignature(c, player, c.playerPosition)
+		return actionSignature(c, c.player, entities, c.playerPosition)
 
 	}
 	return "", nil
 }
 
-// GetEntityAt returns the entity at the given position.
-func (c *Board) GetEntityAt(row int, col int) engosdl.IEntity {
-	return c.Entities[row][col]
-}
-
-// IsCellFree checks if a cell in the board is free or not.
-func (c *Board) IsCellFree(row int, col int) bool {
-	if row >= 0 && row < c.Rows && col >= 0 && col < c.Columns {
-		return c.Entities[row][col] == nil
-	}
-	return false
+// GetEntitiesAt returns the entity at the given position.
+func (c *Board) GetEntitiesAt(row int, col int) []engosdl.IEntity {
+	return c.Cells[row][col].Entities
 }
 
 // OnAwake is called when component is first loaded into the scene and all

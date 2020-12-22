@@ -78,10 +78,10 @@ func (c *SceneController) createBoard() *Board {
 	cell = NewCell(0, 0)
 	cell.EnterDialog = "You enter in the dungeon"
 	cell.ExitDialog = "Perils follow from this point"
-	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+	cell.ActionAndResult["move"] = func(board *Board, player engosdl.IEntity, entities []engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
 		newPos := &Position{Row: position.Row, Col: position.Col + 1}
-		board.DeleteEntityAt(position.Row, position.Col)
-		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
+		board.DeleteEntityAt(player, position.Row, position.Col)
+		board.AddEntityAt(player, newPos.Row, newPos.Col, true)
 		return "Move to the next cell", nil
 	}
 	board.Cells[0][0] = cell
@@ -89,16 +89,16 @@ func (c *SceneController) createBoard() *Board {
 	cell = NewCell(0, 1)
 	cell.EnterDialog = "There is an enemy here"
 	cell.ExitDialog = "You beat the enemy. You can continue"
-	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+	cell.ActionAndResult["look"] = func(board *Board, player engosdl.IEntity, entities []engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
 		return "Enemy is ready to fight", nil
 	}
-	cell.ActionAndResult["move"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+	cell.ActionAndResult["move"] = func(board *Board, player engosdl.IEntity, entities []engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
 		newPos := &Position{Row: position.Row, Col: position.Col + 1}
-		board.DeleteEntityAt(position.Row, position.Col)
-		board.AddEntityAt(entity, newPos.Row, newPos.Col, true)
+		board.DeleteEntityAt(player, position.Row, position.Col)
+		board.AddEntityAt(player, newPos.Row, newPos.Col, true)
 		return "Move to the next cell", nil
 	}
-	cell.ActionAndResult["attack"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+	cell.ActionAndResult["attack"] = func(board *Board, player engosdl.IEntity, entities []engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
 		return "Attack enemy", nil
 	}
 	board.Cells[0][1] = cell
@@ -106,7 +106,7 @@ func (c *SceneController) createBoard() *Board {
 	cell = NewCell(0, 2)
 	cell.EnterDialog = "You reach your destination"
 	cell.ExitDialog = "This is the end"
-	cell.ActionAndResult["look"] = func(board *Board, entity engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
+	cell.ActionAndResult["look"] = func(board *Board, player engosdl.IEntity, entities []engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
 		return "You made it!", nil
 	}
 	board.Cells[0][2] = cell
