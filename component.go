@@ -24,6 +24,7 @@ type IComponent interface {
 	DoLoad(IComponent) bool
 	DoUnLoad()
 	GetActive() bool
+	GetCache(string) (interface{}, error)
 	GetDelegate() IDelegate
 	GetEntity() IEntity
 	GetRemoveOnDestroy() bool
@@ -34,6 +35,7 @@ type IComponent interface {
 	OnUpdate()
 	RemoveDelegateToRegister(IDelegate, IEntity, IComponent) error
 	SetActive(bool)
+	SetCache(string, interface{})
 	SetCustomOnUpdate(func(IComponent))
 	SetDelegate(IDelegate)
 	SetEntity(IEntity)
@@ -111,6 +113,7 @@ type Component struct {
 	registers       []IRegister
 	removeOnDestroy bool
 	customOnUpdate  func(IComponent)
+	cache           map[string]interface{}
 }
 
 var _ IComponent = (*Component)(nil)
@@ -126,6 +129,7 @@ func NewComponent(name string) *Component {
 		registers:       []IRegister{},
 		removeOnDestroy: true,
 		customOnUpdate:  nil,
+		cache:           make(map[string]interface{}),
 	}
 }
 
@@ -240,6 +244,14 @@ func (c *Component) GetActive() bool {
 	return c.active
 }
 
+// GetCache retrieves component cache data for the given key.
+func (c *Component) GetCache(key string) (interface{}, error) {
+	if data, ok := c.cache[key]; ok {
+		return data, nil
+	}
+	return nil, fmt.Errorf("no cache data found for key: %s", key)
+}
+
 // GetDelegate returns delegates created by the component.
 func (c *Component) GetDelegate() IDelegate {
 	return c.delegate
@@ -346,6 +358,11 @@ func (c *Component) RemoveDelegateToRegister(delegate IDelegate, entity IEntity,
 // SetActive sets component active attribute
 func (c *Component) SetActive(active bool) {
 	c.active = active
+}
+
+// SetCache sets a new cache entry for the give key and data.
+func (c *Component) SetCache(key string, data interface{}) {
+	c.cache[key] = data
 }
 
 // SetCustomOnUpdate sets the custom call to be executed OnUpdate.

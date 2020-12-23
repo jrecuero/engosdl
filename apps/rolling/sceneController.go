@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/jrecuero/engosdl"
@@ -22,6 +23,7 @@ type SceneController struct {
 	Player  *Player
 	Board   engosdl.IEntity
 	Console engosdl.IEntity
+	Enemies []*Player
 }
 
 // var _ engosdl.ISceneController = (*SceneController)(nil)
@@ -34,10 +36,15 @@ func NewSceneController(name string, player *Player) *SceneController {
 		Player:    player,
 		Board:     engosdl.NewEntity("board"),
 		Console:   engosdl.NewEntity("console"),
+		Enemies:   []*Player{},
 	}
 	result.Player.AddChild(engosdl.NewEntity("look"))
 	result.Player.AddChild(engosdl.NewEntity("move"))
 	result.Player.AddChild(engosdl.NewEntity("attack"))
+	result.Player.SetCache("sheet", NewCharacterSheet(NewAbility(18, 16, 12, 10, 8, 10)))
+	enemy := NewPlayer("goblin")
+	enemy.SetCache("sheet", NewCharacterSheet(NewAbility(10, 8, 8, 6, 6, 6)))
+	result.Enemies = append(result.Enemies, enemy)
 	result.Board.AddComponent(result.createBoard())
 	result.Console.SetCache("message", "")
 	return result
@@ -90,7 +97,13 @@ func (c *SceneController) createBoard() *Board {
 	cell.EnterDialog = "There is an enemy here"
 	cell.ExitDialog = "You beat the enemy. You can continue"
 	cell.ActionAndResult["look"] = func(board *Board, player engosdl.IEntity, entities []engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
-		return "Enemy is ready to fight", nil
+		text := "room is empty"
+		for _, entity := range entities {
+			if entity.GetID() != player.GetID() {
+				text = fmt.Sprintf("you can see in the room: %s", entity.GetName())
+			}
+		}
+		return text, nil
 	}
 	cell.ActionAndResult["move"] = func(board *Board, player engosdl.IEntity, entities []engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
 		newPos := &Position{Row: position.Row, Col: position.Col + 1}
@@ -99,7 +112,17 @@ func (c *SceneController) createBoard() *Board {
 		return "Move to the next cell", nil
 	}
 	cell.ActionAndResult["attack"] = func(board *Board, player engosdl.IEntity, entities []engosdl.IEntity, position *Position, params ...interface{}) (string, error) {
-		return "Attack enemy", nil
+		result := "nothing happened"
+		for _, entity := range entities {
+			if entity.GetID() != player.GetID() {
+				obj, _ := player.GetCache("sheet")
+				playerStr := obj.(*CharacterSheet).Score.Strength
+				obj, _ = entity.GetCache("sheet")
+				enemyCon := obj.(*CharacterSheet).Score.Constitution
+				result = fmt.Sprintf("%s str %d battle %s con %d", player.GetName(), playerStr, entity.GetName(), enemyCon)
+			}
+		}
+		return result, nil
 	}
 	board.Cells[0][1] = cell
 

@@ -51,6 +51,10 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 		playerController := engosdl.NewComponent("player/controller")
 		player.AddComponentExt(playerController, player)
 
+		enemy := sceneController.GetComponent(&SceneController{}).(*SceneController).Enemies[0]
+		enemy.SetTag("enemy")
+		board.GetComponent(&Board{}).(*Board).AddEntityAt(enemy, 0, 1, false)
+
 		console := sceneController.GetComponent(&SceneController{}).(*SceneController).Console
 		console.GetTransform().SetPositionXY(10, 200)
 		consoleText := components.NewText("console/text", "fonts/fira2.ttf", 12, sdl.Color{}, " ")
@@ -76,6 +80,7 @@ func (h *GameManager) createScenePlay() func(*engosdl.Engine, engosdl.IScene) bo
 		scene.AddEntity(sceneController)
 		scene.AddEntity(board)
 		scene.AddEntity(player)
+		scene.AddEntity(enemy)
 		scene.AddEntity(console)
 		return true
 	}

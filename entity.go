@@ -140,22 +140,6 @@ func (entity *Entity) AddChild(child IEntity) bool {
 
 // AddComponent adds a new component to the entity.
 func (entity *Entity) AddComponent(component IComponent) IEntity {
-	// Logger.Trace().Str("entity", entity.GetName()).
-	// 	Str("component", component.GetName()).
-	// 	Str("type", reflect.TypeOf(component).String()).
-	// 	Msg("add component")
-	// for _, comp := range entity.GetComponents() {
-	// 	if reflect.TypeOf(comp) == reflect.TypeOf(component) {
-	// 		err := fmt.Errorf("component type %s already exist", reflect.TypeOf(component))
-	// 		Logger.Error().Err(err).Msg("AddComponent error")
-	// 		panic(err)
-	// 	}
-	// }
-	// component.SetEntity(entity)
-	// // component.OnAwake()
-	// entity.components = append(entity.components, component)
-	// entity.unloadedComponents = append(entity.unloadedComponents, component)
-	// return entity
 	return entity.AddComponentExt(component, entity)
 }
 
