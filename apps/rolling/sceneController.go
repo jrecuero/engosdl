@@ -120,9 +120,14 @@ func (c *SceneController) createBoard() *Board {
 				playerStr := obj.(*CharacterSheet).Modifier.Strength
 				obj, _ = entity.GetCache("sheet")
 				enemyAC := obj.(*CharacterSheet).ArmorClass
-				// if (attack + playerStr) >= enemyAC {
-				result = fmt.Sprintf("%s Dice roll %d+%d against %s AC %d", player.GetName(), attack, playerStr, entity.GetName(), enemyAC)
-				// }
+				result = fmt.Sprintf("%s Dice roll %d+%d against %s AC %d\n", player.GetName(), attack, playerStr, entity.GetName(), enemyAC)
+				if (attack + playerStr) >= enemyAC {
+					damage := RollDice(3)
+					result += fmt.Sprintf("%s damage for %d+%d to %s", player.GetName(), damage, playerStr, entity.GetName())
+				} else {
+					result += fmt.Sprintln("attack failed")
+				}
+
 			}
 		}
 		return result, nil

@@ -1,6 +1,9 @@
 package main
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/jrecuero/engosdl"
 	"github.com/jrecuero/engosdl/assets/components"
 	"github.com/veandco/go-sdl2/sdl"
@@ -17,6 +20,7 @@ var _ engosdl.IGameManager = (*GameManager)(nil)
 // NewGameManager created a new game manager instance.
 func NewGameManager(name string) *GameManager {
 	engosdl.Logger.Trace().Str("game-manager", name).Msg("new game-manager")
+	rand.Seed(time.Now().UTC().UnixNano())
 	return &GameManager{
 		GameManager: engosdl.NewGameManager(name),
 		Player:      NewPlayer("player"),
