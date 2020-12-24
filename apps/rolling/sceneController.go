@@ -115,11 +115,14 @@ func (c *SceneController) createBoard() *Board {
 		result := "nothing happened"
 		for _, entity := range entities {
 			if entity.GetID() != player.GetID() {
+				attack := RollDice(20)
 				obj, _ := player.GetCache("sheet")
-				playerStr := obj.(*CharacterSheet).Score.Strength
+				playerStr := obj.(*CharacterSheet).Modifier.Strength
 				obj, _ = entity.GetCache("sheet")
-				enemyCon := obj.(*CharacterSheet).Score.Constitution
-				result = fmt.Sprintf("%s str %d battle %s con %d", player.GetName(), playerStr, entity.GetName(), enemyCon)
+				enemyAC := obj.(*CharacterSheet).ArmorClass
+				// if (attack + playerStr) >= enemyAC {
+				result = fmt.Sprintf("%s Dice roll %d+%d against %s AC %d", player.GetName(), attack, playerStr, entity.GetName(), enemyAC)
+				// }
 			}
 		}
 		return result, nil
