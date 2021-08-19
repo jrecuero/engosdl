@@ -71,6 +71,7 @@ type CharacterSheet struct {
 	Initiative  int
 	Speed       int
 	HitDice     int
+	HitPoints   int
 }
 
 // NewAbility creates a new player ability  instance.
@@ -102,6 +103,7 @@ func NewCharacterSheet(score *Ability) *CharacterSheet {
 		Initiative:  BaseInitiative + modDex,
 		Speed:       BaseSpeed,
 		HitDice:     BaseHitDice,
+		HitPoints:   BaseHitDice,
 	}
 	return cs
 }
